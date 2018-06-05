@@ -1,0 +1,31 @@
+﻿<Window x:Class="AutoRobot.OrdersTable"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:AutoRobot"
+        mc:Ignorable="d"
+        Title="Таблица заявок" Height="395.288" Width="1088.5" Closing="Window_Closing">
+    <Grid>
+        <DataGrid x:Name="dg_orders_table" IsSynchronizedWithCurrentItem="False" AutoGenerateColumns="False" SelectionChanged="dg_orders_table_SelectionChanged">
+            <DataGrid.Columns>
+                <DataGridTextColumn Binding="{Binding Path=Number}" Header="#" IsReadOnly="True"/>
+                <DataGridTextColumn Binding="{Binding Path=Time}" Header="Время" IsReadOnly="True"/>
+                <DataGridTextColumn Binding="{Binding Path=Order_ID}" Header="ID заявки" IsReadOnly="True"/>
+                <DataGridTextColumn Binding="{Binding Path=Rule_ID}" Header="ID правила" IsReadOnly="True"/>
+                <DataGridTextColumn Binding="{Binding Path=Type}" Header="Тип" IsReadOnly="True"/>
+                <DataGridTextColumn Binding="{Binding Path=Direction}" Header="Действие" IsReadOnly="True"/>
+                <DataGridTextColumn Binding="{Binding Path=Volume}" Header="Объем" IsReadOnly="True"/>
+                <DataGridTextColumn Binding="{Binding Path=Security_Price}" Header="Цена инструмента" IsReadOnly="True"/>
+                <DataGridTextColumn Binding="{Binding Path=Order_Price}" Header="Цена заявки" IsReadOnly="True"/>
+                <DataGridTextColumn Binding="{Binding Path=Order_Shift}" Header="Сдвиг" IsReadOnly="True"/>
+                <DataGridTextColumn Binding="{Binding Path=Day_PNL}" Header="PNL Дня" IsReadOnly="True"/>
+                <DataGridTextColumn Binding="{Binding Path=Position_PNL}" Header="PNL Позиции" IsReadOnly="True"/>
+                <DataGridTextColumn Binding="{Binding Path=Max_Position_PNL}" Header="Max PNL позиции" IsReadOnly="True"/>
+                <DataGridTextColumn Binding="{Binding Path=Min_Position_PNL}" Header="Min PNL позиции" IsReadOnly="True"/>
+                <DataGridTextColumn Binding="{Binding Path=Comment}" Header="Комментарий" IsReadOnly="True"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+    </Grid>
+</Window>
