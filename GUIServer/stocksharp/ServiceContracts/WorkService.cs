@@ -114,7 +114,7 @@ namespace stocksharp.ServiceContracts
                 sell = tf[0].volume[0].sell,
                 sell_p = tf[0].volume[0].sell_p,
 
-                Candles_N = tf[0].Buffer.Count,
+                Candles_N = tf.Sum(x => x.Buffer.Count),
                 AllTrades_N = ProcessingData.AllTrades.Count,
 
                 Open_Trades_Time = ProcessingData.AllTrades[0].Time,

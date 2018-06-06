@@ -13,7 +13,8 @@ namespace stocksharp.ServiceContracts
         // >> Customizable strategy settings
         public static List<int> tf_Periods = new List<int>
         {
-            60
+            3600,
+            1800
         };
         public static List<ADX_Configuration> adx_cfgList = new List<ADX_Configuration>
         {

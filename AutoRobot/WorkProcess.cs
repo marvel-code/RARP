@@ -30,9 +30,9 @@ namespace AutoRobot
     public partial class WorkProcess : TimeFrameStrategy, IDisposable
     {
         /// Threads
-        volatile bool doStopConnectionReaffirmationThread;
-        Thread threadConnectionReaffirmation;
-        Thread threadLoading;
+        private volatile bool doStopConnectionReaffirmationThread;
+        private Thread threadConnectionReaffirmation;
+        private Thread threadLoading;
 
         /// init
         private MainWindow mw = MainWindow.Instance;
@@ -40,8 +40,6 @@ namespace AutoRobot
         private List<int> _tfPeriods;
         private CandleManager _candleManager;
 
-        public bool isTrade = false;
-        public bool isWork = false;
         public DateTime startDateTime { get; private set; }
 
         public WorkProcess(CandleManager candleManager, QuikTrader quikTrader, Portfolio portfolio, Security secutirty) : base(TimeSpan.FromSeconds(0.1)) // Период стратегии ?
@@ -77,7 +75,7 @@ namespace AutoRobot
 
             // - Timeframe registration
             _tfPeriods = _proxy.GetTimeFramePeriods();
-            transmittedCandles = new List<Candle>[_tfPeriods.Count];
+            transmittedCandlesCount = new int[_tfPeriods.Count];
             foreach (var tf_per in _tfPeriods)
             {
                 if (!_candleManager.IsTimeFrameCandlesRegistered(Security, TimeSpan.FromSeconds(tf_per))) _candleManager.RegisterTimeFrameCandles(Security, TimeSpan.FromSeconds(tf_per));
@@ -87,8 +85,10 @@ namespace AutoRobot
         {
             terminateConnection();
         }
-        
+
         /// Main
+        public bool isTrade = false;
+        public bool isWork = false;
         private Object lockObj_OnProcess = new Object();
          
         protected override void OnStarting()
@@ -483,43 +483,27 @@ namespace AutoRobot
         /// Server preprocessing
         private const int maxTransmitTradesCount = 5000;
         private int transmittedTradesCount = 0;
-        private List<Candle>[] transmittedCandles;
-
+        private const int maxTransmitCandlesCount = 500;
+        private int[] transmittedCandlesCount;
+        
         private Candle[][] getNewCandles()
         {
-            List<Candle>[] result = new List<Candle>[transmittedCandles.Length];
-
-            for (int i = 0; i < _tfPeriods.Count; i++)
+            List<TimeFrameCandle>[] result = new List<TimeFrameCandle>[transmittedCandlesCount.Length];
+            for (int i = 0; i < transmittedCandlesCount.Length; i++)
             {
-                result[i] = new List<Candle>();
-
-                if (transmittedCandles[i] == null)
-                {
-                    transmittedCandles[i] = new List<Candle>();
-                }
-
                 var candles = _candleManager.GetTimeFrameCandles(Security, TimeSpan.FromSeconds(_tfPeriods[i]), 1000).ToArray();
-                for (int p = 0; p < candles.Length; p++)
-                {
-                    int k = candles.Length - 1 - p;
-                    if (!transmittedCandles[i].Contains(candles[k]) || p == 0)
-                    {
-                        result[i].Add(candles[k]);
-                    }
-                }
-                
-                result[i].Reverse();
-                transmittedCandles[i].AddRange(result[i]);
+                int nonTransmittedCandlesCount = candles.Length - transmittedCandlesCount[i];
+                result[i] = candles.Range(transmittedCandlesCount[i], nonTransmittedCandlesCount > maxTransmitTradesCount ? maxTransmitTradesCount : nonTransmittedCandlesCount).ToList();
+                transmittedCandlesCount[i] += result[i].Count - 1;
             }
 
-            return result.Select(l => l.ToArray()).ToArray();
+            return result.Select(x => x.ToArray()).ToArray();
         }
         private Trade[] getNewTrades()
         {
-            List<Trade> result = new List<Trade>();
             var AllTrades = TM.MySecurity.Trader.Trades.ToArray();
             int nonTransmittedTradesCount = AllTrades.Length - transmittedTradesCount;
-            result.AddRange(AllTrades.Range(transmittedTradesCount, nonTransmittedTradesCount > maxTransmitTradesCount ? maxTransmitTradesCount : nonTransmittedTradesCount));
+            List<Trade> result = AllTrades.Range(transmittedTradesCount, nonTransmittedTradesCount > maxTransmitTradesCount ? maxTransmitTradesCount : nonTransmittedTradesCount).ToList();
             transmittedTradesCount += result.Count;
 
             return result.ToArray();
