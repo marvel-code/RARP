@@ -334,7 +334,7 @@ namespace AutoRobot
 
             grid_trade_configuration.IsEnabled = false;
 
-            workProcess.is_Trade = true;
+            workProcess.isTrade = true;
 
             updateRobotStatus();
 
@@ -350,7 +350,7 @@ namespace AutoRobot
             grid_trade_configuration.Dispatcher.Invoke(new Action(() => grid_trade_configuration.IsEnabled = true));
 
 
-            workProcess.is_Trade = false;
+            workProcess.isTrade = false;
             TM.Register.ExitOrder(999, "Stop trading exit");
 
             updateRobotStatus();
@@ -523,9 +523,9 @@ namespace AutoRobot
                 switch (workProcess.ProcessState)
                 {
                     case ProcessStates.Started:
-                        if (workProcess.is_Work)
+                        if (workProcess.isWork)
                         {
-                            if (workProcess.is_Trade)
+                            if (workProcess.isTrade)
                             {
                                 tb_status.Text = "Торговля";
                                 tb_status.Background = Select_Color(MyColors.Cyan);

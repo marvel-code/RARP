@@ -29,166 +29,95 @@ namespace AutoRobot
 {
     public partial class WorkProcess : TimeFrameStrategy, IDisposable
     {
-        //
-        // Threads
-        //
-
+        /// Threads
         volatile bool doStopConnectionReaffirmationThread;
         Thread threadConnectionReaffirmation;
+        Thread threadLoading;
 
-        //
-        // init
-        //
+        /// init
+        private MainWindow mw = MainWindow.Instance;
+        private IWorkService _proxy;
+        private List<int> _tfPeriods;
+        private CandleManager _candleManager;
 
-        IWorkService proxy;
-        ServerDataObject serverDataObj = new ServerDataObject();
-        TradeState tradeState;
-        PartnerDataObject clientDataObj;
-
-        public MainWindow mw = MainWindow.Instance;
-
-        public bool is_Trade = false;
-        public bool is_Work = false;
-        
-        CandleManager _candleManager;
-
+        public bool isTrade = false;
+        public bool isWork = false;
         public DateTime startDateTime { get; private set; }
-
-        //
-        // Exchange variables
-        //
-
-        private Decimal _position;
-        
-        public List<int> tfPeriods;
-        public List<Candle>[] transmittedCandles;
-        public List<Trade> transmittedTrades;
 
         public WorkProcess(CandleManager candleManager, QuikTrader quikTrader, Portfolio portfolio, Security secutirty) : base(TimeSpan.FromSeconds(0.1)) // Период стратегии ?
         {
             // -- init proxy
-
-            clientDataObj = new PartnerDataObject();
-
             WSHttpBinding binding = new WSHttpBinding(SecurityMode.None, true);
             EndpointAddress address = new EndpointAddress("http://185.158.153.217:8010/WorkService");
             //EndpointAddress address = new EndpointAddress("http://127.0.0.1:8010/WorkService");
-
-            proxy = ChannelFactory<IWorkService>.CreateChannel(binding, address);
-            
-            var errorMessage = proxy.InitConnection("TestUser");
+            _proxy = ChannelFactory<IWorkService>.CreateChannel(binding, address);
+            var errorMessage = _proxy.InitConnection("TestUser");
             if (errorMessage != null)
             {
                 throw new Exception(errorMessage);
             }
-
-            // Reaffirmation thread
+            
             threadConnectionReaffirmation = new Thread(() =>
             {
                 doStopConnectionReaffirmationThread = false;
                 while(false && !doStopConnectionReaffirmationThread)
                 {
-                    ReaffirmConnection();
+                    reaffirmConnection();
                     Thread.Sleep(5 * 1000);
                 }
             });
             threadConnectionReaffirmation.Start();
 
             // -- init local
-
             _candleManager = candleManager;
             Interval = TimeSpan.FromSeconds(1);
             Trader = quikTrader;
             Portfolio = portfolio;
             Security = secutirty;
 
-            PropertyChanged += Process_PropertyChanged;
-            OrderFailed += Process_OrderFailed;
-            StopOrderFailed += Process_StopOrderFailed;
-
             // - Timeframe registration
-            tfPeriods = proxy.GetTimeFramePeriods();
-            transmittedCandles = new List<Candle>[tfPeriods.Count];
-            foreach (var tf_per in tfPeriods)
+            _tfPeriods = _proxy.GetTimeFramePeriods();
+            transmittedCandles = new List<Candle>[_tfPeriods.Count];
+            foreach (var tf_per in _tfPeriods)
             {
                 if (!_candleManager.IsTimeFrameCandlesRegistered(Security, TimeSpan.FromSeconds(tf_per))) _candleManager.RegisterTimeFrameCandles(Security, TimeSpan.FromSeconds(tf_per));
             }
         }
         public void MyDoDispose()
         {
-            TerminateMyConnection();
+            terminateConnection();
         }
-
-        //
-        // Main
-        //
         
-        private bool ReaffirmConnection()
-        {
-            try
-            {
-                //proxy.ReaffirmConnection();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                addLogMessage("Попытка подключения к серверу..");
-                return false;
-            }
-        }
-        private void TerminateMyConnection()
-        {
-            try
-            {
-                doStopConnectionReaffirmationThread = true;
-                proxy.TerminateConnection();
-            }
-            catch (Exception ex)
-            {
-                System.Windows.Forms.MessageBox.Show("Не удалось закрыть соединение с сервером:\n\n" + ex.Message);
-            }
-        }
+        /// Main
+        private Object lockObj_OnProcess = new Object();
          
-        // Start robot
         protected override void OnStarting()
         {
             base.OnStarting();
 
             addLogMessage("Старт робота.\n");
             mw.tb_status.Background = mw.Select_Color(MyColors.Yellow);
-
-            ///
-            /// ЭТО ОТДЕЛЬНЫЙ ПОТОК МОНИТОРИНГА СВЕЧ
-            ///
-            //_candleManager.CandlesChanged += (token, candles) => proxy.Process_Token(token, candles);
-
+            
             // -- Synchronization
-            Thread loadingThread = new Thread(() =>
+            threadLoading = new Thread(() =>
             {
                 double interval_sec;
                 double intervalInitial_sec = (TM.terminalDateTime - TM.MySecurity.LastTrade.Time).TotalSeconds;
                 Boolean is_LoadCandles = false;
 
-                while (!is_Work)
+                while (!isWork)
                 {
-                    // - Обработка загрузки робота
                     interval_sec = (TM.terminalDateTime - TM.MySecurity.LastTrade.Time).TotalSeconds;
 
                     if (is_LoadCandles)
                     {   // - Finalizer of loading
                         if (TM.terminalDateTime > startDateTime)
                         {
-                            //Process_CandlesFill();
-
                             addLogMessage("Загрузка исторических данных закончена");
+                            if (TM.trade_cfg.is_Test) addLogMessage("РЕЖИМ ТЕСТИРОВАНИЯ");
+                            else addLogMessage("РЕЖИМ ТОРГОВЛИ");
 
-                            is_Work = true;
-
-                            if (TM.trade_cfg.is_Test)
-                                addLogMessage("РЕЖИМ ТЕСТИРОВАНИЯ");
-                            else
-                                addLogMessage("РЕЖИМ ТОРГОВЛИ");
-
+                            isWork = true;
                             mw.updateRobotStatus();
                         }
                         else
@@ -199,11 +128,11 @@ namespace AutoRobot
                         }
                     }
                     else
-                    {   // Loading..
+                    {   // - Loading..
                         // Loading status
                         double Percents = Math.Round(100 * (1 - interval_sec / intervalInitial_sec), 1, MidpointRounding.AwayFromZero);
                         mw.setTextboxText(mw.tb_status, string.Format("{0}%", Percents < 0 ? 0 : Percents));
-                        // Check synchronization
+                        // Check for synchronization
                         if (interval_sec < 2)
                         {   // Synchronized
                             startDateTime = DateTime.Now.AddSeconds(4);
@@ -212,29 +141,26 @@ namespace AutoRobot
                     }
                 }
             });
-            loadingThread.Start();
+            threadLoading.Start();
         }
-        // Refresh signal
-        Object lockObj_OnProcess = new Object();
         protected override ProcessResults OnProcess()
         {
             lock (lockObj_OnProcess)
             {
-                if (!is_Work)
-                    return ProcessResults.Continue;
-
-                // Stop work
                 if (ProcessState == ProcessStates.Stopping)
                 {
                     addLogMessage("Стратегия остановлена");
                     return ProcessResults.Stop;
                 }
 
+                if (!isWork)
+                    return ProcessResults.Continue;
+                
                 if
                 (
                     TM.trade_cfg.is_Test
                     ||
-                    // Enter, if QUIK process orders without errors
+                    // Enter, if QUIK processes orders without errors
                     (TM.last_EnterOrder == null || TM.last_EnterOrder.State != OrderStates.Failed)
                     &&
                     (TM.last_ExitOrder == null || TM.last_ExitOrder.State != OrderStates.Failed)
@@ -242,117 +168,84 @@ namespace AutoRobot
                     (TM.last_StopOrder == null || TM.last_StopOrder.State != OrderStates.Failed)
                 )
                 {
-                    /**
-                     * Update everything
-                     **/
-
-                    // Indicators
-                    /*
-                    Process_UpdateIndicators();
-
-                    try
-                    { }
-                    catch (Exception ex)
-                    {
-                        addLogMessage("Ошибка обновления индикаторов: " + ex.Message);
-                        return Process_Robot_Wait();
-                    }
-                    */
-
-                    // TradeManager
-
+                    // Update TradeManager
                     try { TM.updateValues(); }
                     catch (Exception ex)
                     {
                         addLogMessage("Ошибка обновления TradeManager: " + ex.Message);
-                        return Process_Robot_Wait();
+                        return ProcessResults.Continue;
                     }
-                    // Current position
 
-                    try { _position = TM.Current_Position; }
+                    // Update current position
+                    decimal currentPosition;
+                    try { currentPosition = TM.Current_Position; }
                     catch (Exception ex)
                     {
-                        addLogMessage("Ошибка обновления TradeManager: " + ex.Message);
-                        return Process_Robot_Wait();
+                        addLogMessage("Ошибка обновления текущей позиции: " + ex.Message);
+                        return ProcessResults.Continue;
                     }
-                    // Current need action
+
+                    // Update need action
                     NeedAction needAction = NeedAction.LongOrShortOpen;
-                    if (_position > 0)
+                    if (currentPosition > 0)
                         needAction = NeedAction.LongClose;
-                    else if (_position < 0)
+                    else if (currentPosition < 0)
                         needAction = NeedAction.ShortClose;
                     // PNL
+                    updatePnlDisplays();
+                    if (isTrade) processPnlLimits();
 
-                    try { updatePnlDisplays(); } 
-                    catch (Exception ex)
-                    {
-                        addLogMessage("Ошибка обновления PNL: " + ex.Message);
-                        return Process_Robot_Wait();
-                    }
+                    // Set quik data 
+                    ServerDataObject quikData = new ServerDataObject();
+                    quikData.NewCandles = getNewCandles();
+                    quikData.NewTrades = getNewTrades();
+                    quikData.TerminalTime = TM.terminalDateTime;
+                    if (TM.last_EnterOrder != null) quikData.LastEnterTime = TM.last_EnterOrder.Time;
+                    if (TM.last_ExitOrder != null) quikData.LastExitTime = TM.last_ExitOrder.Time;
 
-                    try { if (is_Trade) Process_PnlLimits(); }
-                    catch (Exception ex)
-                    {
-                        addLogMessage("Ошибка обработки лимитов PNL: " + ex.Message);
-                        return Process_Robot_Wait();
-                    }
-                    // Trading state
-                    serverDataObj.NewCandles = getNewCandles();
-                    serverDataObj.NewTrades = getNewTrades();
-                    serverDataObj.TerminalTime = TM.terminalDateTime;
-                    if (TM.last_EnterOrder != null)
-                        serverDataObj.LastEnterTime = TM.last_EnterOrder.Time;
-                    if (TM.last_ExitOrder != null)
-                        serverDataObj.LastExitTime = TM.last_ExitOrder.Time;
+                    // Set client data 
+                    PartnerDataObject partnerData = new PartnerDataObject();
+                    partnerData.securitiesData = TM.MyTrader.Securities.Select(x => new SecuritiesRow { code = x.Code }).ToList();
+                    partnerData.derivativePortfolioData = new List<DerivativePortfolioRow>() { new DerivativePortfolioRow { beginAmount = TM.MyPortfolio.BeginAmount.Value, variationMargin = TM.MyPortfolio.VariationMargin.Value } };
+                    partnerData.derivativePositionsData = new List<DerivativePositionsRow>() { new DerivativePositionsRow { currentPosition = (int)(TM.MyTrader.GetPosition(TM.MyPortfolio, TM.MySecurity) ?? new Position { CurrentValue = 0 }).CurrentValue } };
+                    partnerData.tradesData = TM.MyTrader.MyTrades.Select(x => new TradeData { id = x.Trade.Id, orderNumber = x.Order.Id, price = x.Trade.Price, volume = (int)x.Trade.Volume, dateTime = x.Trade.Time.ToString(@"YYYY/MM/dd HH:mm:ss") }).ToList();
+                    partnerData.ordersData = TM.MyTrader.Orders.Except(TM.MyTrader.StopOrders).Select(x => new OrderData { id = x.Id, price = x.Price, volume = (int)x.Volume, balance = (int)x.Balance, dateTime = x.Time.ToString(@"YYYY/MM/dd HH:mm:ss"), secCode = x.Security.Code, derivedOrderId = (x.DerivedOrder ?? new Order() { Id = 0}).Id, side = x.Direction.ToString(), state = x.State.ToString(), comment = x.Comment }).ToList();
+                    partnerData.stopOrdersData = TM.MyTrader.StopOrders.Select(x => new StopOrderData { id = x.Id, price = x.Price, stopPrice = (decimal)x.StopCondition.Parameters["StopPrice"], volume = (int)x.Volume, balance = (int)x.Balance, dateTime = x.Time.ToString(@"YYYY/MM/dd HH:mm:ss"), secCode = x.Security.Code, type = x.StopCondition.Parameters["Type"].ToString(), side = x.Direction.ToString(), state = x.State.ToString(), comment = x.Comment }).ToList();
 
-                    // Client Data Object
-                    clientDataObj.securitiesData = TM.MyTrader.Securities.Select(x => new SecuritiesRow { code = x.Code }).ToList();
-                    clientDataObj.derivativePortfolioData = new List<DerivativePortfolioRow>() { new DerivativePortfolioRow { beginAmount = TM.MyPortfolio.BeginAmount.Value, variationMargin = TM.MyPortfolio.VariationMargin.Value } };
-                    clientDataObj.derivativePositionsData = new List<DerivativePositionsRow>() { new DerivativePositionsRow { currentPosition = (int)(TM.MyTrader.GetPosition(TM.MyPortfolio, TM.MySecurity) ?? new Position { CurrentValue = 0 }).CurrentValue } };
-                    clientDataObj.tradesData = TM.MyTrader.MyTrades.Select(x => new TradeData { id = x.Trade.Id, orderNumber = x.Order.Id, price = x.Trade.Price, volume = (int)x.Trade.Volume, dateTime = x.Trade.Time.ToString(@"YYYY/MM/dd HH:mm:ss") }).ToList();
-                    clientDataObj.ordersData = TM.MyTrader.Orders.Except(TM.MyTrader.StopOrders).Select(x => new OrderData { id = x.Id, price = x.Price, volume = (int)x.Volume, balance = (int)x.Balance, dateTime = x.Time.ToString(@"YYYY/MM/dd HH:mm:ss"), secCode = x.Security.Code, derivedOrderId = (x.DerivedOrder ?? new Order() { Id = 0}).Id, side = x.Direction.ToString(), state = x.State.ToString(), comment = x.Comment }).ToList();
-                    clientDataObj.stopOrdersData = TM.MyTrader.StopOrders.Select(x => new StopOrderData { id = x.Id, price = x.Price, stopPrice = (decimal)x.StopCondition.Parameters["StopPrice"], volume = (int)x.Volume, balance = (int)x.Balance, dateTime = x.Time.ToString(@"YYYY/MM/dd HH:mm:ss"), secCode = x.Security.Code, type = x.StopCondition.Parameters["Type"].ToString(), side = x.Direction.ToString(), state = x.State.ToString(), comment = x.Comment }).ToList();
-                    
+                    // Get trade state
+                    TradeState tradeData;
                     try
                     {
-                        tradeState = proxy.GetTradeState(clientDataObj, serverDataObj, needAction);
+                        tradeData = _proxy.GetTradeState(partnerData, quikData, needAction);
                     }
                     catch (Exception ex)
                     {
                         mw.addLogSpoiler("Ошибка обновления состояния торговли", ex.Message);
                         return ProcessResults.Continue;
-                        return Process_Robot_Wait();
                     }
-                    // Monitoring
+
+                    // Update monitor values
+                    updateMonitorValues(tradeData);
                     
-                    try
-                    { updateMonitorValues(); }
-                    catch (Exception ex)
-                    {
-                        mw.addLogSpoiler("Ошибка обновления мониторинга: ", ex.Message);
-                        return Process_Robot_Wait();
-                    }
-
-                    /**
-                     * TRADING
-                     **/
-
-                    if (is_Trade)
+                    // Trading:
+                    if (isTrade)
                     {
                         if (!TM.is_Position)
                         {
-                            if (tradeState.LongOpen && tradeState.LongClose || tradeState.ShortOpen && tradeState.ShortClose)
+                            // Check for loop existence 
+                            if (tradeData.LongOpen && tradeData.LongClose || tradeData.ShortOpen && tradeData.ShortClose)
                             {
-                                addLogMessage(string.Format("Замечено OPEN&CLOSE. Выход из торговли. (LO-LC SO-SC):({0}-{1} {2}-{3})", tradeState.LongOpen, tradeState.LongClose, tradeState.ShortOpen, tradeState.ShortClose));
+                                addLogMessage(string.Format("Замечено OPEN&CLOSE. Выход из торговли. (LO-LC SO-SC):({0}-{1} {2}-{3})", tradeData.LongOpen, tradeData.LongClose, tradeData.ShortOpen, tradeData.ShortClose));
                                 mw.stopTrading();
                                 return ProcessResults.Continue;
                             }
-                            // LONG
-                            if (tradeState.LongOpen && (TM.last_EnterOrder == null || TM.last_EnterOrder.State == OrderStates.Done))
+
+                            // Long
+                            if (tradeData.LongOpen && (TM.last_EnterOrder == null || TM.last_EnterOrder.State == OrderStates.Done))
                             {
                                 // Order
                                 TM.Register.Order(
-                                    tradeState.RuleId, 
+                                    tradeData.RuleId, 
                                     TM.trade_cfg.Order_Volume, 
                                     OrderDirections.Buy, 
                                     OrderType.Enter
@@ -365,12 +258,13 @@ namespace AutoRobot
                                 );
                                 return ProcessResults.Continue;
                             }
-                            // SHORT
-                            if (tradeState.ShortOpen && (TM.last_EnterOrder == null || TM.last_EnterOrder.State == OrderStates.Done))
+
+                            // Short
+                            if (tradeData.ShortOpen && (TM.last_EnterOrder == null || TM.last_EnterOrder.State == OrderStates.Done))
                             {
                                 // Order
                                 TM.Register.Order(
-                                    tradeState.RuleId, 
+                                    tradeData.RuleId, 
                                     TM.trade_cfg.Order_Volume, 
                                     OrderDirections.Sell, 
                                     OrderType.Enter
@@ -392,11 +286,11 @@ namespace AutoRobot
                             if (TM.last_EnterOrder.Direction == OrderDirections.Buy)
                             {
                                 // SELL
-                                if (tradeState.LongClose && (TM.last_ExitOrder == null || TM.last_ExitOrder.State == OrderStates.Done))
+                                if (tradeData.LongClose && (TM.last_ExitOrder == null || TM.last_ExitOrder.State == OrderStates.Done))
                                 {
                                     // Exit order
                                     TM.Register.ExitOrder(
-                                        tradeState.RuleId
+                                        tradeData.RuleId
                                     );
                                     return ProcessResults.Continue;
                                 }
@@ -404,11 +298,11 @@ namespace AutoRobot
                             else
                             {
                                 // COVER
-                                if (tradeState.ShortClose && (TM.last_ExitOrder == null || TM.last_ExitOrder.State == OrderStates.Done))
+                                if (tradeData.ShortClose && (TM.last_ExitOrder == null || TM.last_ExitOrder.State == OrderStates.Done))
                                 {
                                     // Exit order
                                     TM.Register.ExitOrder(
-                                        tradeState.RuleId
+                                        tradeData.RuleId
                                     );
                                     return ProcessResults.Continue;
                                 }
@@ -418,14 +312,15 @@ namespace AutoRobot
                 }
                 else
                 {
-                    // Обработка недопустимого кол-ва неисполненных заявок
+                    // Exceptions overflow 
                     if (TM.Exceptions_Count >= TM.trade_cfg.Max_Exceptions_Count)
                     {
                         addLogMessage("Кол-во исключений превысило максимально допустимый порог");
                         mw.stopTrading();
                         return ProcessResults.Continue;
                     }
-                    // Заново регистрируем неудачные заявки
+
+                    // Reregistering failed orders
                     if (TM.last_EnterOrder != null && TM.last_EnterOrder.State == OrderStates.Failed)
                         TM.Register.FailedOrder(TM.last_EnterOrder, OrderType.Enter);
                     if (TM.last_ExitOrder != null && TM.last_ExitOrder.State == OrderStates.Failed)
@@ -437,14 +332,29 @@ namespace AutoRobot
                 return ProcessResults.Continue;
             }
         }
+        private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            mw.updateRobotStatus();
+        }
 
-        //
-        // Refresh robot state
-        //
+        private void addLogMessage(String message, params object[] obj)
+        {
+            mw.addLogMessage(message, obj);
+        }
 
-        // Refresh monitor values
-        DateTime lastRefreshTime = DateTime.Now;
-        private void updateMonitorValues()
+        /// Refresh robot state
+        private DateTime lastRefreshTime = DateTime.Now;
+
+        private void setRobotWait()
+        {
+            mw.Dispatcher.Invoke(() => {
+                isWork = false;
+                addLogMessage("Робот в ожидании.\n");
+                mw.tb_status.Text = "В ожидании";
+                mw.tb_status.Background = mw.Select_Color(MyColors.Yellow);
+            });
+        }
+        private void updateMonitorValues(TradeState tradeState)
         {
             mw.mw.Dispatcher.Invoke(new Action(() =>
             {
@@ -459,7 +369,7 @@ namespace AutoRobot
                 mw.mw.tb_allTrades_startTime.Text = (tradeState.AdditionalData.Open_Trades_Time).ToString(@"yyyy/MM/dd HH:mm:ss");
                 mw.mw.tb_allTrades_stopTime.Text = (tradeState.AdditionalData.Close_Trades_Time).ToString(@"yyyy/MM/dd HH:mm:ss");
 
-                decimal progressValue = transmitStartIndex / TM.MySecurity.Trader.Trades.Count();
+                decimal progressValue = transmittedTradesCount / TM.MySecurity.Trader.Trades.Count();
                 progressValue = Math.Ceiling(progressValue * 100);
                 progressValue = progressValue > 100 ? 100 : progressValue;
                 mw.mw.tb_progressLoading.Text = string.Format("{0}%", progressValue);
@@ -511,7 +421,6 @@ namespace AutoRobot
                 mw.setTextboxText(mw.mw.tb_sv_p, tf[0].volume[0].sv_p.Round(MidpointRounding.AwayFromZero).ToString());*/
             }));
         }
-        // Refresh PNL displays
         private void updatePnlDisplays()
         {
             mw.setTextboxTextAndBackgroundByValue(mw.tb_day_pnl, TM.Day_PNL);
@@ -520,8 +429,7 @@ namespace AutoRobot
             mw.setTextboxTextAndBackgroundByValue(mw.mw.tb_max_ppnl, TM.Max_Position_PNL);
             mw.setTextboxTextAndBackgroundByValue(mw.mw.tb_min_ppnl, TM.Min_Position_PNL);
         }
-        // Finalizer of PnL limit reaching
-        private void Process_PnlLimits()
+        private void processPnlLimits()
         {
             if (TM.trade_cfg.Max_Day_Profit != 0 && TM.Session_PNL >= TM.trade_cfg.Max_Day_Profit)
             {
@@ -535,52 +443,53 @@ namespace AutoRobot
             }
         }
 
-        //
-        // Error functions
-        //
-        private ProcessResults Process_Robot_Wait()
-        {
-            mw.Dispatcher.Invoke(() => {
-                is_Work = false;
-                addLogMessage("Робот в ожидании.\n");
-                mw.tb_status.Text = "В ожидании";
-                mw.tb_status.Background = mw.Select_Color(MyColors.Yellow);
-            });
-            return ProcessResults.Continue;
-        }
-        private void Process_OrderFailed(OrderFail orderFail)
+        /// Error handlers
+        protected override void OnOrderFailed(OrderFail orderFail)
         {
             addLogMessage(string.Format("Ошибка регистрации заявки №{0}. Сообщение об ошибке: {1}", orderFail.Order.Id, orderFail.Error.Message));
         }
-        private void Process_StopOrderFailed(OrderFail orderFail)
+        protected override void OnStopOrderFailed(OrderFail orderFail)
         {
             addLogMessage(string.Format("Ошибка регистрации стоп-заявки №{0}. Сообщение об ошибке: {1}", orderFail.Order.Id, orderFail.Error.Message));
         }
 
-        //
-        // Others
-        //
-
-        // Refresh status display
-        private void Process_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        /// Server synchronization
+        private bool reaffirmConnection()
         {
-            mw.updateRobotStatus();
+            try
+            {
+                //proxy.ReaffirmConnection();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                addLogMessage("Попытка подключения к серверу..");
+                return false;
+            }
         }
-        // Add log message
-        private void addLogMessage(String message, params object[] obj)
+        private void terminateConnection()
         {
-            mw.addLogMessage(message, obj);
+            try
+            {
+                doStopConnectionReaffirmationThread = true;
+                _proxy.TerminateConnection();
+            }
+            catch (Exception ex)
+            {
+                System.Windows.Forms.MessageBox.Show("Не удалось закрыть соединение с сервером:\n\n" + ex.Message);
+            }
         }
 
-        //
-        // Server preprocessing
-        //
+        /// Server preprocessing
+        private const int maxTransmitTradesCount = 5000;
+        private int transmittedTradesCount = 0;
+        private List<Candle>[] transmittedCandles;
 
         private Candle[][] getNewCandles()
         {
             List<Candle>[] result = new List<Candle>[transmittedCandles.Length];
 
-            for (int i = 0; i < tfPeriods.Count; i++)
+            for (int i = 0; i < _tfPeriods.Count; i++)
             {
                 result[i] = new List<Candle>();
 
@@ -589,7 +498,7 @@ namespace AutoRobot
                     transmittedCandles[i] = new List<Candle>();
                 }
 
-                var candles = _candleManager.GetTimeFrameCandles(Security, TimeSpan.FromSeconds(tfPeriods[i]), 1000).ToArray();
+                var candles = _candleManager.GetTimeFrameCandles(Security, TimeSpan.FromSeconds(_tfPeriods[i]), 1000).ToArray();
                 for (int p = 0; p < candles.Length; p++)
                 {
                     int k = candles.Length - 1 - p;
@@ -605,20 +514,13 @@ namespace AutoRobot
 
             return result.Select(l => l.ToArray()).ToArray();
         }
-
-        /// SETTINGS
-        /// **
-        // Limit trades count for transmit
-        int maxTransmitTradesCount = 5000;
-        /// **
-        int transmitStartIndex = 0;
         private Trade[] getNewTrades()
         {
             List<Trade> result = new List<Trade>();
             var AllTrades = TM.MySecurity.Trader.Trades.ToArray();
-            int nonTransmittedTradesCount = AllTrades.Length - transmitStartIndex;
-            result.AddRange(AllTrades.Range(transmitStartIndex, nonTransmittedTradesCount > maxTransmitTradesCount ? maxTransmitTradesCount : nonTransmittedTradesCount));
-            transmitStartIndex += result.Count;
+            int nonTransmittedTradesCount = AllTrades.Length - transmittedTradesCount;
+            result.AddRange(AllTrades.Range(transmittedTradesCount, nonTransmittedTradesCount > maxTransmitTradesCount ? maxTransmitTradesCount : nonTransmittedTradesCount));
+            transmittedTradesCount += result.Count;
 
             return result.ToArray();
         }
