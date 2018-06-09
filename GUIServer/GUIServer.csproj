@@ -33,32 +33,29 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Ecng.Common">
-      <HintPath>..\stocksharp\bin\Debug\Ecng.Common.dll</HintPath>
+      <HintPath>..\dll\Ecng.Common.dll</HintPath>
     </Reference>
     <Reference Include="Ecng.ComponentModel">
-      <HintPath>..\stocksharp\bin\Debug\Ecng.ComponentModel.dll</HintPath>
+      <HintPath>..\dll\Ecng.ComponentModel.dll</HintPath>
     </Reference>
     <Reference Include="Ecng.Serialization">
-      <HintPath>..\AutoRobot\dll\Ecng.Serialization.dll</HintPath>
+      <HintPath>..\dll\Ecng.Serialization.dll</HintPath>
     </Reference>
     <Reference Include="Ecng.Serialization.FieldFactories">
-      <HintPath>..\AutoRobot\dll\Ecng.Serialization.FieldFactories.dll</HintPath>
+      <HintPath>..\dll\Ecng.Serialization.FieldFactories.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\AutoRobot\dll\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="StockSharp.Algo, Version=4.0.17.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\stocksharp\bin\Debug\StockSharp.Algo.dll</HintPath>
+    <Reference Include="StockSharp.Algo">
+      <HintPath>..\dll\StockSharp.Algo.dll</HintPath>
     </Reference>
-    <Reference Include="StockSharp.BusinessEntities, Version=4.0.17.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\stocksharp\bin\Debug\StockSharp.BusinessEntities.dll</HintPath>
+    <Reference Include="StockSharp.BusinessEntities">
+      <HintPath>..\dll\StockSharp.BusinessEntities.dll</HintPath>
     </Reference>
-    <Reference Include="StockSharp.Messages, Version=4.3.26.2, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\stocksharp\bin\Debug\StockSharp.Messages.dll</HintPath>
+    <Reference Include="StockSharp.Messages">
+      <HintPath>..\dll\StockSharp.Messages.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -75,7 +72,7 @@
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="WPFToolkit.Extended">
-      <HintPath>..\AutoRobot\dll\WPFToolkit.Extended.dll</HintPath>
+      <HintPath>..\dll\WPFToolkit.Extended.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -133,6 +130,11 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
-  <Import Project="..\SharedProject1\SharedProject1.projitems" Label="Shared" />
+  <ItemGroup>
+    <ProjectReference Include="..\transportDataPattern\transportDataPattern.csproj">
+      <Project>{846f647a-a4a6-43b9-a324-f3f238092670}</Project>
+      <Name>transportDataPattern</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

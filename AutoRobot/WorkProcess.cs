@@ -23,7 +23,7 @@ using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
 
-using SharedProject;
+using transportDataParrern;
 
 namespace AutoRobot
 {
@@ -58,7 +58,7 @@ namespace AutoRobot
             threadConnectionReaffirmation = new Thread(() =>
             {
                 doStopConnectionReaffirmationThread = false;
-                while(false && !doStopConnectionReaffirmationThread)
+                while(!doStopConnectionReaffirmationThread)
                 {
                     reaffirmConnection();
                     Thread.Sleep(5 * 1000);
@@ -114,7 +114,7 @@ namespace AutoRobot
                         if (TM.terminalDateTime > startDateTime)
                         {
                             addLogMessage("Загрузка исторических данных закончена");
-                            if (TM.trade_cfg.is_Test) addLogMessage("РЕЖИМ ТЕСТИРОВАНИЯ");
+                            if (TM.tradeСfg.is_Test) addLogMessage("РЕЖИМ ТЕСТИРОВАНИЯ");
                             else addLogMessage("РЕЖИМ ТОРГОВЛИ");
 
                             isWork = true;
@@ -158,7 +158,7 @@ namespace AutoRobot
                 
                 if
                 (
-                    TM.trade_cfg.is_Test
+                    TM.tradeСfg.is_Test
                     ||
                     // Enter, if QUIK processes orders without errors
                     (TM.last_EnterOrder == null || TM.last_EnterOrder.State != OrderStates.Failed)
@@ -246,13 +246,13 @@ namespace AutoRobot
                                 // Order
                                 TM.Register.Order(
                                     tradeData.RuleId, 
-                                    TM.trade_cfg.Order_Volume, 
+                                    TM.tradeСfg.Order_Volume, 
                                     OrderDirections.Buy, 
                                     OrderType.Enter
                                 );
                                 // Stop order
                                 TM.Register.StopOrder(
-                                    TM.trade_cfg.Order_Volume, 
+                                    TM.tradeСfg.Order_Volume, 
                                     OrderDirections.Sell, 
                                     QuikStopConditionTypes.TakeProfitStopLimit
                                 );
@@ -265,13 +265,13 @@ namespace AutoRobot
                                 // Order
                                 TM.Register.Order(
                                     tradeData.RuleId, 
-                                    TM.trade_cfg.Order_Volume, 
+                                    TM.tradeСfg.Order_Volume, 
                                     OrderDirections.Sell, 
                                     OrderType.Enter
                                 );
                                 // Stop order
                                 TM.Register.StopOrder(
-                                    TM.trade_cfg.Order_Volume, 
+                                    TM.tradeСfg.Order_Volume, 
                                     OrderDirections.Buy, 
                                     QuikStopConditionTypes.TakeProfitStopLimit
                                 );
@@ -313,7 +313,7 @@ namespace AutoRobot
                 else
                 {
                     // Exceptions overflow 
-                    if (TM.Exceptions_Count >= TM.trade_cfg.Max_Exceptions_Count)
+                    if (TM.Exceptions_Count >= TM.tradeСfg.Max_Exceptions_Count)
                     {
                         addLogMessage("Кол-во исключений превысило максимально допустимый порог");
                         mw.stopTrading();
@@ -431,12 +431,12 @@ namespace AutoRobot
         }
         private void processPnlLimits()
         {
-            if (TM.trade_cfg.Max_Day_Profit != 0 && TM.Session_PNL >= TM.trade_cfg.Max_Day_Profit)
+            if (TM.tradeСfg.Max_Day_Profit != 0 && TM.Session_PNL >= TM.tradeСfg.Max_Day_Profit)
             {
                 addLogMessage("Лимит прибыли достигнут! УРА! :)");
                 mw.stopTrading();
             }
-            else if (TM.trade_cfg.Max_Day_Loss != 0 && TM.Session_PNL <= -TM.trade_cfg.Max_Day_Loss)
+            else if (TM.tradeСfg.Max_Day_Loss != 0 && TM.Session_PNL <= -TM.tradeСfg.Max_Day_Loss)
             {
                 addLogMessage("Лимит убытка достигнут! За тучей идёт солнце!");
                 mw.stopTrading();
@@ -483,7 +483,7 @@ namespace AutoRobot
         /// Server preprocessing
         private const int maxTransmitTradesCount = 5000;
         private int transmittedTradesCount = 0;
-        private const int maxTransmitCandlesCount = 500;
+        private const int maxTransmitCandlesCount = 50;
         private int[] transmittedCandlesCount;
         
         private Candle[][] getNewCandles()

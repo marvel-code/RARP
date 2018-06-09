@@ -8,7 +8,7 @@ using System.ServiceModel;
 using System.ServiceModel.Description;
 
 using stocksharp.ServiceContracts;
-using SharedProject;
+using transportDataParrern;
 
 namespace GUIServer
 {

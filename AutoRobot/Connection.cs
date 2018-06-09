@@ -29,7 +29,7 @@ using MessageBox = System.Windows.MessageBox;
 
 using System.Web;
 
-using SharedProject;
+using transportDataParrern;
 
 namespace AutoRobot
 {
@@ -65,7 +65,7 @@ namespace AutoRobot
             if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 tb_quik_path.Text = dlg.FileName;
-                connection_cfg.Quik_Path = dlg.FileName;
+                connectionCfg.Quik_Path = dlg.FileName;
             }
         }
         // App -> Quik connection
@@ -427,7 +427,7 @@ namespace AutoRobot
         {
             try
             {
-                File.WriteAllText(MyGlobals.File_Indicators_Config, JsonConvert.SerializeObject(connection_cfg));
+                File.WriteAllText(MyGlobals.File_Indicators_Config, JsonConvert.SerializeObject(connectionCfg));
                 addLogMessage("Конфигурация соединения cохранена");
             }
             catch (Exception ex)
@@ -442,7 +442,7 @@ namespace AutoRobot
                 var _Deserialized = JsonConvert.DeserializeObject<Connection_Configuration>(File.OpenText(MyGlobals.File_Indicators_Config).ReadLine());
                 if (_Deserialized == null)
                     throw new Exception("Нулевая конфигурация соединения");
-                connection_cfg = _Deserialized;
+                connectionCfg = _Deserialized;
                 addLogMessage("Конфигурация соединения загружена");
             }
             catch (Exception ex)
@@ -455,7 +455,7 @@ namespace AutoRobot
         {
             try
             {
-                File.WriteAllText(MyGlobals.File_Connection_Config, JsonConvert.SerializeObject(connection_cfg));
+                File.WriteAllText(MyGlobals.File_Connection_Config, JsonConvert.SerializeObject(connectionCfg));
                 addLogMessage("Конфигурация соединения cохранена");
             }
             catch (Exception ex)
@@ -470,7 +470,7 @@ namespace AutoRobot
                 var _Deserialized = JsonConvert.DeserializeObject<Connection_Configuration>(File.OpenText(MyGlobals.File_Connection_Config).ReadLine());
                 if (_Deserialized == null)
                     throw new Exception("Нулевая конфигурация соединения");
-                connection_cfg = _Deserialized;
+                connectionCfg = _Deserialized;
                 addLogMessage("Конфигурация соединения загружена");
             }
             catch (Exception ex)
@@ -483,7 +483,7 @@ namespace AutoRobot
         {
             try
             {
-                File.WriteAllText(MyGlobals.File_Trade_Config, JsonConvert.SerializeObject(TM.trade_cfg));
+                File.WriteAllText(MyGlobals.File_Trade_Config, JsonConvert.SerializeObject(TM.tradeСfg));
                 addLogMessage("Конфигурация торговли cохранена");
             }
             catch (Exception ex)
@@ -498,7 +498,7 @@ namespace AutoRobot
                 var _Deserialized = JsonConvert.DeserializeObject<Trade_Configuration>(File.OpenText(MyGlobals.File_Trade_Config).ReadLine());
                 if (_Deserialized == null)
                     throw new Exception("Нулевая конфигурация торговли");
-                TM.trade_cfg = _Deserialized;
+                TM.tradeСfg = _Deserialized;
                 addLogMessage("Конфигурация торговли загружена");
             }
             catch (Exception ex)

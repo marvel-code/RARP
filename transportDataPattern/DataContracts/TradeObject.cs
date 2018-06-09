@@ -6,7 +6,7 @@ using System.ServiceModel;
 using System.Runtime.Serialization;
 
 
-namespace SharedProject
+namespace transportDataParrern
 {
     [DataContract]
     public class TradeState {

@@ -53,38 +53,48 @@
     <ApplicationIcon>favicon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AvalonControlsLibrary">
-      <HintPath>dll\AvalonControlsLibrary.dll</HintPath>
+    <Reference Include="AvalonControlsLibrary, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\dll\AvalonControlsLibrary.dll</HintPath>
     </Reference>
-    <Reference Include="Ecng.Collections">
-      <HintPath>dll\Ecng.Collections.dll</HintPath>
+    <Reference Include="Ecng.Collections, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\dll\Ecng.Collections.dll</HintPath>
     </Reference>
-    <Reference Include="Ecng.Common">
-      <HintPath>dll\Ecng.Common.dll</HintPath>
+    <Reference Include="Ecng.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\dll\Ecng.Common.dll</HintPath>
     </Reference>
-    <Reference Include="Ecng.ComponentModel">
-      <HintPath>dll\Ecng.ComponentModel.dll</HintPath>
+    <Reference Include="Ecng.ComponentModel, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\dll\Ecng.ComponentModel.dll</HintPath>
     </Reference>
-    <Reference Include="Ecng.Xaml">
-      <HintPath>dll\Ecng.Xaml.dll</HintPath>
+    <Reference Include="Ecng.Xaml, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\dll\Ecng.Xaml.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>dll\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="StockSharp.Algo">
-      <HintPath>dll\StockSharp.Algo.dll</HintPath>
+    <Reference Include="StockSharp.Algo, Version=4.0.17.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\dll\StockSharp.Algo.dll</HintPath>
     </Reference>
-    <Reference Include="StockSharp.BusinessEntities">
-      <HintPath>dll\StockSharp.BusinessEntities.dll</HintPath>
+    <Reference Include="StockSharp.BusinessEntities, Version=4.0.17.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\dll\StockSharp.BusinessEntities.dll</HintPath>
     </Reference>
-    <Reference Include="StockSharp.Quik">
-      <HintPath>dll\StockSharp.Quik.dll</HintPath>
+    <Reference Include="StockSharp.Quik, Version=4.0.17.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\dll\StockSharp.Quik.dll</HintPath>
     </Reference>
-    <Reference Include="StockSharp.Smart">
-      <HintPath>dll\StockSharp.Smart.dll</HintPath>
+    <Reference Include="StockSharp.Smart, Version=4.0.17.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\dll\StockSharp.Smart.dll</HintPath>
     </Reference>
-    <Reference Include="StockSharp.Xaml">
-      <HintPath>dll\StockSharp.Xaml.dll</HintPath>
+    <Reference Include="StockSharp.Xaml, Version=4.0.17.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\dll\StockSharp.Xaml.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Runtime.Serialization" />
@@ -196,7 +206,12 @@
   <ItemGroup>
     <Resource Include="Fix List.txt" />
   </ItemGroup>
-  <Import Project="..\SharedProject1\SharedProject1.projitems" Label="Shared" />
+  <ItemGroup>
+    <ProjectReference Include="..\transportDataPattern\transportDataPattern.csproj">
+      <Project>{846f647a-a4a6-43b9-a324-f3f238092670}</Project>
+      <Name>transportDataPattern</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

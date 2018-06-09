@@ -22,8 +22,8 @@ namespace AutoRobot
             InitializeComponent();
 
             Instance = this;
-            TM.Orders_Info_Array = new System.Collections.ObjectModel.ObservableCollection<OrderInfo>();
-            dg_orders_table.ItemsSource = TM.Orders_Info_Array;
+            TM.ordersInfoArray = new System.Collections.ObjectModel.ObservableCollection<OrderInfo>();
+            dg_orders_table.ItemsSource = TM.ordersInfoArray;
         }
         public Boolean is_Closable = false;
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)

@@ -2,7 +2,7 @@
 
 using StockSharp.BusinessEntities;
 
-using SharedProject;
+using transportDataParrern;
 
 namespace stocksharp.ServiceContracts
 {

@@ -7,7 +7,7 @@ using System.ServiceModel;
 using StockSharp.Algo.Candles;
 using StockSharp.BusinessEntities;
 
-using SharedProject;
+using transportDataParrern;
 
 namespace stocksharp.ServiceContracts
 {
@@ -15,7 +15,6 @@ namespace stocksharp.ServiceContracts
     public partial class WorkService : IWorkService
     {
         // >> Connection
-
         string currentUser;
 
         public string InitConnection(string username)
@@ -40,10 +39,9 @@ namespace stocksharp.ServiceContracts
         }
 
         // >> Server processing
-
         public ServerDataObject currentDataObj;
-        
         public List<TimeFrame> tf;
+
         public TradeState GetTradeState(PartnerDataObject partnerDataObject, ServerDataObject dataObj, NeedAction needAction)
         {
             try
@@ -54,6 +52,7 @@ namespace stocksharp.ServiceContracts
             catch (Exception ex)
             {
                 Log.addLog(GUIServer.LogType.Warn, "Ошибка обновления информации о пользователе");
+                TerminateConnection();
             }
 
             currentDataObj = dataObj;
@@ -73,6 +72,7 @@ namespace stocksharp.ServiceContracts
             catch (Exception ex)
             {
                 Log.addLog(GUIServer.LogType.Warn, "Ошибка обновления данных");
+                TerminateConnection();
             }
             // - Indicators
             try
@@ -82,6 +82,7 @@ namespace stocksharp.ServiceContracts
             catch (Exception ex)
             {
                 Log.addLog(GUIServer.LogType.Warn, "Ошибка обновления индикаторов");
+                TerminateConnection();
             }
 
             // -- Processing
@@ -93,40 +94,48 @@ namespace stocksharp.ServiceContracts
             catch (Exception ex)
             {
                 Log.addLog(GUIServer.LogType.Warn, "Ошибка обновления состояния торговли");
+                TerminateConnection();
             }
 
-            result.AdditionalData = new AdditionalDataStruct
+            try
             {
-                message = "",
-                //message = string.Format("val={0} | val_p={1}", ProcessingData.timeFrameList[0].kama[0].val, ProcessingData.timeFrameList[0].kama[0].val_p),
+                result.AdditionalData = new AdditionalDataStruct
+                {
+                    message = "",
+                    //message = string.Format("val={0} | val_p={1}", ProcessingData.timeFrameList[0].kama[0].val, ProcessingData.timeFrameList[0].kama[0].val_p),
 
-                adx_val = tf[0].adx[0].val,
-                adx_dip = tf[0].adx[0].dip,
-                adx_dim = tf[0].adx[0].dim,
-                adx_val_p = tf[0].adx[0].val_p,
-                adx_dip_p = tf[0].adx[0].dip_p,
-                adx_dim_p = tf[0].adx[0].dim_p,
+                    adx_val = tf[0].adx[0].val,
+                    adx_dip = tf[0].adx[0].dip,
+                    adx_dim = tf[0].adx[0].dim,
+                    adx_val_p = tf[0].adx[0].val_p,
+                    adx_dip_p = tf[0].adx[0].dip_p,
+                    adx_dim_p = tf[0].adx[0].dim_p,
 
-                total = tf[0].volume[0].total,
-                total_p = tf[0].volume[0].total_p,
-                buy = tf[0].volume[0].buy,
-                buy_p = tf[0].volume[0].buy_p,
-                sell = tf[0].volume[0].sell,
-                sell_p = tf[0].volume[0].sell_p,
+                    total = tf[0].volume[0].total,
+                    total_p = tf[0].volume[0].total_p,
+                    buy = tf[0].volume[0].buy,
+                    buy_p = tf[0].volume[0].buy_p,
+                    sell = tf[0].volume[0].sell,
+                    sell_p = tf[0].volume[0].sell_p,
 
-                Candles_N = tf.Sum(x => x.Buffer.Count),
-                AllTrades_N = ProcessingData.AllTrades.Count,
+                    Candles_N = tf.Sum(x => x.Buffer.Count),
+                    AllTrades_N = ProcessingData.AllTrades.Count,
 
-                Open_Trades_Time = ProcessingData.AllTrades[0].Time,
-                Close_Trades_Time = ProcessingData.AllTrades.Last().Time,
+                    Open_Trades_Time = ProcessingData.AllTrades[0].Time,
+                    Close_Trades_Time = ProcessingData.AllTrades.Last().Time,
 
-                Open_Time = tf[0].Buffer[0].Time,
-                Close_Time = tf[0].Buffer.Last().Time,
-            };
+                    Open_Time = tf[0].Buffer[0].Time,
+                    Close_Time = tf[0].Buffer.Last().Time,
+                };
+            }
+            catch (Exception ex)
+            {
+                Log.addLog(GUIServer.LogType.Warn, "Ошибка обновления данных мониторинга");
+                TerminateConnection();
+            }
 
             return result;
         }
-
         public List<int> GetTimeFramePeriods()
         {
             return ProcessingData.tf_Periods;

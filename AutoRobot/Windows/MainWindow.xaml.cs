@@ -19,25 +19,23 @@ namespace AutoRobot
     public partial class MainWindow : Window
     {
         public static MainWindow Instance { get; private set; }
-        public static Connection_Configuration connection_cfg { get; set; }
+        public static Connection_Configuration connectionCfg { get; set; }
 
         public MainWindow()
         {
             InitializeComponent();
-
             Instance = this;
-
             addLogMessage(string.Format("Вас приветствует {0}. Удачной торговли!", MyGlobals.Robot_Name));
             
             // Загрузка конфигурации соединения
-            connection_cfg = new Connection_Configuration();
+            connectionCfg = new Connection_Configuration();
             loadConnectionConfiguration();
-            tb_quik_path.Text = connection_cfg.Quik_Path; // проблемы с привязкой
-            grid_connection.DataContext = connection_cfg;
+            tb_quik_path.Text = connectionCfg.Quik_Path; // проблемы с привязкой
+            grid_connection.DataContext = connectionCfg;
             // Загрузка конфигурации торговли
-            TM.trade_cfg = new Trade_Configuration();
+            TM.tradeСfg = new Trade_Configuration();
             loadTradingConfiguration();
-            grid_trade_configuration.DataContext = TM.trade_cfg;
+            grid_trade_configuration.DataContext = TM.tradeСfg;
         }
 
         // Закрытие робота

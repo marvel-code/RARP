@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.ServiceModel;
 
-namespace SharedProject
+namespace transportDataParrern
 {
     [ServiceContract(SessionMode = SessionMode.Required)]
     public interface IWorkService

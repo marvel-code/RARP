@@ -9,7 +9,7 @@ using StockSharp.Algo.Candles;
 using StockSharp.BusinessEntities;
 
 
-namespace SharedProject
+namespace transportDataParrern
 {
     [DataContract]
     [KnownType("GetKnownTypes")]

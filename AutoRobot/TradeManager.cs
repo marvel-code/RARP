@@ -31,9 +31,9 @@ namespace AutoRobot
         // Test Trades
         private static List<MyTrade> testTrades = new List<MyTrade>();
         // Orders info
-        public static ObservableCollection<OrderInfo> Orders_Info_Array;
+        public static ObservableCollection<OrderInfo> ordersInfoArray;
         // Configuration
-        public static Trade_Configuration trade_cfg;
+        public static Trade_Configuration tradeСfg;
 
         // INIT
         public static void init(QuikTrader _QuikTrader, Portfolio _Portfolio, Security _Security)
@@ -48,18 +48,19 @@ namespace AutoRobot
             Orders_Exit = new List<Order>();
             Orders_Stop = new List<Order>();
             Orders_Failed = new List<Order>();
-            if (!trade_cfg.is_New_Session)
+            if (!tradeСfg.is_New_Session)
             {
                 Orders_Enter.Add(MyDayOrders.LastOrDefault(or => or.Comment == string.Format("{0} {1}", Robot_Trade_Name, OrderType.Enter)));
-                if (Orders_Enter[0] == null) Orders_Enter = new List<Order>();
+                if (Orders_Enter[0] == null)
+                    Orders_Enter = new List<Order>();
 
                 Orders_Exit.Add(MyDayOrders.LastOrDefault(or => or.Comment == string.Format("{0} {1}", Robot_Trade_Name, OrderType.Exit) || or.Comment == string.Format("{0} {1}", Robot_Trade_Name, OrderType.Stop) && or.StopCondition == null));
-                if (Orders_Exit[0] == null || last_ExitOrder.Time < last_EnterOrder.Time) Orders_Exit = new List<Order>();
+                if (Orders_Exit[0] == null || last_ExitOrder.Time < last_EnterOrder.Time)
+                    Orders_Exit = new List<Order>();
 
                 Orders_Stop.Add(MyDayOrders.LastOrDefault(or => or.Comment == string.Format("{0} {1}", Robot_Trade_Name, OrderType.Stop) && or.StopCondition != null));
-                if (Orders_Stop[0] == null) Orders_Stop = new List<Order>();
-
-                //Orders_Failed.Add(MyTrader.Orders.Last(or => or.Comment.Contains(MyName) && or.State == OrderStates.Failed));
+                if (Orders_Stop[0] == null)
+                    Orders_Stop = new List<Order>();
             }
         }
         public static void loadTestTrades(List<MyTrade> _Test_Trades)
@@ -204,7 +205,7 @@ namespace AutoRobot
 
                 if (Current_Position != 0)
                 {
-                    if (!trade_cfg.is_Test)
+                    if (!tradeСfg.is_Test)
                     {
                         var _last_EnterOrder = last_EnterOrder;
                         // Взяли последнюю входую заявку
@@ -307,7 +308,7 @@ namespace AutoRobot
                     Portfolio = MyPortfolio,
                     Security = MySecurity,
 
-                    Price = _Order_Direction == OrderDirections.Buy ? Current_Price + trade_cfg.Order_Shift : Current_Price - trade_cfg.Order_Shift,
+                    Price = _Order_Direction == OrderDirections.Buy ? Current_Price + tradeСfg.Order_Shift : Current_Price - tradeСfg.Order_Shift,
                     Direction = _Order_Direction,
                     Volume = _Order_Volume,
 
@@ -329,7 +330,7 @@ namespace AutoRobot
                 // Регистрация информации о заявке
                 Register_Order_Info(_Rule_ID, _OrderType, _Comment);
                 // Лог
-                Add_Log_Spoiler(string.Format("{0} {1} {2}", _Order_Direction.ToString().ToUpper(), _OrderType.ToString(), _Comment), string.Format("ID правила: {0}\nОбъем: {1}\nТекущая цена: {2}\nСдвиг: {3}", _Rule_ID, _Order_Volume, Current_Price, trade_cfg.Order_Shift));
+                Add_Log_Spoiler(string.Format("{0} {1} {2}", _Order_Direction.ToString().ToUpper(), _OrderType.ToString(), _Comment), string.Format("ID правила: {0}\nОбъем: {1}\nТекущая цена: {2}\nСдвиг: {3}", _Rule_ID, _Order_Volume, Current_Price, tradeСfg.Order_Shift));
 
                 return New_Order;
             }
@@ -370,7 +371,7 @@ namespace AutoRobot
                     Security = MySecurity,
 
                     // Цена дочерней заявки после срабатывания Стоп-лимит
-                    Price = _StopOrder_Direction == OrderDirections.Buy ? Current_Price + trade_cfg.Order_StopLoss + trade_cfg.Order_Shift : Current_Price - trade_cfg.Order_StopLoss - trade_cfg.Order_Shift,
+                    Price = _StopOrder_Direction == OrderDirections.Buy ? Current_Price + tradeСfg.Order_StopLoss + tradeСfg.Order_Shift : Current_Price - tradeСfg.Order_StopLoss - tradeСfg.Order_Shift,
                     Direction = _StopOrder_Direction,
                     Volume = _StopOrder_Volume,
 
@@ -381,18 +382,18 @@ namespace AutoRobot
                     {
                         Type = _QuikStopConditionTypes,
                         // Цена срабатывания Тейк-профит
-                        StopPrice = _StopOrder_Direction == OrderDirections.Buy ? Current_Price - trade_cfg.Order_TakeProfit : Current_Price + trade_cfg.Order_TakeProfit,
+                        StopPrice = _StopOrder_Direction == OrderDirections.Buy ? Current_Price - tradeСfg.Order_TakeProfit : Current_Price + tradeСfg.Order_TakeProfit,
                         // Цена срабатывания Стоп-лимит
-                        StopLimitPrice = _StopOrder_Direction == OrderDirections.Buy ? Current_Price + trade_cfg.Order_StopLoss : Current_Price - trade_cfg.Order_StopLoss,
-                        Offset = trade_cfg.Order_Offset,
+                        StopLimitPrice = _StopOrder_Direction == OrderDirections.Buy ? Current_Price + tradeСfg.Order_StopLoss : Current_Price - tradeСfg.Order_StopLoss,
+                        Offset = tradeСfg.Order_Offset,
                         // Отступ после срабатывания ТЕЙК-ПРОФИТ (только)
-                        Spread = trade_cfg.Order_Shift
+                        Spread = tradeСfg.Order_Shift
                     },
                 };
                 RegisterOrder(New_StopOrder);
                 Orders_Stop.Add(New_StopOrder);
                 // Лог
-                Add_Log_Spoiler(string.Format("{0} {1} {2}", _StopOrder_Direction.ToString().ToUpper(), OrderType.Stop.ToString(), _Comment), string.Format("{0} стоп-заявка\nОбъем: {1}\nТекущая цена: {2}\nПрофит: {3}\nЛосс: {4}\nСдвиг: {5}\nОтступ: {6}", _StopOrder_Direction.ToString().ToUpper(), _StopOrder_Volume, Current_Price, trade_cfg.Order_TakeProfit, trade_cfg.Order_StopLoss, trade_cfg.Order_Shift, trade_cfg.Order_Offset));
+                Add_Log_Spoiler(string.Format("{0} {1} {2}", _StopOrder_Direction.ToString().ToUpper(), OrderType.Stop.ToString(), _Comment), string.Format("{0} стоп-заявка\nОбъем: {1}\nТекущая цена: {2}\nПрофит: {3}\nЛосс: {4}\nСдвиг: {5}\nОтступ: {6}", _StopOrder_Direction.ToString().ToUpper(), _StopOrder_Volume, Current_Price, tradeСfg.Order_TakeProfit, tradeСfg.Order_StopLoss, tradeСfg.Order_Shift, tradeСfg.Order_Offset));
 
                 return New_StopOrder;
             }
@@ -534,7 +535,7 @@ namespace AutoRobot
                 // Регистрация информации о заявке
                 Register_Order_Info(0, OrderType.Exit, Comment);
                 // Лог
-                Add_Log_Spoiler(string.Format("{0} {1} {2}", _New_ExitOrder.Direction.ToString().ToUpper(), OrderType.Exit, Comment), string.Format("{0} заявка\nОбъем: {1}\nТекущая цена: {2}\nСдвиг: {3}", _New_ExitOrder.Direction.ToString().ToUpper(), _New_ExitOrder.Volume, Current_Price, trade_cfg.Order_Shift));
+                Add_Log_Spoiler(string.Format("{0} {1} {2}", _New_ExitOrder.Direction.ToString().ToUpper(), OrderType.Exit, Comment), string.Format("{0} заявка\nОбъем: {1}\nТекущая цена: {2}\nСдвиг: {3}", _New_ExitOrder.Direction.ToString().ToUpper(), _New_ExitOrder.Volume, Current_Price, tradeСfg.Order_Shift));
                 return true;
             }
 
@@ -582,7 +583,7 @@ namespace AutoRobot
                     // Значения индикаторов
                     mw.saveIndicatorsValuesToFile(_OrderInfo);
                     // Таблица
-                    Orders_Info_Array.Add(_OrderInfo);
+                    ordersInfoArray.Add(_OrderInfo);
                 }))
             );
         }
@@ -614,7 +615,7 @@ namespace AutoRobot
     {
         public OrderInfo(Decimal _Rule_ID, Order _Order, OrderType _Order_Type, String _Comment = "")
         {
-            Number = TM.Orders_Info_Array.Count + 1;
+            Number = TM.ordersInfoArray.Count + 1;
             Time = _Order.Time;
             Order_ID = _Order.Id;
             Rule_ID = _Rule_ID;
@@ -623,7 +624,7 @@ namespace AutoRobot
             Volume = _Order.Volume;
             Security_Price = TM.Current_Price;
             Order_Price = _Order.Price;
-            Order_Shift = TM.trade_cfg.Order_Shift;
+            Order_Shift = TM.tradeСfg.Order_Shift;
             Day_PNL = TM.Session_PNL;
             Position_PNL = TM._Position_PNL;
             Max_Position_PNL = TM._Max_Position_PNL;
