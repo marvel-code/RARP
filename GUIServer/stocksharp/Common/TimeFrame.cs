@@ -15,6 +15,8 @@ namespace stocksharp
 {
     public partial class TimeFrame
     {
+        private ServiceContracts.ProcessingData _processingData;
+
         public TimeSpan Period { get; private set; }
         public List<Candle> Buffer { get; private set; }
 
@@ -25,8 +27,9 @@ namespace stocksharp
         public List<BBW> bbw { get; private set; }
         public List<Vol> volume { get; private set; }
 
-        public TimeFrame(int _Period_Seconds)
+        public TimeFrame(ServiceContracts.ProcessingData processingData, int _Period_Seconds)
         {
+            _processingData = processingData;
             Buffer = new List<Candle>();
 
             adx = new List<ADX>();

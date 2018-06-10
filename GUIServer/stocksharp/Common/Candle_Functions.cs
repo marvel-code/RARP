@@ -144,7 +144,7 @@ namespace stocksharp
             if (_candle == null)
                 return false;
 
-            var time = ServiceContracts.ProcessingData.LastEnterTime;
+            var time = _processingData.LastEnterTime;
 
             return
                 time >= _candle.Time
@@ -157,7 +157,7 @@ namespace stocksharp
             if (_candle == null)
                 return false;
             
-            var time = ServiceContracts.ProcessingData.LastExitTime;
+            var time = _processingData.LastExitTime;
 
             return
                 time >= _candle.Time
