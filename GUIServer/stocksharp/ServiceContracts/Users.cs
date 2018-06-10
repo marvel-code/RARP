@@ -38,7 +38,8 @@ namespace stocksharp.ServiceContracts
         }
         public static void Dispose()
         {
-            doStopUserThread = true;
+            //doStopUserThread = true;
+            threadUserTimeoutCheck.Abort();
         }
         
         public static void ReaffirmUserConnection(string username)

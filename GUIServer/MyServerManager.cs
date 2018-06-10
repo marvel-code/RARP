@@ -51,8 +51,8 @@ namespace GUIServer
 
                 binding.Security = new WSHttpSecurity() { Mode = SecurityMode.None };
 
-                int sizeMb = 500;
-                binding.MaxReceivedMessageSize = sizeMb * 1024 * 1024;
+                int sizeMB = 500;
+                binding.MaxReceivedMessageSize = sizeMB * 1024 * 1024;
 
                 host = new ServiceHost(typeof(WorkService), address);
                 host.AddServiceEndpoint(typeof(IWorkService), binding, "");

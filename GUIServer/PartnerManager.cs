@@ -81,12 +81,9 @@ namespace GUIServer
             {
                 LogManager.Log(LogType.Error, "Ошибка загрузки списка клиентов: {0}", ex.ToString());
             }
-
-            // Checking for roooot client
+            
             if (_partnersInfo == null)
                 _partnersInfo = new List<PartnerInfo>();
-            if (!_partnersInfo.Exists(x => x.login == "rоoоot"))
-                _partnersInfo.Add(new PartnerInfo("rоoоot", true, 0));
         }
 
         public static void AddPartnerInfo(PartnerInfo newClientInfo)
@@ -121,13 +118,6 @@ namespace GUIServer
             if (MessageBox.Show(string.Format("Изменить клиента `{0}`?\nНовые настройки: Разрешено торговать - {1}. Номер стратегии - {2}", login, allowTrade ? "ДА" : "НЕТ", strategyNumber), "Изменение клиента", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) != DialogResult.Yes)
                 return;
 
-            if (login == "roooot")
-            {
-                LogManager.Log(LogType.Warn, "Попытка изменения корневого клиента.");
-
-                return;
-            }
-
             try
             {
                 // Check: login exist
@@ -156,13 +146,6 @@ namespace GUIServer
         {
             if (MessageBox.Show(string.Format("Удалить клиента `{0}`?", login), "Удаление клиента", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) != DialogResult.Yes)
                 return;
-
-            if (login == "roooot")
-            {
-                LogManager.Log(LogType.Warn, "Попытка удаления корневого клиента.");
-
-                return;
-            }
 
             try
             {
