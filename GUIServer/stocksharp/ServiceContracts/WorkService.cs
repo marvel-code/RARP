@@ -15,59 +15,58 @@ namespace stocksharp.ServiceContracts
     public partial class WorkService : IWorkService
     {
         // >> Connection
-        string currentUser;
+        private string _currentUser;
 
         public string InitConnection(string username)
         {
-            currentUser = username;
+            _currentUser = username;
+            _currentData = new ProcessingData();
+            _currentData.Init();
+
             bool result = UserManager.Process_UserConnect(username);
 
             if (!result)
-            {
                 return "Required user doesn`t exist or connected at the moment.";
-            }
 
             return null;
         }
         public void ReaffirmConnection()
         {
-            UserManager.ReaffirmUserConnection(currentUser);
+            UserManager.ReaffirmUserConnection(_currentUser);
         }
         public void TerminateConnection()
         {
-            UserManager.Process_UserDisconnect(currentUser);
+            UserManager.Process_UserDisconnect(_currentUser);
         }
 
-        // >> Server processing
-        public ServerDataObject currentDataObj;
-        public List<TimeFrame> tf;
+        // >> Server data processing
+        private ProcessingData _currentData;
 
         public TradeState GetTradeState(PartnerDataObject partnerDataObject, ServerDataObject dataObj, NeedAction needAction)
         {
             try
             {
-                UserManager.Update_UserData(currentUser);
-                GUIServer.MainWindow.Instance.SetPartnerData(currentUser, partnerDataObject);
+                UserManager.Update_UserData(_currentUser);
+                GUIServer.MainWindow.Instance.SetPartnerData(_currentUser, partnerDataObject);
             }
             catch (Exception ex)
             {
                 Log.addLog(GUIServer.LogType.Warn, "Ошибка обновления информации о пользователе");
                 TerminateConnection();
             }
-
-            currentDataObj = dataObj;
+            
             TradeState result = null;
 
             // -- Synchronizing of current via received
             // - Time
-            ProcessingData.TerminalTime = dataObj.TerminalTime;
-            ProcessingData.LastEnterTime = dataObj.LastEnterTime;
-            ProcessingData.LastExitTime = dataObj.LastExitTime;
+            _currentData.TerminalTime = dataObj.TerminalTime;
+            _currentData.LastEnterTime = dataObj.LastEnterTime;
+            _currentData.LastExitTime = dataObj.LastExitTime;
             // - Data
             try
             {
-                ProcessingData.Update_AllTrades(dataObj.NewTrades);
-                ProcessingData.Update_TfCandles(currentDataObj.NewCandles);
+                _currentData.Update_AllTrades(dataObj.NewTrades);
+                _currentData.Update_TfCandles(dataObj.NewCandles);
             }
             catch (Exception ex)
             {
@@ -77,7 +76,7 @@ namespace stocksharp.ServiceContracts
             // - Indicators
             try
             {
-                ProcessingData.Process_UpdateIndicators();
+                _currentData.Process_UpdateIndicators();
             }
             catch (Exception ex)
             {
@@ -88,8 +87,7 @@ namespace stocksharp.ServiceContracts
             // -- Processing
             try
             {
-                tf = ProcessingData.timeFrameList;
-                result = updateTradeState(needAction);
+                result = updateTradeState(_currentData.timeFrameList, needAction);
             }
             catch (Exception ex)
             {
@@ -99,11 +97,12 @@ namespace stocksharp.ServiceContracts
 
             try
             {
+                var tf = _currentData.timeFrameList;
                 result.AdditionalData = new AdditionalDataStruct
                 {
                     message = "",
                     //message = string.Format("val={0} | val_p={1}", ProcessingData.timeFrameList[0].kama[0].val, ProcessingData.timeFrameList[0].kama[0].val_p),
-
+                    
                     adx_val = tf[0].adx[0].val,
                     adx_dip = tf[0].adx[0].dip,
                     adx_dim = tf[0].adx[0].dim,
@@ -119,10 +118,10 @@ namespace stocksharp.ServiceContracts
                     sell_p = tf[0].volume[0].sell_p,
 
                     Candles_N = tf.Sum(x => x.Buffer.Count),
-                    AllTrades_N = ProcessingData.AllTrades.Count,
+                    AllTrades_N = _currentData.AllTrades.Count,
 
-                    Open_Trades_Time = ProcessingData.AllTrades[0].Time,
-                    Close_Trades_Time = ProcessingData.AllTrades.Last().Time,
+                    Open_Trades_Time = _currentData.AllTrades[0].Time,
+                    Close_Trades_Time = _currentData.AllTrades.Last().Time,
 
                     Open_Time = tf[0].Buffer[0].Time,
                     Close_Time = tf[0].Buffer.Last().Time,
@@ -138,7 +137,7 @@ namespace stocksharp.ServiceContracts
         }
         public List<int> GetTimeFramePeriods()
         {
-            return ProcessingData.tf_Periods;
+            return _currentData.tf_Periods;
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.Collections.Generic;
 using StockSharp.BusinessEntities;
 
 using transportDataParrern;
@@ -30,52 +30,23 @@ namespace stocksharp.ServiceContracts
         }
 
         private const bool DYNAMIC = false; // true - включить; false - выключить (ДИНАМИЧЕСКОЕ УСЛОВИЕ)
-        public TradeState updateTradeState(NeedAction _needAction)
+        public TradeState updateTradeState(List<TimeFrame> tf, NeedAction _needAction)
         {
             TradeState tradeState = new TradeState();
-
-            // ENTRY
+            
             if (_needAction == NeedAction.LongOrShortOpen)
             {
-                /**
-  * LONG OPEN
-                 **/
-
+                /// LONG
                 {
-                    // Refresh
                     ruleId = 0;
-                    // Динамические условия
-                    if (DYNAMIC)
-                    { }
-                    /// CONDITION
                     tradeState.LongOpen = true
-                            /*~*/
-                            &&
-                            tf[0].adx[0].dip > tf[0].adx[0].dim                      //per=2
-                            &&
-                            tf[0].adx[0].dip > tf[0].adx[0].dip_p 
-                            &&
-                            (
-                                tf[0].roc[0].val > new decimal(0.08)                   //...per=1
-                                ||
-                                tf[0].roc[1].val > new decimal(0.1)                   //...per=2                       
-                            )
-                            &&
-                            (
-                                    tf[0].adx[0].val > new decimal(42)                    //...per=2
-                                    &&
-                                    tf[0].adx[0].val > tf[0].adx[0].val_p
-                                    ||
-                                    tf[0].adx[0].dip > new decimal(42)                    //...per=2 
-                            )
-                        /*~*/
+                        //*//
+                            && tf[0].adx[0].dip > tf[0].adx[0].dim
+                        //*//
                         && true;
                 }
 
-                /**
-                 * SHORT OPEN
-                 **/
-
+                /// SHORT
                 if (!tradeState.LongOpen)
                 {
                     // Refresh
@@ -108,69 +79,48 @@ namespace stocksharp.ServiceContracts
                         && true;
                 }
 
-                /**
-                 * Allow
-                 **/
-
-                // Разрешить ВХОД
+                /// Общее разрешение на вход
                 bool allowEntry = true
-                    /*~*/
+                    //*//
                     // Запрет входа в позицию на свече выхода........(убрать комменты в стр ниже)..............
-                //    && !tf[0].IsExitCandle()
-                    /*
-                    ||
-
-                    tf[0].Get_Candle_HLRange() > 500
-                    
-                    /*~*/
+                    && !tf[0].IsExitCandle()
+                    //*//
                     && true;
-                // Разрешить LONG
+                /// LONG разрешение на вход
                 tradeState.LongOpen &= allowEntry
-                    /*~*/
-
-                    /*~*/
+                    //*//
+                    // <- Пишем внутри
+                    //*//
                     && true;
-                // Разрешить SHORT
+                /// SHORT разрешение на вход
                 tradeState.ShortOpen &= allowEntry
-                    /*~*/
-
-                    /*~*/
+                    //*//
+                    // <- Пишем внутри
+                    //*//
                     && true;
-
-                // ..
+                
                 tradeState.RuleId = ruleId;
             }
-            // EXIT
             {
-                /**
-                 * LONG CLOSE
-                 **/
-
+                /// LONG CLOSE
                 ruleId = 0;
-                /// CONDITION
                 tradeState.LongClose = true
-                        /*~*/
+                        //*//
                         &&
                         tf[0].adx[0].dip < tf[0].adx[0].dim 
-                    /*~*/
+                        //*//
                     && true;
-                // Save RuleId
                 if (_needAction == NeedAction.LongClose)
                     tradeState.RuleId = ruleId;
 
-                /**
-                 * SHORT CLOSE
-                 **/
-
+                /// SHORT CLOSE
                 ruleId = 0;
-                /// CONDITION
                 tradeState.ShortClose = true
-                        /*~*/
+                        //*//
                         &&
                         tf[0].adx[0].dip > tf[0].adx[0].dim 
-                    /*~*/
+                        //*//
                     && true;
-                // Save RuleId
                 if (_needAction == NeedAction.ShortClose)
                     tradeState.RuleId = ruleId;
             }

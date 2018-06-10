@@ -64,7 +64,6 @@ namespace stocksharp.ServiceContracts
 
             connectedUsers.Add(username, DateTime.Now);
             PartnersManager.UpdatePartnerState(username, true);
-            ProcessingData.AllTrades.Clear();
 
             Log.addLog(LogType.Info, "{0}: connected {1}", username, comment);
             return true;
