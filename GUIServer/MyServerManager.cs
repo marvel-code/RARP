@@ -19,8 +19,7 @@ namespace GUIServer
         private static void host_Opened(object sender, EventArgs e)
         {
             LogManager.Log(LogType.Info, "Сервер открыт.");
-
-            ProcessingData.Init();
+            
             UserManager.Init(PartnersManager.GetPartnersInfo().Select(x => x.login).ToList());
         }
         private static void host_Opening(object sender, EventArgs e)
