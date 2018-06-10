@@ -55,18 +55,21 @@ namespace stocksharp
         /**
          * Настройки
          **/
+        private ServiceContracts.ProcessingData _processingData;
         // Параметры
         public int Long_Period { get; private set; }
         public int Short_Period { get; private set; }
         public int Velocity_Period_Seconds { get; private set; }
-        // Массив свечек
+        // Массив свечек и сделок
         public List<Candle> Buffer;
         // Массивы значений
         private List<DecimalIndicatorValue> Values_BuyVolume;
         private List<DecimalIndicatorValue> Values_SellVolume;
         // Инициализация
-        public Vol(int _Long_Period, int _Short_Period, int _Velocity_Period_Seconds)
+        public Vol(ServiceContracts.ProcessingData processingData, int _Long_Period, int _Short_Period, int _Velocity_Period_Seconds)
         {
+            _processingData = processingData;
+
             Long_Period = _Long_Period;
             Short_Period = _Short_Period;
             Velocity_Period_Seconds = _Velocity_Period_Seconds;
@@ -133,7 +136,7 @@ namespace stocksharp
         }
         public Decimal Get_DirectionVolume(OrderDirections _Order_Direction, int shift = 0)
         {
-            var AllTrades = ServiceContracts.ProcessingData.AllTrades;
+            var AllTrades = _processingData.AllTrades;
 
             // Если недостаточно данных
             if (Buffer.Count <= 1 || Buffer.Count <= shift || AllTrades.Count == 0)
@@ -191,14 +194,14 @@ namespace stocksharp
         }
         public Decimal Get_DirectionVolume_Velocity(OrderDirections _Order_Direction, int shift = 0)
         {
-            var AllTrades = ServiceContracts.ProcessingData.AllTrades;
+            var AllTrades = _processingData.AllTrades;
 
             if (AllTrades.Count == 0)
                 return 0;
 
             Trade t;
             int _Velocity_Period_Seconds = Velocity_Period_Seconds;
-            DateTimeOffset _Current_Time = ServiceContracts.ProcessingData.TerminalTime;
+            DateTimeOffset _Current_Time = _processingData.TerminalTime;
             Decimal result = 0;
             for (int i = 0; i < AllTrades.Count; i++)
             {
@@ -236,13 +239,13 @@ namespace stocksharp
         }
         public Decimal Get_BVV_Value(int _Velocity_Period_Seconds, int shift = 0) // Get buy volume velocity value
         {
-            var AllTrades = ServiceContracts.ProcessingData.AllTrades;
+            var AllTrades = _processingData.AllTrades;
 
             if (AllTrades.Count == 0)
                 return 0;
 
             Trade t;
-            DateTimeOffset _Current_Time = ServiceContracts.ProcessingData.TerminalTime;
+            DateTimeOffset _Current_Time = _processingData.TerminalTime;
             OrderDirections _Order_Direction = OrderDirections.Buy;
             Decimal result = 0;
             for (int i = 0; i < AllTrades.Count; i++)
@@ -274,13 +277,13 @@ namespace stocksharp
         }
         public Decimal Get_SVV_Value(int _Velocity_Period_Seconds, int shift = 0) // Get sell volume velocity value
         {
-            var AllTrades = ServiceContracts.ProcessingData.AllTrades;
+            var AllTrades = _processingData.AllTrades;
 
             if (AllTrades.Count == 0)
                 return 0;
 
             Trade t;
-            DateTimeOffset _Current_Time = ServiceContracts.ProcessingData.TerminalTime;
+            DateTimeOffset _Current_Time = _processingData.TerminalTime;
             OrderDirections _Order_Direction = OrderDirections.Sell;
             Decimal result = 0;
             for (int i = 0; i < AllTrades.Count; i++)
