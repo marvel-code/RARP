@@ -50,11 +50,8 @@ namespace AutoRobot
 
         public CandleManager candleManager;
         public WorkProcess workProcess;
-
-        //
-        // CONNECTION
-        //
-
+        
+        /// CONNECTION
         // Quik path selection
         private void selectQuikPath()
         {
@@ -174,11 +171,8 @@ namespace AutoRobot
                 addLogMessage(string.Format("Ошибка остановки экспорта DDE: {0}", exc.Message));
             }
         }
-
-        //
-        // MENU
-        //
-
+        
+        /// MENU
         // Start work
         private void startWork()
         {
@@ -320,11 +314,8 @@ namespace AutoRobot
                 addLogSpoiler("Лог не сохранён", ex.Message);
             }
         }
-
-        //
-        // TRADE
-        //
-
+        
+        /// TRADE
         // Start trading
         public void startTrading()
         {
@@ -417,11 +408,8 @@ namespace AutoRobot
                 }));
             }
         }
-
-        //
-        // INTERFACE
-        //
-
+        
+        /// INTERFACE
         // Indicators cfg
         private void saveIndicatorsConfiguration()
         {
@@ -609,11 +597,8 @@ namespace AutoRobot
                     })
             ));
         }
-
-        //
-        // OTHERS
-        //
-
+        
+        /// OTHERS
         // Мои цвета
         public SolidColorBrush Select_Color(MyColors _Color)
         {

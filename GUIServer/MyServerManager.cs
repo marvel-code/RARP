@@ -45,7 +45,7 @@ namespace GUIServer
         {
             try
             {
-                Uri address = new Uri("http://localhost:8010/WorkService");
+                Uri address = new Uri("http://localhost:8020/WorkService");
                 WSHttpBinding binding = new WSHttpBinding(SecurityMode.None, true);
 
                 binding.Security = new WSHttpSecurity() { Mode = SecurityMode.None };

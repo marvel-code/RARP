@@ -46,7 +46,7 @@ namespace AutoRobot
         {
             // -- init proxy
             WSHttpBinding binding = new WSHttpBinding(SecurityMode.None, true);
-            EndpointAddress address = new EndpointAddress("http://185.158.153.217:8010/WorkService");
+            EndpointAddress address = new EndpointAddress("http://185.158.153.217:8020/WorkService");
             //EndpointAddress address = new EndpointAddress("http://127.0.0.1:8010/WorkService");
             _proxy = ChannelFactory<IWorkService>.CreateChannel(binding, address);
             var errorMessage = _proxy.InitConnection("TestUser");
@@ -317,6 +317,7 @@ namespace AutoRobot
                     {
                         addLogMessage("Кол-во исключений превысило максимально допустимый порог");
                         mw.stopTrading();
+                        TM.resetExceptionsCount();
                         return ProcessResults.Continue;
                     }
 
@@ -369,7 +370,7 @@ namespace AutoRobot
                 mw.mw.tb_allTrades_startTime.Text = (tradeState.AdditionalData.Open_Trades_Time).ToString(@"yyyy/MM/dd HH:mm:ss");
                 mw.mw.tb_allTrades_stopTime.Text = (tradeState.AdditionalData.Close_Trades_Time).ToString(@"yyyy/MM/dd HH:mm:ss");
 
-                decimal progressValue = transmittedTradesCount / TM.MySecurity.Trader.Trades.Count();
+                decimal progressValue = (decimal)transmittedTradesCount / TM.MySecurity.Trader.Trades.Count();
                 progressValue = Math.Ceiling(progressValue * 100);
                 progressValue = progressValue > 100 ? 100 : progressValue;
                 mw.mw.tb_progressLoading.Text = string.Format("{0}%", progressValue);

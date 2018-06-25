@@ -40,10 +40,11 @@ namespace stocksharp.ServiceContracts
                 {
                     ruleId = 0;
                     tradeState.LongOpen = true
-                        //*//
-                            && tf[0].adx[0].dip > tf[0].adx[0].dim
-                        //*//
-                        && true;
+                            //*//
+                            &&
+                            tf[0].adx[0].dip > tf[0].adx[0].dim
+                            //*//
+                            && true;
                 }
 
                 /// SHORT
@@ -56,34 +57,18 @@ namespace stocksharp.ServiceContracts
                     { }
                     /// CONDITION
                     tradeState.ShortOpen = true
-                            /*~*/
+                            //*//
                             &&
-                            tf[0].adx[0].dim > tf[0].adx[0].dip                      //per=2
-                            &&
-                            tf[0].adx[0].dim > tf[0].adx[0].dim_p  
-                            &&
-                            (
-                                tf[0].roc[0].val < - new decimal(0.08)                   //...per=1
-                                ||
-                                tf[0].roc[1].val < - new decimal(0.1)                   //...per=2                            
-                            )
-                            &&
-                            (
-                                    tf[0].adx[0].val > new decimal(42)                    //...per=5
-                                    &&
-                                    tf[0].adx[0].val > tf[0].adx[0].val_p
-                                    ||
-                                    tf[0].adx[0].dim > new decimal(42)                    //...per=2                             
-                            )
-                        /*~*/
-                        && true;
+                            tf[0].adx[0].dip < tf[0].adx[0].dim
+                            //*//
+                            && true;
                 }
 
                 /// Общее разрешение на вход
                 bool allowEntry = true
                     //*//
                     // Запрет входа в позицию на свече выхода........(убрать комменты в стр ниже)..............
-                    && !tf[0].IsExitCandle()
+                    //&& !tf[0].IsExitCandle()
                     //*//
                     && true;
                 /// LONG разрешение на вход

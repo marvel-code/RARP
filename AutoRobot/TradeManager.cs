@@ -270,6 +270,7 @@ namespace AutoRobot
             }
         }
         public static Decimal Exceptions_Count { get; private set; }
+        public static void resetExceptionsCount() { Exceptions_Count = 0; }
         public static Decimal Max_Exceptions_Count { get; private set; }
         public static Boolean is_Position { get { return Orders_Enter.Count == 0 ? false : Orders_Exit.Count == 0 ? true : last_EnterOrder.Time > last_ExitOrder.Time; } }
 
@@ -519,10 +520,8 @@ namespace AutoRobot
                 return false;
             }
         }
-
-        /**
-         * Работа с заявками и сделками
-         **/
+        
+        /// ORDERS
         // Проверка выхода по стоп-заявке
         public static Boolean is_Exit_From_Stop_Order()
         {
@@ -556,10 +555,8 @@ namespace AutoRobot
         {
             return MyTrader.MyTrades.Where(t => t.Order.Id == _Order.Id).ToList();
         }
-
-        /**
-         * ИНФО
-         **/
+        
+        ///  INFO
         // Таблица + значения индикаторов
         private static void Register_Order_Info(Decimal _Rule_ID, OrderType _OrderType, String _Comment)
         {
@@ -600,16 +597,16 @@ namespace AutoRobot
     {
         public Boolean is_Test { get; set; }
         public Boolean is_New_Session { get; set; }
-        public Decimal Max_Exceptions_Count { get; set; }
+        public int Max_Exceptions_Count { get; set; }
 
-        public Decimal Order_Volume { get; set; }
-        public Decimal Order_Shift { get; set; }
-        public Decimal Order_TakeProfit { get; set; }
-        public Decimal Order_StopLoss { get; set; }
-        public Decimal Order_Offset { get; set; }
+        public int Order_Volume { get; set; }
+        public int Order_Shift { get; set; }
+        public int Order_TakeProfit { get; set; }
+        public int Order_StopLoss { get; set; }
+        public int Order_Offset { get; set; }
 
-        public Decimal Max_Day_Profit { get; set; }
-        public Decimal Max_Day_Loss { get; set; }
+        public int Max_Day_Profit { get; set; }
+        public int Max_Day_Loss { get; set; }
     }
     public class OrderInfo
     {
