@@ -43,7 +43,7 @@ namespace GUIServer
         }
         public static void UpdatePartnerLastConnectionTime(string login, DateTime dateTime)
         {
-            _partnersInfo.Find(x => x.login == login).lastConnectionTime = dateTime.ToString(@"YYYY/MM/dd HH:mm:ss");
+            _partnersInfo.Find(x => x.login == login).lastConnectionTime = dateTime.ToString(@"yyyy/MM/dd HH:mm:ss");
 
             UpdateDgvPartnersInfoSource();
         }
