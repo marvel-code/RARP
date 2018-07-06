@@ -102,6 +102,8 @@ namespace transportDataParrern
     public class PartnerDataObject
     {
         [DataMember]
+        public decimal Position_PNL_Max { get; set; }
+        [DataMember]
         public List<SecuritiesRow> securitiesData { get; set; }
         [DataMember]
         public List<DerivativePortfolioRow> derivativePortfolioData { get; set; }

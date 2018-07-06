@@ -34,8 +34,17 @@ namespace AutoRobot
         private Thread threadConnectionReaffirmation;
         private Thread threadLoading;
 
+        /// Settings
+        const int maxServerExceptionCount = 5;
+
+        /// 
+        private int serverExceptionCount;
+        private volatile bool isServerConnectionEstablished;
+
         /// init
         private MainWindow mw = MainWindow.Instance;
+        private WSHttpBinding binding;
+        private EndpointAddress address;
         private IWorkService _proxy;
         private List<int> _tfPeriods;
         private CandleManager _candleManager;
@@ -45,26 +54,21 @@ namespace AutoRobot
         public WorkProcess(CandleManager candleManager, QuikTrader quikTrader, Portfolio portfolio, Security secutirty) : base(TimeSpan.FromSeconds(0.1)) // Период стратегии ?
         {
             // -- init proxy
-            WSHttpBinding binding = new WSHttpBinding(SecurityMode.None, true);
-            EndpointAddress address = new EndpointAddress("http://185.158.153.217:8020/WorkService");
-            //EndpointAddress address = new EndpointAddress("http://127.0.0.1:8010/WorkService");
-            _proxy = ChannelFactory<IWorkService>.CreateChannel(binding, address);
-            var errorMessage = _proxy.InitConnection("main#9999");
-            if (errorMessage != null)
-            {
-                throw new Exception(errorMessage);
-            }
-            
+            binding = new WSHttpBinding(SecurityMode.None, true);
+            address = new EndpointAddress("http://185.158.153.217:8020/WorkService");
+            //address = new EndpointAddress("http://127.0.0.1:8010/WorkService");
             threadConnectionReaffirmation = new Thread(() =>
             {
+                int delaySeconds = 5;
+
                 doStopConnectionReaffirmationThread = false;
-                while(!doStopConnectionReaffirmationThread)
+                while (!doStopConnectionReaffirmationThread)
                 {
                     reaffirmConnection();
-                    Thread.Sleep(5 * 1000);
+                    Thread.Sleep(delaySeconds * 1000);
                 }
             });
-            threadConnectionReaffirmation.Start();
+            initConnection();
 
             // -- init local
             _candleManager = candleManager;
@@ -85,7 +89,7 @@ namespace AutoRobot
         {
             terminateConnection();
         }
-
+        
         /// Main
         public bool isTrade = false;
         public bool isWork = false;
@@ -147,6 +151,9 @@ namespace AutoRobot
         {
             lock (lockObj_OnProcess)
             {
+                if (!isServerConnectionEstablished)
+                    return ProcessResults.Continue;
+
                 if (ProcessState == ProcessStates.Stopping)
                 {
                     addLogMessage("Стратегия остановлена");
@@ -205,6 +212,7 @@ namespace AutoRobot
 
                     // Set client data 
                     PartnerDataObject partnerData = new PartnerDataObject();
+                    partnerData.Position_PNL_Max = TM.Max_Position_PNL;
                     partnerData.securitiesData = TM.MyTrader.Securities.Select(x => new SecuritiesRow { code = x.Code }).ToList();
                     partnerData.derivativePortfolioData = new List<DerivativePortfolioRow>() { new DerivativePortfolioRow { beginAmount = TM.MyPortfolio.BeginAmount.Value, variationMargin = TM.MyPortfolio.VariationMargin.Value } };
                     partnerData.derivativePositionsData = new List<DerivativePositionsRow>() { new DerivativePositionsRow { currentPosition = (int)(TM.MyTrader.GetPosition(TM.MyPortfolio, TM.MySecurity) ?? new Position { CurrentValue = 0 }).CurrentValue } };
@@ -220,7 +228,12 @@ namespace AutoRobot
                     }
                     catch (Exception ex)
                     {
-                        mw.addLogSpoiler("Ошибка обновления состояния торговли", ex.Message);
+                        serverExceptionCount++;
+                        mw.addLogSpoiler(string.Format("[{0}] Ошибка обновления состояния торговли", serverExceptionCount), ex.Message);
+
+                        if (serverExceptionCount >= maxServerExceptionCount)
+                            isServerConnectionEstablished = false;
+
                         return ProcessResults.Continue;
                     }
 
@@ -455,16 +468,47 @@ namespace AutoRobot
         }
 
         /// Server synchronization
+        private void initConnection()
+        {
+            serverExceptionCount = 0;
+            _proxy = ChannelFactory<IWorkService>.CreateChannel(binding, address);
+            var errorMessage = _proxy.InitConnection("TestUser");
+            if (errorMessage != null)
+            {
+                throw new Exception(errorMessage);
+            }
+            if (threadConnectionReaffirmation.ThreadState != ThreadState.Running)
+                threadConnectionReaffirmation.Start();
+            if (_tfPeriods != null)
+                transmittedCandlesCount = new int[_tfPeriods.Count];
+            transmittedTradesCount = 0;
+
+            isServerConnectionEstablished = true;
+            addLogMessage("Успешное подключение к серверу!");
+        }
         private bool reaffirmConnection()
         {
             try
             {
-                //proxy.ReaffirmConnection();
+                _proxy.ReaffirmConnection();
+                isServerConnectionEstablished = true;
                 return true;
             }
             catch (Exception ex)
             {
+                isServerConnectionEstablished = false;
                 addLogMessage("Попытка подключения к серверу..");
+
+                try
+                {
+                    if (maxServerExceptionCount % ++serverExceptionCount == 0)
+                        initConnection();
+                    return true;
+                }
+                catch (Exception exc)
+                {
+                    addLogMessage(exc.Message.ToString());
+                }
                 return false;
             }
         }

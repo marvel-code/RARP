@@ -56,7 +56,7 @@ namespace stocksharp.ServiceContracts
 
         public static bool Process_UserConnect(string username, string comment = "")
         {
-            if (!usersList.Contains(username) || connectedUsers.Keys.Contains(username) || PartnersManager.GetPartnersInfo().Find(x => x.login == username) != null && !PartnersManager.GetPartnersInfo().Find(x => x.login == username).allowTrade)
+            if (!usersList.Contains(username)/* || connectedUsers.Keys.Contains(username) */|| PartnersManager.GetPartnersInfo().Find(x => x.login == username) != null && !PartnersManager.GetPartnersInfo().Find(x => x.login == username).allowTrade)
             {
                 Log.addLog(LogType.Info, "{0}: CONNECTION FAILED {1}", username, comment);
                 return false;

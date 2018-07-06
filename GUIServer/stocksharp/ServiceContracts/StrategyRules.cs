@@ -30,7 +30,7 @@ namespace stocksharp.ServiceContracts
         }
 
         private const bool DYNAMIC = false; // true - включить; false - выключить (ДИНАМИЧЕСКОЕ УСЛОВИЕ)
-        public TradeState updateTradeState(List<TimeFrame> tf, NeedAction _needAction)
+        public TradeState updateTradeState(List<TimeFrame> tf, NeedAction _needAction, PartnerDataObject partnerData)
         {
             TradeState tradeState = new TradeState();
             

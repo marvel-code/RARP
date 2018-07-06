@@ -87,11 +87,11 @@ namespace stocksharp.ServiceContracts
             // -- Processing
             try
             {
-                result = updateTradeState(_currentData.timeFrameList, needAction);
+                result = updateTradeState(_currentData.timeFrameList, needAction, partnerDataObject);
             }
             catch (Exception ex)
             {
-                Log.addLog(GUIServer.LogType.Warn, "Ошибка обновления состояния торговли");
+                Log.addLog(GUIServer.LogType.Warn, "Ошибка обновления состояния торговли" + ex.ToString());
                 TerminateConnection();
             }
 
