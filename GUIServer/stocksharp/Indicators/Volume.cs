@@ -352,13 +352,16 @@ namespace stocksharp
         }
         public Decimal Get_Candle_Duration(int shift = 0)
         {
-            var candle = Get_Candle();
+            var candle = Get_Candle(shift);
             if (candle == null)
-                return 1;
+                return 0;
 
-            Decimal result = (decimal)(_processingData.TerminalTime - candle.Time).TotalSeconds;
-
-            return result;
+            var OpenTime = candle.Time;
+            var CloseTime = _processingData.TerminalTime;
+            if (shift > 0)
+                CloseTime = Get_Candle(shift - 1).Time;
+                
+            return (decimal)(CloseTime - OpenTime).TotalSeconds;
         }
     }
     public class Volume_Configuration

@@ -587,15 +587,18 @@ namespace AutoRobot
         }
         public void addLogSpoiler(String _Spoiler_Header_Message, String _Spoiler_Content_Message)
         {
-            lb_log.Dispatcher.Invoke(new Action(() =>
-                lb_log.Items.Insert(0,
-                    new System.Windows.Controls.Expander()
-                    {
-                        Header = DateTime.Now + " |  " + _Spoiler_Header_Message,
-                        Content = _Spoiler_Content_Message,
-                        Background = Select_Color(MyColors.Blue)
-                    })
-            ));
+            try
+            {
+                lb_log.Dispatcher.Invoke(new Action(() =>
+                    lb_log.Items.Insert(0,
+                        new System.Windows.Controls.Expander()
+                        {
+                            Header = DateTime.Now + " |  " + _Spoiler_Header_Message,
+                            Content = _Spoiler_Content_Message,
+                            Background = Select_Color(MyColors.Blue)
+                        })
+                ));
+            } catch (Exception ex) { }
         }
         
         /// OTHERS

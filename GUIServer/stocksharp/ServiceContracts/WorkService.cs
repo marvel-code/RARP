@@ -135,19 +135,19 @@ namespace stocksharp.ServiceContracts
 
             if (needAction == NeedAction.LongOrShortOpen && result.LongOpen)
             {
-                Log.addLog(GUIServer.LogType.Info, "Открытие LONG");
+                Log.addLog(GUIServer.LogType.Info, _currentUser + ":: Открытие LONG");
             }
             else if (needAction == NeedAction.LongOrShortOpen && result.ShortOpen)
             {
-                Log.addLog(GUIServer.LogType.Info, "Открытие SHORT");
+                Log.addLog(GUIServer.LogType.Info, _currentUser + ":: Открытие SHORT");
             }
             else if (needAction == NeedAction.LongClose && result.LongClose)
             {
-                Log.addLog(GUIServer.LogType.Info, "Закрытие LONG");
+                Log.addLog(GUIServer.LogType.Info, _currentUser + ":: Закрытие LONG");
             }
             else if (needAction == NeedAction.ShortClose && result.ShortClose)
             {
-                Log.addLog(GUIServer.LogType.Info, "Закрытие SHORT");
+                Log.addLog(GUIServer.LogType.Info, _currentUser + ":: Закрытие SHORT");
             }
 
             return result;

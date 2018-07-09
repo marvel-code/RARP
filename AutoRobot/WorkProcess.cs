@@ -37,9 +37,9 @@ namespace AutoRobot
 
         /// Settings
 
-        const string USERNAME = "gr#2396";
+        const string USERNAME = "ro#9019";
         const int PORT = 8020;
-        const int maxServerExceptionCount = 15;
+        const int maxServerExceptionCount = 5;
 
         /// 
 
@@ -552,7 +552,7 @@ namespace AutoRobot
 
                 try
                 {
-                    if (maxServerExceptionCount % ++serverExceptionCount == 0)
+                    if (++serverExceptionCount % maxServerExceptionCount == 0)
                         initConnection();
                     return true;
                 }
