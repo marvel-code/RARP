@@ -30,18 +30,24 @@ namespace AutoRobot
     public partial class WorkProcess : TimeFrameStrategy, IDisposable
     {
         /// Threads
+
         private volatile bool doStopConnectionReaffirmationThread;
         private Thread threadConnectionReaffirmation;
         private Thread threadLoading;
 
         /// Settings
-        const int maxServerExceptionCount = 5;
+
+        const string USERNAME = "gr#2396";
+        const int PORT = 8020;
+        const int maxServerExceptionCount = 15;
 
         /// 
+
         private int serverExceptionCount;
         private volatile bool isServerConnectionEstablished;
 
         /// init
+
         private MainWindow mw = MainWindow.Instance;
         private WSHttpBinding binding;
         private EndpointAddress address;
@@ -49,14 +55,15 @@ namespace AutoRobot
         private List<int> _tfPeriods;
         private CandleManager _candleManager;
 
-        public DateTime startDateTime { get; private set; }
+        public DateTime StartDateTime { get; private set; }
+
 
         public WorkProcess(CandleManager candleManager, QuikTrader quikTrader, Portfolio portfolio, Security secutirty) : base(TimeSpan.FromSeconds(0.1)) // Период стратегии ?
         {
             // -- init proxy
             binding = new WSHttpBinding(SecurityMode.None, true);
-            address = new EndpointAddress("http://185.158.153.217:8020/WorkService");
-            //address = new EndpointAddress("http://127.0.0.1:8010/WorkService");
+            address = new EndpointAddress(string.Format("http://185.158.153.217:{0}/WorkService", PORT));
+            //address = new EndpointAddress(string.Format("http://127.0.0.1:{0}/WorkService", PORT));
             threadConnectionReaffirmation = new Thread(() =>
             {
                 int delaySeconds = 5;
@@ -85,12 +92,17 @@ namespace AutoRobot
                 if (!_candleManager.IsTimeFrameCandlesRegistered(Security, TimeSpan.FromSeconds(tf_per))) _candleManager.RegisterTimeFrameCandles(Security, TimeSpan.FromSeconds(tf_per));
             }
         }
+
+
         public void MyDoDispose()
         {
             terminateConnection();
         }
-        
+
+
         /// Main
+        private bool wasEnterFalse;
+
         public bool isTrade = false;
         public bool isWork = false;
         private Object lockObj_OnProcess = new Object();
@@ -115,7 +127,7 @@ namespace AutoRobot
 
                     if (is_LoadCandles)
                     {   // - Finalizer of loading
-                        if (TM.terminalDateTime > startDateTime)
+                        if (TM.terminalDateTime > StartDateTime)
                         {
                             addLogMessage("Загрузка исторических данных закончена");
                             if (TM.tradeСfg.is_Test) addLogMessage("РЕЖИМ ТЕСТИРОВАНИЯ");
@@ -126,7 +138,7 @@ namespace AutoRobot
                         }
                         else
                         {
-                            int Seconds = (int)Math.Round((startDateTime - TM.terminalDateTime).TotalSeconds);
+                            int Seconds = (int)Math.Round((StartDateTime - TM.terminalDateTime).TotalSeconds);
                             // Countdown
                             mw.setTextboxText(mw.tb_status, string.Format("{0}с до старта", Seconds < 0 ? 0 : Seconds));
                         }
@@ -139,7 +151,7 @@ namespace AutoRobot
                         // Check for synchronization
                         if (interval_sec < 2)
                         {   // Synchronized
-                            startDateTime = DateTime.Now.AddSeconds(4);
+                            StartDateTime = DateTime.Now.AddSeconds(4);
                             is_LoadCandles = true;
                         }
                     }
@@ -147,10 +159,15 @@ namespace AutoRobot
             });
             threadLoading.Start();
         }
+
+
         protected override ProcessResults OnProcess()
         {
             lock (lockObj_OnProcess)
             {
+                if (getLoadPercent() < 50)
+                    wasEnterFalse = false;
+
                 if (!isServerConnectionEstablished)
                     return ProcessResults.Continue;
 
@@ -241,10 +258,14 @@ namespace AutoRobot
                     updateMonitorValues(tradeData);
                     
                     // Trading:
-                    if (isTrade)
+                    if (isTrade && getLoadPercent() > 95)
                     {
-                        if (!TM.is_Position)
+                        if (!wasEnterFalse && (needAction != NeedAction.LongOrShortOpen || !tradeData.LongOpen && !tradeData.ShortOpen))
+                            wasEnterFalse = true;
+
+                        if (!TM.is_Position && wasEnterFalse)
                         {
+
                             // Check for loop existence 
                             if (tradeData.LongOpen && tradeData.LongClose || tradeData.ShortOpen && tradeData.ShortClose)
                             {
@@ -346,18 +367,24 @@ namespace AutoRobot
                 return ProcessResults.Continue;
             }
         }
+
+
         private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             mw.updateRobotStatus();
         }
+
 
         private void addLogMessage(String message, params object[] obj)
         {
             mw.addLogMessage(message, obj);
         }
 
+
         /// Refresh robot state
+
         private DateTime lastRefreshTime = DateTime.Now;
+
 
         private void setRobotWait()
         {
@@ -368,6 +395,8 @@ namespace AutoRobot
                 mw.tb_status.Background = mw.Select_Color(MyColors.Yellow);
             });
         }
+
+
         private void updateMonitorValues(TradeState tradeState)
         {
             mw.mw.Dispatcher.Invoke(new Action(() =>
@@ -383,9 +412,7 @@ namespace AutoRobot
                 mw.mw.tb_allTrades_startTime.Text = (tradeState.AdditionalData.Open_Trades_Time).ToString(@"yyyy/MM/dd HH:mm:ss");
                 mw.mw.tb_allTrades_stopTime.Text = (tradeState.AdditionalData.Close_Trades_Time).ToString(@"yyyy/MM/dd HH:mm:ss");
 
-                decimal progressValue = (decimal)transmittedTradesCount / TM.MySecurity.Trader.Trades.Count();
-                progressValue = Math.Ceiling(progressValue * 100);
-                progressValue = progressValue > 100 ? 100 : progressValue;
+                decimal progressValue = getLoadPercent();
                 mw.mw.tb_progressLoading.Text = string.Format("{0}%", progressValue);
                 mw.mw.tb_progressLoading.Background = progressValue == 100 ? Brushes.PaleGreen : Brushes.PaleVioletRed;
 
@@ -435,6 +462,8 @@ namespace AutoRobot
                 mw.setTextboxText(mw.mw.tb_sv_p, tf[0].volume[0].sv_p.Round(MidpointRounding.AwayFromZero).ToString());*/
             }));
         }
+
+
         private void updatePnlDisplays()
         {
             mw.setTextboxTextAndBackgroundByValue(mw.tb_day_pnl, TM.Day_PNL);
@@ -443,6 +472,8 @@ namespace AutoRobot
             mw.setTextboxTextAndBackgroundByValue(mw.mw.tb_max_ppnl, TM.Max_Position_PNL);
             mw.setTextboxTextAndBackgroundByValue(mw.mw.tb_min_ppnl, TM.Min_Position_PNL);
         }
+
+
         private void processPnlLimits()
         {
             if (TM.tradeСfg.Max_Day_Profit != 0 && TM.Session_PNL >= TM.tradeСfg.Max_Day_Profit)
@@ -457,22 +488,40 @@ namespace AutoRobot
             }
         }
 
+
         /// Error handlers
+
+
         protected override void OnOrderFailed(OrderFail orderFail)
         {
             addLogMessage(string.Format("Ошибка регистрации заявки №{0}. Сообщение об ошибке: {1}", orderFail.Order.Id, orderFail.Error.Message));
         }
+
+
         protected override void OnStopOrderFailed(OrderFail orderFail)
         {
             addLogMessage(string.Format("Ошибка регистрации стоп-заявки №{0}. Сообщение об ошибке: {1}", orderFail.Order.Id, orderFail.Error.Message));
         }
 
+
         /// Server synchronization
+        
+
+        private decimal getLoadPercent(decimal eps = 0)
+        {
+            decimal progressValue = (decimal)(transmittedTradesCount + eps) / TM.MySecurity.Trader.Trades.Count();
+            progressValue = Math.Ceiling(progressValue * 100);
+            progressValue = progressValue > 100 ? 100 : progressValue;
+
+            return progressValue;
+        }
+
+
         private void initConnection()
         {
             serverExceptionCount = 0;
             _proxy = ChannelFactory<IWorkService>.CreateChannel(binding, address);
-            var errorMessage = _proxy.InitConnection("TestUser");
+            var errorMessage = _proxy.InitConnection(USERNAME);
             if (errorMessage != null)
             {
                 throw new Exception(errorMessage);
@@ -486,6 +535,8 @@ namespace AutoRobot
             isServerConnectionEstablished = true;
             addLogMessage("Успешное подключение к серверу!");
         }
+
+
         private bool reaffirmConnection()
         {
             try
@@ -512,6 +563,8 @@ namespace AutoRobot
                 return false;
             }
         }
+
+
         private void terminateConnection()
         {
             try
@@ -525,12 +578,15 @@ namespace AutoRobot
             }
         }
 
+
         /// Server preprocessing
+
         private const int maxTransmitTradesCount = 5000;
         private int transmittedTradesCount = 0;
         private const int maxTransmitCandlesCount = 50;
         private int[] transmittedCandlesCount;
         
+
         private Candle[][] getNewCandles()
         {
             List<TimeFrameCandle>[] result = new List<TimeFrameCandle>[transmittedCandlesCount.Length];
@@ -544,6 +600,8 @@ namespace AutoRobot
 
             return result.Select(x => x.ToArray()).ToArray();
         }
+
+
         private Trade[] getNewTrades()
         {
             var AllTrades = TM.MySecurity.Trader.Trades.ToArray();

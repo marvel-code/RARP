@@ -183,7 +183,7 @@ namespace stocksharp
             return result;
         }
         // Взятие свечи из буффера
-        public Candle Get_Candle(int _shift = 0)
+        public Candle getCandle(int _shift = 0)
         {
             return Buffer.Count <= _shift ? null : Buffer[Buffer.Count - 1 - _shift];
         }

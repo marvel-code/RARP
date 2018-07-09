@@ -19,6 +19,17 @@ namespace GUIServer
         // Partners info table
         private BindingSource _dgvPartnersInfoSource;
 
+
+        object lock_object = new object();
+        public void UpdateInfoLabel(string info)
+        {
+            lock (lock_object)
+            {
+                lbl_info.Text = info;
+            }
+        }
+
+
         public void UpdateDgvPartnersInfoSource()
         {
             try

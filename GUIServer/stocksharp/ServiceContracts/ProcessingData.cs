@@ -13,12 +13,11 @@ namespace stocksharp.ServiceContracts
         // >> Customizable strategy settings
         public List<int> tf_Periods = new List<int>
         {
-            300,
-            1800
+            900
         };
         public List<ADX_Configuration> adx_cfgList = new List<ADX_Configuration>
         {
-            new ADX_Configuration(0, 2, MaType.
+            new ADX_Configuration(0, 4, MaType.
                 //Simple
                 Exponential
                 )
@@ -29,7 +28,7 @@ namespace stocksharp.ServiceContracts
         };
         public List<KAMA_Configuration> kama_cfgList = new List<KAMA_Configuration>
         {
-            new KAMA_Configuration(0, 2, CalculationType.Median, 2, 30)
+
         };
         public List<MA_Configuration> ma_cfgList = new List<MA_Configuration>
         {
@@ -42,7 +41,7 @@ namespace stocksharp.ServiceContracts
         };
         public List<Volume_Configuration> volume_cfgList = new List<Volume_Configuration>
         {
-            new Volume_Configuration(0, 1, 1, 10)
+            new Volume_Configuration(0, 2, 1, 60)
         };
 
         public List<TimeFrame> timeFrameList;

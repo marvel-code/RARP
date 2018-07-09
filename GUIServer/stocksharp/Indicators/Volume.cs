@@ -42,12 +42,12 @@ namespace stocksharp
         public Decimal vv { get { return Get_VectorVolume_Velocity(); } }
         public Decimal vv_p { get { return Get_VectorVolume_Velocity(1); } }
         // Средняя скорость за свечу
-        public Decimal actvv { get { return Get_TotalVolume() / Get_Candle_Duration(); } }
-        public Decimal actvv_p { get { return Get_TotalVolume(1) / Get_Candle_Duration(1); } }
-        public Decimal acbvv { get { return Get_DirectionVolume(OrderDirections.Buy) / Get_Candle_Duration(); } }
-        public Decimal acbvv_p { get { return Get_DirectionVolume(OrderDirections.Buy, 1) / Get_Candle_Duration(1); } }
-        public Decimal acsvv { get { return Get_DirectionVolume(OrderDirections.Sell) / Get_Candle_Duration(); } }
-        public Decimal acsvv_p { get { return Get_DirectionVolume(OrderDirections.Sell, 1) / Get_Candle_Duration(1); } }
+        public Decimal actv { get { return Get_Average_Candle_Total_Volume(); } }
+        public Decimal actv_p { get { return Get_Average_Candle_Total_Volume(1); } }
+        public Decimal acbv { get { return Get_Average_Candle_Buy_Volume(); } }
+        public Decimal acbv_p { get { return Get_Average_Candle_Buy_Volume(1); } }
+        public Decimal acsv { get { return Get_Average_Candle_Sell_Volume(); } }
+        public Decimal acsv_p { get { return Get_Average_Candle_Sell_Volume(1); } }
         // Регистрация значений произвольных скоростей за период
         public Dictionary<int, Decimal[]> TVV_for_order_info;
         public Dictionary<int, Decimal[]> BVV_for_order_info;
@@ -182,6 +182,31 @@ namespace stocksharp
                 result += Get_DirectionVolume(_Order_Direction, i + shift);
 
             return result;
+        }
+        // Средние объемы свеч
+        public Decimal Get_Average_Candle_Total_Volume(int shift = 0)
+        {
+            decimal duration = Get_Candle_Duration(shift);
+            if (duration == 0)
+                return 0;
+
+            return Get_TotalVolume(shift) / duration;
+        }
+        public Decimal Get_Average_Candle_Buy_Volume(int shift = 0)
+        {
+            decimal duration = Get_Candle_Duration(shift);
+            if (duration == 0)
+                return 0;
+
+            return Get_DirectionVolume(OrderDirections.Buy, shift) / duration;
+        }
+        public Decimal Get_Average_Candle_Sell_Volume(int shift = 0)
+        {
+            decimal duration = Get_Candle_Duration(shift);
+            if (duration == 0)
+                return 0;
+
+            return Get_DirectionVolume(OrderDirections.Sell, shift) / duration;
         }
         // Скорости
         public Decimal Get_TotalVolume_Velocity(int shift = 0)
@@ -327,13 +352,11 @@ namespace stocksharp
         }
         public Decimal Get_Candle_Duration(int shift = 0)
         {
-            Candle candle = Get_Candle(shift);
+            var candle = Get_Candle();
             if (candle == null)
                 return 1;
 
-            Decimal result = (decimal)(candle.Time - Get_OpenTime(shift)).TotalSeconds;
-            if (result == 0)
-                return 1;
+            Decimal result = (decimal)(_processingData.TerminalTime - candle.Time).TotalSeconds;
 
             return result;
         }

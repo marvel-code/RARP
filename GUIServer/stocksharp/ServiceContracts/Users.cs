@@ -44,7 +44,7 @@ namespace stocksharp.ServiceContracts
         
         public static void ReaffirmUserConnection(string username)
         {
-            if (connectedUsers.ContainsKey(username))
+            if (true || connectedUsers.ContainsKey(username))
             {
                 Update_UserData(username);
             }

@@ -55,6 +55,7 @@
             this.dgv_derivativePortfolio = new System.Windows.Forms.DataGridView();
             this.label1 = new System.Windows.Forms.Label();
             this.dgv_securities = new System.Windows.Forms.DataGridView();
+            this.lbl_info = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_partnersInfo)).BeginInit();
             this.gb_partnerManagerPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nud_editStrategyNumber)).BeginInit();
@@ -73,10 +74,10 @@
             this.dgv_partnersInfo.AllowUserToDeleteRows = false;
             this.dgv_partnersInfo.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCells;
             this.dgv_partnersInfo.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgv_partnersInfo.Location = new System.Drawing.Point(12, 241);
+            this.dgv_partnersInfo.Location = new System.Drawing.Point(12, 212);
             this.dgv_partnersInfo.Name = "dgv_partnersInfo";
             this.dgv_partnersInfo.ReadOnly = true;
-            this.dgv_partnersInfo.Size = new System.Drawing.Size(447, 110);
+            this.dgv_partnersInfo.Size = new System.Drawing.Size(447, 170);
             this.dgv_partnersInfo.TabIndex = 0;
             this.dgv_partnersInfo.Click += new System.EventHandler(this.dgv_partnersInfo_Click);
             // 
@@ -106,7 +107,7 @@
             this.gb_partnerManagerPanel.Controls.Add(this.btn_addClientInfo);
             this.gb_partnerManagerPanel.Location = new System.Drawing.Point(12, 62);
             this.gb_partnerManagerPanel.Name = "gb_partnerManagerPanel";
-            this.gb_partnerManagerPanel.Size = new System.Drawing.Size(447, 173);
+            this.gb_partnerManagerPanel.Size = new System.Drawing.Size(447, 107);
             this.gb_partnerManagerPanel.TabIndex = 3;
             this.gb_partnerManagerPanel.TabStop = false;
             this.gb_partnerManagerPanel.Text = "Управление клиентами";
@@ -114,7 +115,7 @@
             // lbl_selectedPartner
             // 
             this.lbl_selectedPartner.AutoSize = true;
-            this.lbl_selectedPartner.Location = new System.Drawing.Point(86, 143);
+            this.lbl_selectedPartner.Location = new System.Drawing.Point(90, 80);
             this.lbl_selectedPartner.Name = "lbl_selectedPartner";
             this.lbl_selectedPartner.Size = new System.Drawing.Size(122, 13);
             this.lbl_selectedPartner.TabIndex = 14;
@@ -123,7 +124,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(87, 114);
+            this.label3.Location = new System.Drawing.Point(91, 51);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(73, 13);
             this.label3.TabIndex = 13;
@@ -131,7 +132,7 @@
             // 
             // nud_editStrategyNumber
             // 
-            this.nud_editStrategyNumber.Location = new System.Drawing.Point(161, 112);
+            this.nud_editStrategyNumber.Location = new System.Drawing.Point(165, 49);
             this.nud_editStrategyNumber.Maximum = new decimal(new int[] {
             99,
             0,
@@ -144,7 +145,7 @@
             // cb_editAllowTrade
             // 
             this.cb_editAllowTrade.AutoSize = true;
-            this.cb_editAllowTrade.Location = new System.Drawing.Point(211, 113);
+            this.cb_editAllowTrade.Location = new System.Drawing.Point(215, 50);
             this.cb_editAllowTrade.Name = "cb_editAllowTrade";
             this.cb_editAllowTrade.Size = new System.Drawing.Size(133, 17);
             this.cb_editAllowTrade.TabIndex = 10;
@@ -154,7 +155,7 @@
             // lbl_addLogin
             // 
             this.lbl_addLogin.AutoSize = true;
-            this.lbl_addLogin.Location = new System.Drawing.Point(86, 85);
+            this.lbl_addLogin.Location = new System.Drawing.Point(90, 22);
             this.lbl_addLogin.Name = "lbl_addLogin";
             this.lbl_addLogin.Size = new System.Drawing.Size(41, 13);
             this.lbl_addLogin.TabIndex = 7;
@@ -162,14 +163,14 @@
             // 
             // tb_addLogin
             // 
-            this.tb_addLogin.Location = new System.Drawing.Point(131, 82);
+            this.tb_addLogin.Location = new System.Drawing.Point(135, 19);
             this.tb_addLogin.Name = "tb_addLogin";
             this.tb_addLogin.Size = new System.Drawing.Size(213, 20);
             this.tb_addLogin.TabIndex = 3;
             // 
             // btn_removeClientInfo
             // 
-            this.btn_removeClientInfo.Location = new System.Drawing.Point(6, 138);
+            this.btn_removeClientInfo.Location = new System.Drawing.Point(10, 75);
             this.btn_removeClientInfo.Name = "btn_removeClientInfo";
             this.btn_removeClientInfo.Size = new System.Drawing.Size(75, 23);
             this.btn_removeClientInfo.TabIndex = 2;
@@ -179,7 +180,7 @@
             // 
             // btn_editClientInfo
             // 
-            this.btn_editClientInfo.Location = new System.Drawing.Point(6, 109);
+            this.btn_editClientInfo.Location = new System.Drawing.Point(10, 46);
             this.btn_editClientInfo.Name = "btn_editClientInfo";
             this.btn_editClientInfo.Size = new System.Drawing.Size(75, 23);
             this.btn_editClientInfo.TabIndex = 1;
@@ -189,7 +190,7 @@
             // 
             // btn_addClientInfo
             // 
-            this.btn_addClientInfo.Location = new System.Drawing.Point(6, 80);
+            this.btn_addClientInfo.Location = new System.Drawing.Point(10, 17);
             this.btn_addClientInfo.Name = "btn_addClientInfo";
             this.btn_addClientInfo.Size = new System.Drawing.Size(75, 23);
             this.btn_addClientInfo.TabIndex = 0;
@@ -205,9 +206,9 @@
             this.lb_mainLog.FormattingEnabled = true;
             this.lb_mainLog.HorizontalScrollbar = true;
             this.lb_mainLog.ItemHeight = 16;
-            this.lb_mainLog.Location = new System.Drawing.Point(10, 357);
+            this.lb_mainLog.Location = new System.Drawing.Point(10, 389);
             this.lb_mainLog.Name = "lb_mainLog";
-            this.lb_mainLog.Size = new System.Drawing.Size(449, 292);
+            this.lb_mainLog.Size = new System.Drawing.Size(449, 260);
             this.lb_mainLog.TabIndex = 4;
             // 
             // btn_openLogFile
@@ -349,11 +350,21 @@
             this.dgv_securities.Size = new System.Drawing.Size(132, 111);
             this.dgv_securities.TabIndex = 0;
             // 
+            // lbl_info
+            // 
+            this.lbl_info.AutoSize = true;
+            this.lbl_info.Location = new System.Drawing.Point(12, 172);
+            this.lbl_info.Name = "lbl_info";
+            this.lbl_info.Size = new System.Drawing.Size(35, 13);
+            this.lbl_info.TabIndex = 17;
+            this.lbl_info.Text = "label8";
+            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1421, 673);
+            this.Controls.Add(this.lbl_info);
             this.Controls.Add(this.lb_mainLog);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.btn_openLogFile);
@@ -377,6 +388,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.dgv_derivativePortfolio)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_securities)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -409,6 +421,7 @@
         private System.Windows.Forms.DataGridView dgv_derivativePositions;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.DataGridView dgv_derivativePortfolio;
+        private System.Windows.Forms.Label lbl_info;
     }
 }
 
