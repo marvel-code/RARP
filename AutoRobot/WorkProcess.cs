@@ -37,7 +37,7 @@ namespace AutoRobot
 
         /// Settings
 
-        const string USERNAME = "ro#9019";
+        const string USERNAME = "ss#5182";
         const int PORT = 8020;
         const int maxServerExceptionCount = 5;
 
@@ -230,6 +230,7 @@ namespace AutoRobot
                     // Set client data 
                     PartnerDataObject partnerData = new PartnerDataObject();
                     partnerData.Position_PNL_Max = TM.Max_Position_PNL;
+                    partnerData.Is_Trading = isTrade;
                     partnerData.securitiesData = TM.MyTrader.Securities.Select(x => new SecuritiesRow { code = x.Code }).ToList();
                     partnerData.derivativePortfolioData = new List<DerivativePortfolioRow>() { new DerivativePortfolioRow { beginAmount = TM.MyPortfolio.BeginAmount.Value, variationMargin = TM.MyPortfolio.VariationMargin.Value } };
                     partnerData.derivativePositionsData = new List<DerivativePositionsRow>() { new DerivativePositionsRow { currentPosition = (int)(TM.MyTrader.GetPosition(TM.MyPortfolio, TM.MySecurity) ?? new Position { CurrentValue = 0 }).CurrentValue } };
@@ -269,8 +270,11 @@ namespace AutoRobot
                             // Check for loop existence 
                             if (tradeData.LongOpen && tradeData.LongClose || tradeData.ShortOpen && tradeData.ShortClose)
                             {
-                                addLogMessage(string.Format("Замечено OPEN&CLOSE. Выход из торговли. (LO-LC SO-SC):({0}-{1} {2}-{3})", tradeData.LongOpen, tradeData.LongClose, tradeData.ShortOpen, tradeData.ShortClose));
+                                string message = string.Format("Замечено OPEN&CLOSE. Выход из торговли. (LO-LC SO-SC):({0}-{1} {2}-{3})", tradeData.LongOpen, tradeData.LongClose, tradeData.ShortOpen, tradeData.ShortClose);
+                                addLogMessage(message);
                                 mw.stopTrading();
+
+                                _proxy.LogAction(message);
                                 return ProcessResults.Continue;
                             }
 
@@ -290,6 +294,8 @@ namespace AutoRobot
                                     OrderDirections.Sell, 
                                     QuikStopConditionTypes.TakeProfitStopLimit
                                 );
+
+                                _proxy.LogAction("Открытие LONG");
                                 return ProcessResults.Continue;
                             }
 
@@ -309,6 +315,8 @@ namespace AutoRobot
                                     OrderDirections.Buy, 
                                     QuikStopConditionTypes.TakeProfitStopLimit
                                 );
+
+                                _proxy.LogAction("Открытие SHORT");
                                 return ProcessResults.Continue;
                             }
                         }
@@ -326,6 +334,8 @@ namespace AutoRobot
                                     TM.Register.ExitOrder(
                                         tradeData.RuleId
                                     );
+
+                                    _proxy.LogAction(string.Format("Закрытие LONG: {0}pnl", TM.Position_PNL));
                                     return ProcessResults.Continue;
                                 }
                             }
@@ -338,6 +348,8 @@ namespace AutoRobot
                                     TM.Register.ExitOrder(
                                         tradeData.RuleId
                                     );
+
+                                    _proxy.LogAction(string.Format("Закрытие SHORT {0}pnl", TM.Position_PNL));
                                     return ProcessResults.Continue;
                                 }
                             }

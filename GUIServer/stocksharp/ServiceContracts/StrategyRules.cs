@@ -43,6 +43,9 @@ namespace stocksharp.ServiceContracts
                     tradeState.LongOpen = true
                             //*//
                             &&
+                            tf[0].adx[0].dip > tf[0].adx[0].dim
+                            /*
+                            &&
                             tf[0].getCandle().Time.TimeOfDay.TotalMinutes > 10 * 60 + 30
                             &&
                             tf[0].getCandle().Time.Hour < 19
@@ -60,6 +63,8 @@ namespace stocksharp.ServiceContracts
                             tf[0].volume[0].bv > tf[0].volume[0].sv
                             &&
                             tf[0].volume[0].bo > tf[0].volume[0].so
+                            &&
+                            tf[0].volume[0].bo_p > tf[0].volume[0].so_p
                             &&
                             (fix(true) && false
 
@@ -98,6 +103,7 @@ namespace stocksharp.ServiceContracts
                                 &&
                                 tf[0].getCandleHLRange(0) > tf[0].getCandleHLRange(1) * new decimal(1.1)  // 1.0-1.1-1.2
                             )
+                            */
                             //*//
                             && true;
                 }
@@ -113,6 +119,9 @@ namespace stocksharp.ServiceContracts
                     /// CONDITION
                     tradeState.ShortOpen = true
                             //*//
+                            &&
+                            tf[0].adx[0].dip < tf[0].adx[0].dim
+                            /*
                             &&
                             tf[0].getCandle().Time.TimeOfDay.TotalMinutes > 10 * 60 + 30
                             &&
@@ -131,6 +140,8 @@ namespace stocksharp.ServiceContracts
                             tf[0].volume[0].sv > tf[0].volume[0].bv
                             &&
                             tf[0].volume[0].so > tf[0].volume[0].bo
+                            &&
+                            tf[0].volume[0].so_p > tf[0].volume[0].bo_p
                             &&
                             (fix(true) && false
 
@@ -169,6 +180,7 @@ namespace stocksharp.ServiceContracts
                                 &&
                                 tf[0].getCandleHLRange(0) > tf[0].getCandleHLRange(1) * new decimal(1.1)  // 1.0-1.1-1.2
                             )
+                            */
                             //*//
                             && true;
                 }
@@ -200,6 +212,9 @@ namespace stocksharp.ServiceContracts
                 ruleId = 0;
                 tradeState.LongClose = false
                         //*//
+                        &&
+                        tf[0].adx[0].dip < tf[0].adx[0].dim
+                        /*
                         || fix() &&
                         tf[0].adx[0].dim > tf[0].adx[0].dip                       //.......1
 
@@ -212,6 +227,7 @@ namespace stocksharp.ServiceContracts
                         tf[0].adx[0].val < tf[0].adx[0].val_p                     //.......3
                         &&
                         tf[0].adx[0].val < new decimal(50)
+                        */
                     //*//
                     && true;
                 if (_needAction == NeedAction.LongClose)
@@ -221,6 +237,9 @@ namespace stocksharp.ServiceContracts
                 ruleId = 0;
                 tradeState.ShortClose = false
                         //*//
+                        &&
+                        tf[0].adx[0].dip > tf[0].adx[0].dim
+                        /*
                         || fix() &&
                         tf[0].adx[0].dip > tf[0].adx[0].dim                       //.......1
 
@@ -233,6 +252,7 @@ namespace stocksharp.ServiceContracts
                         tf[0].adx[0].val < tf[0].adx[0].val_p                     //.......3
                         &&
                         tf[0].adx[0].val < new decimal(50)
+                        */
                     //*//
                     && true;
                 if (_needAction == NeedAction.ShortClose)

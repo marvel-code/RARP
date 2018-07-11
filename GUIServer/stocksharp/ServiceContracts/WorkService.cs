@@ -133,28 +133,15 @@ namespace stocksharp.ServiceContracts
                 TerminateConnection();
             }
 
-            if (needAction == NeedAction.LongOrShortOpen && result.LongOpen)
-            {
-                Log.addLog(GUIServer.LogType.Info, _currentUser + ":: Открытие LONG");
-            }
-            else if (needAction == NeedAction.LongOrShortOpen && result.ShortOpen)
-            {
-                Log.addLog(GUIServer.LogType.Info, _currentUser + ":: Открытие SHORT");
-            }
-            else if (needAction == NeedAction.LongClose && result.LongClose)
-            {
-                Log.addLog(GUIServer.LogType.Info, _currentUser + ":: Закрытие LONG");
-            }
-            else if (needAction == NeedAction.ShortClose && result.ShortClose)
-            {
-                Log.addLog(GUIServer.LogType.Info, _currentUser + ":: Закрытие SHORT");
-            }
-
             return result;
         }
         public List<int> GetTimeFramePeriods()
         {
             return _currentData.tf_Periods;
+        }
+        public void LogAction(string action)
+        {
+            Log.addLog(GUIServer.LogType.Info, _currentUser + " :: " + action);
         }
     }
 }

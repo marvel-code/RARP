@@ -122,7 +122,7 @@ namespace GUIServer
             dgv_partnersInfo.Columns[0].HeaderText = "Логин";
             dgv_partnersInfo.Columns[1].HeaderText = "В сети";
             dgv_partnersInfo.Columns[2].HeaderText = "Разрешено торговать";
-            dgv_partnersInfo.Columns[3].HeaderText = "Стр-ия";
+            dgv_partnersInfo.Columns[3].HeaderText = "В торговле";
             dgv_partnersInfo.Columns[4].HeaderText = "Был в сети..";
         }
         private void MainWindow_Closing(object sender, FormClosingEventArgs e)
@@ -202,7 +202,7 @@ namespace GUIServer
             }
             
             // Process
-            PartnersManager.AddPartnerInfo(new PartnerInfo(login, false, 0));
+            PartnersManager.AddPartnerInfo(new PartnerInfo(login, true));
         }
         private void btn_editPartnerInfo_Click(object sender, EventArgs e)
         {

@@ -14,15 +14,15 @@ namespace GUIServer
         public string login { get;  set; }
         public bool isOnline { get;  set; }
         public bool allowTrade { get;  set; }
-        public ushort strategyNumber { get;  set; }
+        public bool is_Trading { get;  set; }
         public string lastConnectionTime { get; set; }
 
-        public PartnerInfo(string _login, bool _allowTrade, ushort _strategyNumber)
+        public PartnerInfo(string _login, bool _allowTrade)
         {
             login = _login;
             isOnline = false;
             allowTrade = _allowTrade;
-            strategyNumber = _strategyNumber;
+            is_Trading = false;
         }
     }
 
@@ -44,6 +44,12 @@ namespace GUIServer
         public static void UpdatePartnerLastConnectionTime(string login, DateTime dateTime)
         {
             _partnersInfo.Find(x => x.login == login).lastConnectionTime = dateTime.ToString(@"yyyy/MM/dd HH:mm:ss");
+
+            UpdateDgvPartnersInfoSource();
+        }
+        public static void UpdatePartnerTradingState(string login, bool is_Trading)
+        {
+            _partnersInfo.Find(x => x.login == login).is_Trading = is_Trading;
 
             UpdateDgvPartnersInfoSource();
         }
@@ -104,7 +110,7 @@ namespace GUIServer
                 // Success
                 _partnersInfo.Add(newClientInfo);
                 
-                LogManager.Log(LogType.Info, "Клиент `{0}` добавлен. Разрешено торговать - {1}. Номер стратегии - {2}.", newClientInfo.login, newClientInfo.allowTrade ? "ДА" : "НЕТ", newClientInfo.strategyNumber);
+                LogManager.Log(LogType.Info, "Клиент `{0}` добавлен. Разрешено торговать - {1}.", newClientInfo.login, newClientInfo.allowTrade ? "ДА" : "НЕТ");
 
                 UpdateDgvPartnersInfoSource();
             }
@@ -131,7 +137,6 @@ namespace GUIServer
                 // Success
                 var target = _partnersInfo.Find(x => x.login == login);
                 target.allowTrade = allowTrade;
-                target.strategyNumber = strategyNumber;
 
                 LogManager.Log(LogType.Info, "Клиент `{0}` изменён. Разрешено торговать - {1}. Номер стратегии - {2}", login, allowTrade ? "ДА" : "НЕТ", strategyNumber);
 

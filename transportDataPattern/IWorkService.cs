@@ -19,6 +19,9 @@ namespace transportDataParrern
         List<int> GetTimeFramePeriods();
         
         [OperationContract(IsInitiating = false, IsTerminating = false)]
+        void LogAction(string action);
+
+        [OperationContract(IsInitiating = false, IsTerminating = false)]
         void ReaffirmConnection();
         
         [OperationContract(IsInitiating = false, IsTerminating = true)]
