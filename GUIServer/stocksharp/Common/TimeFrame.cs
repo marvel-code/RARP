@@ -16,6 +16,9 @@ namespace stocksharp
     public partial class TimeFrame
     {
         private ServiceContracts.ProcessingData _processingData;
+        
+        public decimal period { get { return (decimal)Period.TotalSeconds; } }
+        public decimal currentPrice { get { return GetCandle().ClosePrice; } }
 
         public TimeSpan Period { get; private set; }
         public List<Candle> Buffer { get; private set; }
@@ -25,7 +28,8 @@ namespace stocksharp
         public List<ROC> roc { get; private set; }
         public List<KAMA> kama { get; private set; }
         public List<BBW> bbw { get; private set; }
-        public List<Vol> volume { get; private set; }
+        public Vol volume { get { return Volume[0]; } }
+        public List<Vol> Volume { get; private set; }
 
         public TimeFrame(ServiceContracts.ProcessingData processingData, int _Period_Seconds)
         {
@@ -37,7 +41,7 @@ namespace stocksharp
             roc = new List<ROC>();
             kama = new List<KAMA>();
             bbw = new List<BBW>();
-            volume = new List<Vol>();
+            Volume = new List<Vol>();
 
             Period = TimeSpan.FromSeconds(_Period_Seconds);
         }
@@ -90,7 +94,7 @@ namespace stocksharp
             if (_buffer.Count == 0)
                 return;
             // VOLUME
-            foreach (var ind in volume)
+            foreach (var ind in Volume)
             {
                 // Если разница между последней свечёй и последним значением больше периода
                 if (_buffer[_buffer.Count - 1].Time - ind.Get_OpenTime() > Period && ind.Get_OpenTime().TimeOfDay != new TimeSpan(14, 0, 0).Add(-Period))
@@ -183,7 +187,7 @@ namespace stocksharp
             return result;
         }
         // Взятие свечи из буффера
-        public Candle getCandle(int _shift = 0)
+        public Candle GetCandle(int _shift = 0)
         {
             return Buffer.Count <= _shift ? null : Buffer[Buffer.Count - 1 - _shift];
         }

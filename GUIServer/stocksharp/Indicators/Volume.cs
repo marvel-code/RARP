@@ -15,10 +15,13 @@ namespace stocksharp
         // Осциляторы
         public Decimal vo { get { return Get_VO(); } }
         public Decimal vo_p { get { return Get_VO(1); } }
+        public Decimal vo_pp { get { return Get_VO(2); } }
         public Decimal bo { get { return Get_BO(); } }
         public Decimal bo_p { get { return Get_BO(1); } }
+        public Decimal bo_pp { get { return Get_BO(2); } }
         public Decimal so { get { return Get_SO(); } }
         public Decimal so_p { get { return Get_SO(1); } }
+        public Decimal so_pp { get { return Get_SO(2); } }
         // Вектора
         public Decimal vector { get { return Get_VectorVolume(); } }
         public Decimal vector_p { get { return Get_VectorVolume(1); } }
@@ -42,12 +45,18 @@ namespace stocksharp
         public Decimal vv { get { return Get_VectorVolume_Velocity(); } }
         public Decimal vv_p { get { return Get_VectorVolume_Velocity(1); } }
         // Средняя скорость за свечу
-        public Decimal actv { get { return Get_Average_Candle_Total_Volume(); } }
-        public Decimal actv_p { get { return Get_Average_Candle_Total_Volume(1); } }
-        public Decimal acbv { get { return Get_Average_Candle_Buy_Volume(); } }
-        public Decimal acbv_p { get { return Get_Average_Candle_Buy_Volume(1); } }
-        public Decimal acsv { get { return Get_Average_Candle_Sell_Volume(); } }
-        public Decimal acsv_p { get { return Get_Average_Candle_Sell_Volume(1); } }
+        public Decimal act { get { return Get_Average_Candle_Total_Volume(); } }
+        public Decimal act_p { get { return Get_Average_Candle_Total_Volume(1); } }
+        public Decimal act_pp { get { return Get_Average_Candle_Total_Volume(2); } }
+        public Decimal acb { get { return Get_Average_Candle_Buy_Volume(); } }
+        public Decimal acb_p { get { return Get_Average_Candle_Buy_Volume(1); } }
+        public Decimal acb_pp { get { return Get_Average_Candle_Buy_Volume(2); } }
+        public Decimal acs { get { return Get_Average_Candle_Sell_Volume(); } }
+        public Decimal acs_p { get { return Get_Average_Candle_Sell_Volume(1); } }
+        public Decimal acs_pp { get { return Get_Average_Candle_Sell_Volume(2); } }
+        public Decimal acv { get { return Get_Average_Candle_Vector(); } }
+        public Decimal acv_p { get { return Get_Average_Candle_Vector(1); } }
+        public Decimal acv_pp { get { return Get_Average_Candle_Vector(2); } }
         // Регистрация значений произвольных скоростей за период
         public Dictionary<int, Decimal[]> TVV_for_order_info;
         public Dictionary<int, Decimal[]> BVV_for_order_info;
@@ -192,6 +201,14 @@ namespace stocksharp
 
             return Get_TotalVolume(shift) / duration;
         }
+        public Decimal Get_Average_Candle_Vector(int shift = 0)
+        {
+            decimal duration = Get_Candle_Duration(shift);
+            if (duration == 0)
+                return 0;
+
+            return (Get_DirectionVolume(OrderDirections.Buy, shift) - Get_DirectionVolume(OrderDirections.Sell, shift)) / duration;
+        }
         public Decimal Get_Average_Candle_Buy_Volume(int shift = 0)
         {
             decimal duration = Get_Candle_Duration(shift);
@@ -246,9 +263,9 @@ namespace stocksharp
             return result;
         }
 
-        public Decimal Get_TVV_Value(int _Velocity_Period_Seconds, int shift = 0) // Get total volume velocity value
+        public Decimal GetTv(int _Velocity_Period_Seconds, int shift = 0) // Get total volume velocity value
         {
-            Decimal result = Get_BVV_Value(_Velocity_Period_Seconds, shift) + Get_SVV_Value(_Velocity_Period_Seconds, shift);
+            Decimal result = GetBv(_Velocity_Period_Seconds, shift) + GetSv(_Velocity_Period_Seconds, shift);
 
             // For order info
             if (shift < 2)
@@ -262,7 +279,7 @@ namespace stocksharp
 
             return result;
         }
-        public Decimal Get_BVV_Value(int _Velocity_Period_Seconds, int shift = 0) // Get buy volume velocity value
+        public Decimal GetBv(int _Velocity_Period_Seconds, int shift = 0) // Get buy volume velocity value
         {
             var AllTrades = _processingData.AllTrades;
 
@@ -300,7 +317,7 @@ namespace stocksharp
 
             return result;
         }
-        public Decimal Get_SVV_Value(int _Velocity_Period_Seconds, int shift = 0) // Get sell volume velocity value
+        public Decimal GetSv(int _Velocity_Period_Seconds, int shift = 0) // Get sell volume velocity value
         {
             var AllTrades = _processingData.AllTrades;
 

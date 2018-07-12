@@ -263,13 +263,13 @@ namespace stocksharp.ServiceContracts
             if (_currentUser == "ro#9019")
             {
                 GUIServer.MainWindow.Instance.UpdateInfoLabel(string.Format("_{0}_ _{1}_ _{2}_ _{3}_ _{4}_ _{5}_ _{6}_",
-                    Math.Round(tf[0].volume[0].actv, 1),
-                    Math.Round(tf[0].volume[0].actv_p, 1),
-                    Math.Round(tf[0].volume[0].tv, 1),
-                    Math.Round(tf[0].volume[0].bo, 1),
-                   Math.Round(tf[0].volume[0].so, 1),
-                    Math.Round(tf[0].volume[0].bv, 1),
-                   Math.Round(tf[0].volume[0].sv, 1)
+                    Math.Round(tf[0].Volume[0].act, 1),
+                    Math.Round(tf[0].Volume[0].act_p, 1),
+                    Math.Round(tf[0].Volume[0].tv, 1),
+                    Math.Round(tf[0].Volume[0].bo, 1),
+                   Math.Round(tf[0].Volume[0].so, 1),
+                    Math.Round(tf[0].Volume[0].bv, 1),
+                   Math.Round(tf[0].Volume[0].sv, 1)
                    ));
             }
 

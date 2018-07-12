@@ -13,68 +13,58 @@ namespace stocksharp
         /**
          * Работа со свечами
          **/
-        public Boolean is_Green_Candle(int shift = 0, int cnt = 1)
+        public Boolean IsGreenCandle(int shift = 0, int cnt = 1)
         {
             if (Buffer.Count <= shift + cnt - 1) return false;
             for (int i = shift; i < shift + cnt; i++)
-                if (getCandle(i).ClosePrice <= getCandle(i).OpenPrice) // Если не зелёная
+                if (GetCandle(i).ClosePrice <= GetCandle(i).OpenPrice) // Если не зелёная
                     return false;
             return true;
         }
-        public Boolean is_Red_Candle(int shift = 0, int cnt = 1)
+        public Boolean IsRedCandle(int shift = 0, int cnt = 1)
         {
             if (Buffer.Count <= shift + cnt - 1) return false;
             for (int i = shift; i < shift + cnt; i++)
-                if (getCandle(i).ClosePrice >= getCandle(i).OpenPrice) // Если не красная
+                if (GetCandle(i).ClosePrice >= GetCandle(i).OpenPrice) // Если не красная
                     return false;
             return true;
         }
-        public Boolean is_Doji(int shift = 0, Decimal filter = 0)
+        
+        public Decimal GetCandleBodyCentre(int shift = 0)
         {
-            if (Buffer.Count <= shift) return false;
-            return Math.Abs(getCandle(shift).OpenPrice - getCandle(shift).ClosePrice) <= filter;
+            if (Buffer.Count <= shift) return 0;
+            if (IsGreenCandle(shift))
+                return (GetCandle(shift).OpenPrice + GetCandle(shift).ClosePrice) / 2;
+            else
+                return (GetCandle(shift).ClosePrice + GetCandle(shift).OpenPrice) / 2;
         }
 
-        public Decimal getCandleHLRange(int shift = 0)
+        public Decimal GetCandleHLRange(int shift = 0)
         {
             if (Buffer.Count <= shift) return 0;
-            return Math.Abs(getCandle(shift).OpenPrice - getCandle(shift).ClosePrice);
+            return GetCandle(shift).HighPrice - GetCandle(shift).LowPrice;
         }
-        public Decimal Get_Candle_BodyCentre(int shift = 0)
+        public Decimal GetCandleHLCentre(int shift = 0)
         {
             if (Buffer.Count <= shift) return 0;
-            if (is_Green_Candle(shift))
-                return (getCandle(shift).OpenPrice + getCandle(shift).ClosePrice) / 2;
-            else
-                return (getCandle(shift).ClosePrice + getCandle(shift).OpenPrice) / 2;
+            return (GetCandle(shift).LowPrice + GetCandle(shift).HighPrice) / 2;
         }
 
-        public Decimal Get_Candle_HLRange(int shift = 0)
+        public Decimal GetUpperShadow(int shift = 0)
         {
             if (Buffer.Count <= shift) return 0;
-            return getCandle(shift).HighPrice - getCandle(shift).LowPrice;
-        }
-        public Decimal Get_Candle_HLCentre(int shift = 0)
-        {
-            if (Buffer.Count <= shift) return 0;
-            return (getCandle(shift).LowPrice + getCandle(shift).HighPrice) / 2;
-        }
-
-        public Decimal Get_Upper_TailRange(int shift = 0)
-        {
-            if (Buffer.Count <= shift) return 0;
-            if (is_Green_Candle(shift))
-                return getCandle(shift).HighPrice - getCandle(shift).ClosePrice;
+            if (IsGreenCandle(shift))
+                return GetCandle(shift).HighPrice - GetCandle(shift).ClosePrice;
             else
-                return getCandle(shift).HighPrice - getCandle(shift).OpenPrice;
+                return GetCandle(shift).HighPrice - GetCandle(shift).OpenPrice;
         }
-        public Decimal Get_Lower_TailRange(int shift = 0)
+        public Decimal GetLowerShadow(int shift = 0)
         {
             if (Buffer.Count <= shift) return 0;
-            if (is_Green_Candle(shift))
-                return getCandle(shift).OpenPrice - getCandle(shift).LowPrice;
+            if (IsGreenCandle(shift))
+                return GetCandle(shift).OpenPrice - GetCandle(shift).LowPrice;
             else
-                return getCandle(shift).ClosePrice - getCandle(shift).LowPrice;
+                return GetCandle(shift).ClosePrice - GetCandle(shift).LowPrice;
         }
 
 
@@ -90,12 +80,12 @@ namespace stocksharp
                 {
                     j = 1;
                     while (j <= side_candles_cnt) // Проверяем бока
-                        if (getCandle(i).HighPrice >= getCandle(i - j).HighPrice && getCandle(i).HighPrice >= getCandle(i + j).HighPrice)
+                        if (GetCandle(i).HighPrice >= GetCandle(i - j).HighPrice && GetCandle(i).HighPrice >= GetCandle(i + j).HighPrice)
                             j++;
                         else
                             break;
                     if (j == side_candles_cnt + 1)
-                        return getCandle(i).HighPrice;
+                        return GetCandle(i).HighPrice;
                 }
             }
             else
@@ -104,16 +94,16 @@ namespace stocksharp
                 {
                     j = 1;
                     while (j <= side_candles_cnt) // Проверяем бока
-                        if (getCandle(i).LowPrice <= getCandle(i - j).LowPrice && getCandle(i).LowPrice <= getCandle(i + j).LowPrice)
+                        if (GetCandle(i).LowPrice <= GetCandle(i - j).LowPrice && GetCandle(i).LowPrice <= GetCandle(i + j).LowPrice)
                             j++;
                         else
                             break;
                     if (j == side_candles_cnt + 1)
-                        return getCandle(i).LowPrice;
+                        return GetCandle(i).LowPrice;
                 }
             }
 
-            return trend_direction == Sides.Buy ? getCandle().HighPrice : getCandle().LowPrice;
+            return trend_direction == Sides.Buy ? GetCandle().HighPrice : GetCandle().LowPrice;
         }
 
         public Boolean ComparePrevCandlesTails(Sides _Side, int _Candles_Count, Decimal _Price_Shift)
@@ -121,19 +111,19 @@ namespace stocksharp
             if (Buffer.Count < _Candles_Count + 1)
                 return false;
 
-            var Current_Price = getCandle().ClosePrice;
+            var Current_Price = GetCandle().ClosePrice;
             if (_Side == Sides.Buy)
                 // Buy
                 for (int i = 1; i < _Candles_Count; i++)
                 {
-                    if (Current_Price < getCandle(i).HighPrice + _Price_Shift)
+                    if (Current_Price < GetCandle(i).HighPrice + _Price_Shift)
                         return false;
                 }
             else
                 // Sell
                 for (int i = 1; i < _Candles_Count; i++)
                 {
-                    if (Current_Price > getCandle(i).LowPrice - _Price_Shift)
+                    if (Current_Price > GetCandle(i).LowPrice - _Price_Shift)
                         return false;
                 }
 
@@ -141,7 +131,7 @@ namespace stocksharp
         }
         public Boolean IsEnterCandle(int shift = 0)
         {
-            Candle _candle = getCandle(shift);
+            Candle _candle = GetCandle(shift);
             if (_candle == null)
                 return false;
 
@@ -154,7 +144,7 @@ namespace stocksharp
         }
         public Boolean IsExitCandle(int shift = 0)
         {
-            Candle _candle = getCandle(shift);
+            Candle _candle = GetCandle(shift);
             if (_candle == null)
                 return false;
 
@@ -164,6 +154,15 @@ namespace stocksharp
                 time >= _candle.Time
                 &&
                 time < _candle.Time.Add(Period);
+        }
+
+
+
+
+        public Boolean IsDoji(int shift = 0, Decimal filter = 0)
+        {
+            if (Buffer.Count <= shift) return false;
+            return Math.Abs(GetCandle(shift).OpenPrice - GetCandle(shift).ClosePrice) <= filter;
         }
     }
 }

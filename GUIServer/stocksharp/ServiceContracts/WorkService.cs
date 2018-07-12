@@ -110,12 +110,12 @@ namespace stocksharp.ServiceContracts
                     adx_dip_p = tf[0].adx[0].dip_p,
                     adx_dim_p = tf[0].adx[0].dim_p,
 
-                    total = tf[0].volume[0].total,
-                    total_p = tf[0].volume[0].total_p,
-                    buy = tf[0].volume[0].buy,
-                    buy_p = tf[0].volume[0].buy_p,
-                    sell = tf[0].volume[0].sell,
-                    sell_p = tf[0].volume[0].sell_p,
+                    total = tf[0].Volume[0].total,
+                    total_p = tf[0].Volume[0].total_p,
+                    buy = tf[0].Volume[0].buy,
+                    buy_p = tf[0].Volume[0].buy_p,
+                    sell = tf[0].Volume[0].sell,
+                    sell_p = tf[0].Volume[0].sell_p,
 
                     Candles_N = tf.Sum(x => x.Buffer.Count),
                     AllTrades_N = _currentData.AllTrades.Count,

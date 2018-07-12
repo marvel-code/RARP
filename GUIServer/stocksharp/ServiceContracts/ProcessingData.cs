@@ -75,7 +75,7 @@ namespace stocksharp.ServiceContracts
             foreach (var ind in roc_cfgList)
                 timeFrameList[ind.TF_Number].roc.Add(new ROC(ind.Period, ind.Calc_Type));
             foreach (var ind in volume_cfgList)
-                timeFrameList[ind.TF_Number].volume.Add(new Vol(this, ind.Long_Period, ind.Short_Period, ind.Velocity_Period_Seconds));
+                timeFrameList[ind.TF_Number].Volume.Add(new Vol(this, ind.Long_Period, ind.Short_Period, ind.Velocity_Period_Seconds));
         }
 
         public void Update_AllTrades(Trade[] newTrades)
