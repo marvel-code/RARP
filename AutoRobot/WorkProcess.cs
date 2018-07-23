@@ -38,6 +38,7 @@ namespace AutoRobot
         /// Settings
 
         const string USERNAME = "ss#5182";
+        const string IP = "185.158.153.217";
         const int PORT = 8020;
         const int maxServerExceptionCount = 5;
 
@@ -62,7 +63,7 @@ namespace AutoRobot
         {
             // -- init proxy
             binding = new WSHttpBinding(SecurityMode.None, true);
-            address = new EndpointAddress(string.Format("http://185.158.153.217:{0}/WorkService", PORT));
+            address = new EndpointAddress(string.Format("http://{0}:{1}/WorkService", IP, PORT));
             //address = new EndpointAddress(string.Format("http://127.0.0.1:{0}/WorkService", PORT));
             threadConnectionReaffirmation = new Thread(() =>
             {
@@ -330,12 +331,12 @@ namespace AutoRobot
                                 // SELL
                                 if (tradeData.LongClose && (TM.last_ExitOrder == null || TM.last_ExitOrder.State == OrderStates.Done))
                                 {
+                                    _proxy.LogAction(string.Format("Закрытие LONG: {0}pnl", TM.Position_PNL));
+
                                     // Exit order
                                     TM.Register.ExitOrder(
                                         tradeData.RuleId
                                     );
-
-                                    _proxy.LogAction(string.Format("Закрытие LONG: {0}pnl", TM.Position_PNL));
                                     return ProcessResults.Continue;
                                 }
                             }
@@ -344,12 +345,12 @@ namespace AutoRobot
                                 // COVER
                                 if (tradeData.ShortClose && (TM.last_ExitOrder == null || TM.last_ExitOrder.State == OrderStates.Done))
                                 {
+                                    _proxy.LogAction(string.Format("Закрытие SHORT {0}pnl", TM.Position_PNL));
+
                                     // Exit order
                                     TM.Register.ExitOrder(
                                         tradeData.RuleId
                                     );
-
-                                    _proxy.LogAction(string.Format("Закрытие SHORT {0}pnl", TM.Position_PNL));
                                     return ProcessResults.Continue;
                                 }
                             }

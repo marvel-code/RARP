@@ -13,11 +13,16 @@ namespace stocksharp.ServiceContracts
         // >> Customizable strategy settings
         public List<int> tf_Periods = new List<int>
         {
+            180,
             900
         };
         public List<ADX_Configuration> adx_cfgList = new List<ADX_Configuration>
         {
-            new ADX_Configuration(0, 4, MaType.
+            new ADX_Configuration(0, 3, MaType.
+                //Simple
+                Exponential
+                ),
+            new ADX_Configuration(1, 2, MaType.
                 //Simple
                 Exponential
                 )
@@ -37,7 +42,6 @@ namespace stocksharp.ServiceContracts
         public List<ROC_Configuration> roc_cfgList = new List<ROC_Configuration>
         {
             new ROC_Configuration(0, 1, CalculationType.Median),
-            new ROC_Configuration(0, 2, CalculationType.Median),
         };
         public List<Volume_Configuration> volume_cfgList = new List<Volume_Configuration>
         {

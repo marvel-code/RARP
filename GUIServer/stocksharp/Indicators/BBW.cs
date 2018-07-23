@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using System.Linq;
 using StockSharp.Algo.Candles;
 
 namespace stocksharp
@@ -48,7 +48,7 @@ namespace stocksharp
                 Values.RemoveAt(Values.Count - 1);
             }
             // Мусор
-            if (Values.Count > Period)
+            else if (Values.Count > Period)
             {
                 HighBand_Values.RemoveAt(0);
                 LowBand_Values.RemoveAt(0);
@@ -66,12 +66,13 @@ namespace stocksharp
                     Price = Get_Calced_Value(MA_Values.Buffer[MA_Values.Buffer.Count - 1 - i], Calc_Type);
                     SUM += (Price - MA_Value) * (Price - MA_Value);
                 }
-            Decimal StDev = (decimal)Math.Sqrt((double)(SUM / Period)) * Deviation;
+            Decimal StDev = (decimal)Math.Sqrt((double)(SUM / Period));
             // Обновляем значения BB
-            HighBand_Values.Add(new DecimalIndicatorValue(candle.Time, MA_Values.Get_Value() + StDev));
-            LowBand_Values.Add(new DecimalIndicatorValue(candle.Time, MA_Values.Get_Value() - StDev));
+            Decimal k = Deviation;
+            HighBand_Values.Add(new DecimalIndicatorValue(candle.Time, MA_Values.Get_Value() + k * StDev));
+            LowBand_Values.Add(new DecimalIndicatorValue(candle.Time, MA_Values.Get_Value() - k * StDev));
             // Обновляем значение BBW
-            Values.Add(new DecimalIndicatorValue(candle.Time, 2 * StDev));
+            Values.Add(new DecimalIndicatorValue(candle.Time, 2 * k * StDev));
         }
         public void Reset()
         {

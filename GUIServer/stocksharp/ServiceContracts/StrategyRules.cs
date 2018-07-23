@@ -41,69 +41,30 @@ namespace stocksharp.ServiceContracts
                 {
                     ruleId = 0;
                     tradeState.LongOpen = true
-                            //*//
-                            &&
-                            tf[0].adx[0].dip > tf[0].adx[0].dim
-                            /*
-                            &&
-                            tf[0].getCandle().Time.TimeOfDay.TotalMinutes > 10 * 60 + 30
-                            &&
-                            tf[0].getCandle().Time.Hour < 19
-                            &&
-                            tf[0].adx[0].dip > tf[0].adx[0].dim + new decimal(0)  //10-15-20
-                            &&
-                            tf[0].adx[0].dip >= tf[0].adx[0].dip_p               //adx[0]-adx[1]
-                            &&
-                            tf[0].adx[0].val >= tf[0].adx[0].val_p
-                            &&
-                            tf[0].volume[0].tv > new decimal(10)       //5-10-15-20  
-                            &&
-                            tf[0].volume[0].actv > tf[0].volume[0].actv_p
-                            &&
-                            tf[0].volume[0].bv > tf[0].volume[0].sv
-                            &&
-                            tf[0].volume[0].bo > tf[0].volume[0].so
-                            &&
-                            tf[0].volume[0].bo_p > tf[0].volume[0].so_p
-                            &&
-                            (fix(true) && false
+                        //*//
+                        &&
+                        tf[0].GetCandle().Time.TimeOfDay.TotalMinutes >= 10 * 60 + 15
+                        &&
+                        tf[0].GetCandle().Time.Hour < 19
 
-                                || fix() &&
-                                tf[0].adx[0].val > new decimal(50)   //30-40-50-60           //.......1
-                                &&
-                                tf[0].roc[0].val > new decimal(0.15)   //0.13-0.15-0.17    
+                        &&
 
-                                || fix() &&
-                                tf[0].adx[0].dip > tf[0].adx[0].val
-                                &&
-                                tf[0].adx[0].val > tf[0].adx[0].val_p + new decimal(7)
-                                &&
-                                tf[0].roc[0].val > new decimal(0.15)   //0.13-0.15-0.17    
+                        tf[0].adx[0].dip > tf[0].adx[0].dim        //3m, per=3
+                        &&
+                        tf[0].adx[0].dip >= tf[0].adx[0].dip_p
+                        &&
+                        tf[0].adx[0].dim <= tf[0].adx[0].dim + new decimal(5)
 
-                                || fix() &&
-                                tf[0].adx[0].val > new decimal(50)   //30-40-50-60           //.......1
-                                &&
-                                tf[0].roc[1].val > new decimal(0.15)  //0.13-0.15-0.17
+                        &&
 
-                                || fix() &&
-                                tf[0].adx[0].dip > tf[0].adx[0].val
-                                &&
-                                tf[0].adx[0].val > tf[0].adx[0].val_p + new decimal(7)
-                                &&
-                                tf[0].roc[1].val > new decimal(0.15)  //0.13-0.15-0.17
+                        tf[0].roc[0].val > new decimal(0.12)     //per=1 
 
-                                || fix() &&
-                                tf[0].roc[0].val > new decimal(0.15)  //0.10-0.12-0.15      //........3  
-                                &&
-                                tf[0].volume[0].actv > tf[0].volume[0].actv_p * new decimal(1.5)  //1.2-1.5-2.0-2.5
-                                &&
-                                tf[0].volume[0].tv > new decimal(20)    //15-20-30      period=60sec -30-120-180
-                                &&
-                                tf[0].volume[0].bv > tf[0].volume[0].sv
-                                &&
-                                tf[0].getCandleHLRange(0) > tf[0].getCandleHLRange(1) * new decimal(1.1)  // 1.0-1.1-1.2
-                            )
-                            */
+                        &&
+                        tf[0].volume.vector > tf[0].volume.vector_p.Abs()
+
+                            &&
+
+                            tf[1].adx[0].dip > tf[1].adx[0].dim
                             //*//
                             && true;
                 }
@@ -118,69 +79,31 @@ namespace stocksharp.ServiceContracts
                     { }
                     /// CONDITION
                     tradeState.ShortOpen = true
-                            //*//
-                            &&
-                            tf[0].adx[0].dip < tf[0].adx[0].dim
-                            /*
-                            &&
-                            tf[0].getCandle().Time.TimeOfDay.TotalMinutes > 10 * 60 + 30
-                            &&
-                            tf[0].getCandle().Time.Hour < 19
-                            &&
-                            tf[0].adx[0].dim > tf[0].adx[0].dip + new decimal(0)  //10-15-20
-                            &&
-                            tf[0].adx[0].dim >= tf[0].adx[0].dim_p               //adx[0]-adx[1]
-                            &&
-                            tf[0].adx[0].val >= tf[0].adx[0].val_p
-                            &&
-                            tf[0].volume[0].tv > new decimal(10)       //5-10-15-20  
-                            &&
-                            tf[0].volume[0].actv > tf[0].volume[0].actv_p
-                            &&
-                            tf[0].volume[0].sv > tf[0].volume[0].bv
-                            &&
-                            tf[0].volume[0].so > tf[0].volume[0].bo
-                            &&
-                            tf[0].volume[0].so_p > tf[0].volume[0].bo_p
-                            &&
-                            (fix(true) && false
+                        //*//
+                        &&
+                        tf[0].GetCandle().Time.TimeOfDay.TotalMinutes >= 10 * 60 + 15
+                        &&
+                        tf[0].GetCandle().Time.Hour < 19
 
-                                || fix() &&
-                                tf[0].adx[0].val > new decimal(50)   //30-40-50-60           //.......1
-                                &&
-                                -tf[0].roc[0].val > new decimal(0.15)   //0.13-0.15-0.17    
+                        &&
 
-                                || fix() &&
-                                tf[0].adx[0].dim > tf[0].adx[0].val
-                                &&
-                                tf[0].adx[0].val > tf[0].adx[0].val_p + new decimal(7)
-                                &&
-                                -tf[0].roc[0].val > new decimal(0.15)   //0.13-0.15-0.17    
+                        tf[0].adx[0].dim > tf[0].adx[0].dip
+                        &&
+                        tf[0].adx[0].dim >= tf[0].adx[0].dim_p               //adx[0]-adx[1]
+                        &&
+                        tf[0].adx[0].dip <= tf[0].adx[0].dip_p + new decimal(10)
 
-                                || fix() &&
-                                tf[0].adx[0].val > new decimal(50)   //30-40-50-60           //.......1
-                                &&
-                                -tf[0].roc[1].val > new decimal(0.15)  //0.13-0.15-0.17
+                        &&
+                        
 
-                                || fix() &&
-                                tf[0].adx[0].dim > tf[0].adx[0].val
-                                &&
-                                tf[0].adx[0].val > tf[0].adx[0].val_p + new decimal(7)
-                                &&
-                                -tf[0].roc[1].val > new decimal(0.15)  //0.13-0.15-0.17
+                        tf[0].roc[0].val < -new decimal(0.12)     //per=1 
 
-                                || fix() &&
-                                -tf[0].roc[0].val > new decimal(0.15)  //0.10-0.12-0.15      //........3  
-                                &&
-                                tf[0].volume[0].actv > tf[0].volume[0].actv_p * new decimal(1.5)  //1.2-1.5-2.0-2.5
-                                &&
-                                tf[0].volume[0].tv > new decimal(20)    //15-20-30      period=60sec -30-120-180
-                                &&
-                                tf[0].volume[0].sv > tf[0].volume[0].bv
-                                &&
-                                tf[0].getCandleHLRange(0) > tf[0].getCandleHLRange(1) * new decimal(1.1)  // 1.0-1.1-1.2
-                            )
-                            */
+                        &&
+                        -tf[0].volume.vector > tf[0].volume.vector_p.Abs()
+
+                            &&
+
+                            tf[1].adx[0].dim > tf[1].adx[0].dip
                             //*//
                             && true;
                 }
@@ -212,23 +135,12 @@ namespace stocksharp.ServiceContracts
                 ruleId = 0;
                 tradeState.LongClose = false
                         //*//
-                        &&
-                        tf[0].adx[0].dip < tf[0].adx[0].dim
-                        /*
                         || fix() &&
-                        tf[0].adx[0].dim > tf[0].adx[0].dip                       //.......1
+                        tf[0].adx[0].dim > tf[0].adx[0].dim_p + new decimal(10)  //..1
 
                         || fix() &&
-                        -tf[0].volume[0].vector > new decimal(1300)
-                        &&
-                        partnerData.Position_PNL_Max < 300
-
-                        || fix() &&
-                        tf[0].adx[0].val < tf[0].adx[0].val_p                     //.......3
-                        &&
-                        tf[0].adx[0].val < new decimal(50)
-                        */
-                    //*//
+                        tf[0].adx[0].dim > tf[0].adx[0].dip              //.......2
+                                                                         //*//
                     && true;
                 if (_needAction == NeedAction.LongClose)
                     tradeState.RuleId = ruleId;
@@ -237,23 +149,13 @@ namespace stocksharp.ServiceContracts
                 ruleId = 0;
                 tradeState.ShortClose = false
                         //*//
-                        &&
-                        tf[0].adx[0].dip > tf[0].adx[0].dim
-                        /*
-                        || fix() &&
-                        tf[0].adx[0].dip > tf[0].adx[0].dim                       //.......1
 
                         || fix() &&
-                        tf[0].volume[0].vector > new decimal(1300)
-                        &&
-                        partnerData.Position_PNL_Max < 300
+                        tf[0].adx[0].dip > tf[0].adx[0].dip_p + new decimal(10)  //..1
 
                         || fix() &&
-                        tf[0].adx[0].val < tf[0].adx[0].val_p                     //.......3
-                        &&
-                        tf[0].adx[0].val < new decimal(50)
-                        */
-                    //*//
+                        tf[0].adx[0].dip > tf[0].adx[0].dim              //.......2
+                                                                         //*//
                     && true;
                 if (_needAction == NeedAction.ShortClose)
                     tradeState.RuleId = ruleId;
