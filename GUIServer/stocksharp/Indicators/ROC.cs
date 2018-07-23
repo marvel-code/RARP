@@ -45,7 +45,7 @@ namespace stocksharp
             // Считаем значение
             DecimalIndicatorValue New_Value = new DecimalIndicatorValue(candle.Time, 0);
             if (candle_period != null)
-                New_Value.Value = (1 - Get_Calced_Value(candle_period, Calc_Type) / Get_Calced_Value(candle, Calc_Type)) * 100 * 100;
+                New_Value.Value = (1 - Get_Calced_Value(candle_period, Calc_Type) / Get_Calced_Value(candle, Calc_Type)) * 100;
             // Обновляем значения
             Values.Add(New_Value);
         }
