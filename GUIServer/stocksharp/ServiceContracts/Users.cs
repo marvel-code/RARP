@@ -71,7 +71,8 @@ namespace stocksharp.ServiceContracts
         public static bool Process_UserDisconnect(string username, string comment = "")
         {
             connectedUsers.Remove(username);
-            GUIServer.PartnersManager.UpdatePartnerState(username, false);
+            PartnersManager.UpdatePartnerState(username, false);
+            PartnersManager.UpdatePartnerTradingState(username, false);
 
             Log.addLog(LogType.Info, "{0}: disconnected {1}", username, comment);
             return true;

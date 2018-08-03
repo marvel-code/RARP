@@ -14,6 +14,8 @@ namespace GUIServer
 {
     public static class MyServerManager
     {
+        private const int PORT = 8020;
+
         private static ServiceHost host;
 
         private static void host_Opened(object sender, EventArgs e)
@@ -45,7 +47,7 @@ namespace GUIServer
         {
             try
             {
-                Uri address = new Uri("http://localhost:8020/WorkService");
+                Uri address = new Uri(string.Format("http://localhost:{0}/WorkService", PORT));
                 WSHttpBinding binding = new WSHttpBinding(SecurityMode.None, true);
 
                 binding.Security = new WSHttpSecurity() { Mode = SecurityMode.None };

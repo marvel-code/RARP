@@ -13,23 +13,36 @@ namespace stocksharp.ServiceContracts
         // >> Customizable strategy settings
         public List<int> tf_Periods = new List<int>
         {
-            180,
-            900
+            600,
+            1800
         };
         public List<ADX_Configuration> adx_cfgList = new List<ADX_Configuration>
         {
-            new ADX_Configuration(0, 3, MaType.
-                //Simple
-                Exponential
+            new ADX_Configuration(
+                    0, 3, MaType.Exponential
                 ),
-            new ADX_Configuration(1, 2, MaType.
-                //Simple
-                Exponential
-                )
+            new ADX_Configuration(
+                    1, 2, MaType.Exponential
+                ),
         };
         public List<BBW_Configuration> bbw_cfgList = new List<BBW_Configuration>
         {
+            new BBW_Configuration(
+                    0, 3, 2, CalculationType.Median, MaType.Simple
+                ),
+            new BBW_Configuration(
+                    0, 4, 2, CalculationType.Median, MaType.Simple
+                ),
+            new BBW_Configuration(
+                    0, 5, 2, CalculationType.Median, MaType.Simple
+                ),
 
+            new BBW_Configuration(
+                    1, 2, 2, CalculationType.Median, MaType.Simple
+                ),
+            new BBW_Configuration(
+                    1, 3, 2, CalculationType.Median, MaType.Simple
+                ),
         };
         public List<KAMA_Configuration> kama_cfgList = new List<KAMA_Configuration>
         {
@@ -37,15 +50,23 @@ namespace stocksharp.ServiceContracts
         };
         public List<MA_Configuration> ma_cfgList = new List<MA_Configuration>
         {
-
+            new MA_Configuration(
+                    1, 2, MaType.Simple, CalculationType.Median
+                ),
+            new MA_Configuration(
+                    1, 10, MaType.Simple, CalculationType.Median
+                ),
         };
         public List<ROC_Configuration> roc_cfgList = new List<ROC_Configuration>
         {
             new ROC_Configuration(0, 1, CalculationType.Median),
+            new ROC_Configuration(1, 1, CalculationType.Median),
         };
         public List<Volume_Configuration> volume_cfgList = new List<Volume_Configuration>
         {
-            new Volume_Configuration(0, 2, 1, 60)
+            new Volume_Configuration(0, 2, 1, 60),
+
+            new Volume_Configuration(1, 2, 1, 1),
         };
 
         public List<TimeFrame> timeFrameList;

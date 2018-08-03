@@ -101,6 +101,7 @@ namespace GUIServer
         public void SetPartnerData(string login, PartnerDataObject newPartnersDataObj)
         {
             partnersData[login] = newPartnersDataObj;
+            PartnersManager.UpdatePartnerTradingState(login, newPartnersDataObj.Is_Trading);
         }
 
         // MainWindow

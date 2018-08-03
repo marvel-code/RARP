@@ -29,14 +29,20 @@ namespace stocksharp
                     return false;
             return true;
         }
-        
+
+        public Decimal GetCandleBodyRange(int shift = 0)
+        {
+            if (Buffer.Count <= shift) return 0;
+            if (IsRedCandle(shift))
+                return (GetCandle(shift).OpenPrice - GetCandle(shift).ClosePrice);
+            else
+                return (GetCandle(shift).ClosePrice - GetCandle(shift).OpenPrice);
+        }
         public Decimal GetCandleBodyCentre(int shift = 0)
         {
             if (Buffer.Count <= shift) return 0;
-            if (IsGreenCandle(shift))
-                return (GetCandle(shift).OpenPrice + GetCandle(shift).ClosePrice) / 2;
-            else
-                return (GetCandle(shift).ClosePrice + GetCandle(shift).OpenPrice) / 2;
+
+            return (GetCandle(shift).OpenPrice + GetCandle(shift).ClosePrice) / 2;
         }
 
         public Decimal GetCandleHLRange(int shift = 0)

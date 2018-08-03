@@ -25,6 +25,13 @@ namespace stocksharp
         // Вектора
         public Decimal vector { get { return Get_VectorVolume(); } }
         public Decimal vector_p { get { return Get_VectorVolume(1); } }
+        public Decimal vector_pp { get { return Get_VectorVolume(2); } }
+        public Decimal vector_h { get { return Get_VectorHigh(); } }
+        public Decimal vector_hp { get { return Get_VectorHigh(1); } }
+        public Decimal vector_hpp { get { return Get_VectorHigh(2); } }
+        public Decimal vector_l { get { return Get_VectorLow(); } }
+        public Decimal vector_lp { get { return Get_VectorLow(1); } }
+        public Decimal vector_lpp { get { return Get_VectorLow(2); } }
         // Объемы текущих одиночных свеч
         public Decimal total { get { return Get_TotalVolume(); } }
         public Decimal total_p { get { return Get_TotalVolume(1); } }
@@ -61,6 +68,9 @@ namespace stocksharp
         public Dictionary<int, Decimal[]> TVV_for_order_info;
         public Dictionary<int, Decimal[]> BVV_for_order_info;
         public Dictionary<int, Decimal[]> SVV_for_order_info;
+        // Регистрация значений вектора для определения vector_h, vector_l
+        private List<Decimal> vectors_h;
+        private List<Decimal> vectors_l;
         /**
          * Настройки
          **/
@@ -99,6 +109,28 @@ namespace stocksharp
                 Buffer.RemoveAt(0);
 
             Buffer.Add(_candle);
+
+            
+            // VECTOR HIGH & LOW
+            if (vectors_h.Count != 0 && Buffer[Buffer.Count - 1].Time == _candle.Time)
+            {
+                if (vectors_h.Count > 5)
+                {
+                    vectors_h.RemoveAt(0);
+                    vectors_l.RemoveAt(0);
+                }
+
+                var current_vector = vector;
+                if (vectors_h.Last() < current_vector)
+                    vectors_h[vectors_h.Count - 1] = current_vector;
+                if (vectors_l.Last() > current_vector)
+                    vectors_l[vectors_l.Count - 1] = current_vector;
+            }
+            else
+            {
+                vectors_h.Add(0);
+                vectors_l.Add(0);
+            }
         }
         // Стереть все значения
         public void Reset()
@@ -110,6 +142,9 @@ namespace stocksharp
             TVV_for_order_info = new Dictionary<int, Decimal[]>();
             BVV_for_order_info = new Dictionary<int, Decimal[]>();
             SVV_for_order_info = new Dictionary<int, Decimal[]>();
+
+            vectors_h = new List<decimal>();
+            vectors_l = new List<decimal>();
         }
         // Осциляторы
         public Decimal Get_VO(int shift = 0)
@@ -134,6 +169,20 @@ namespace stocksharp
         public Decimal Get_VectorVolume(int shift = 0)
         {
             return Get_DirectionVolume(OrderDirections.Buy, shift) - Get_DirectionVolume(OrderDirections.Sell, shift);
+        }
+        public Decimal Get_VectorHigh(int shift = 0)
+        {
+            if (vectors_h.Count <= shift)
+                return 0;
+
+            return vectors_h[vectors_h.Count - 1 - shift];
+        }
+        public Decimal Get_VectorLow(int shift = 0)
+        {
+            if (vectors_l.Count <= shift)
+                return 0;
+
+            return vectors_l[vectors_l.Count - 1 - shift];
         }
         // Объемы свечи
         public Decimal Get_TotalVolume(int shift = 0)

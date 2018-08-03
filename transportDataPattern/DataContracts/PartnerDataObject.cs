@@ -102,7 +102,9 @@ namespace transportDataParrern
     public class PartnerDataObject
     {
         [DataMember]
-        public decimal Position_PNL_Max { get; set; }
+        public decimal Position_PNL { get; set; }
+        [DataMember]
+        public decimal Position_PNL_MAX { get; set; }
         [DataMember]
         public bool Is_Trading { get; set; }
         [DataMember]

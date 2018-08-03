@@ -37,7 +37,7 @@ namespace AutoRobot
 
         /// Settings
 
-        const string USERNAME = "ss#5182";
+        const string USERNAME = "ro#9019";
         const string IP = "185.158.153.217";
         const int PORT = 8020;
         const int maxServerExceptionCount = 5;
@@ -230,7 +230,8 @@ namespace AutoRobot
 
                     // Set client data 
                     PartnerDataObject partnerData = new PartnerDataObject();
-                    partnerData.Position_PNL_Max = TM.Max_Position_PNL;
+                    partnerData.Position_PNL = TM.Position_PNL;
+                    partnerData.Position_PNL_MAX = TM.Max_Position_PNL;
                     partnerData.Is_Trading = isTrade;
                     partnerData.securitiesData = TM.MyTrader.Securities.Select(x => new SecuritiesRow { code = x.Code }).ToList();
                     partnerData.derivativePortfolioData = new List<DerivativePortfolioRow>() { new DerivativePortfolioRow { beginAmount = TM.MyPortfolio.BeginAmount.Value, variationMargin = TM.MyPortfolio.VariationMargin.Value } };
@@ -263,7 +264,9 @@ namespace AutoRobot
                     if (isTrade && getLoadPercent() > 95)
                     {
                         if (!wasEnterFalse && (needAction != NeedAction.LongOrShortOpen || !tradeData.LongOpen && !tradeData.ShortOpen))
+                        {
                             wasEnterFalse = true;
+                        }
 
                         if (!TM.is_Position && wasEnterFalse)
                         {
@@ -273,6 +276,7 @@ namespace AutoRobot
                             {
                                 string message = string.Format("Замечено OPEN&CLOSE. Выход из торговли. (LO-LC SO-SC):({0}-{1} {2}-{3})", tradeData.LongOpen, tradeData.LongClose, tradeData.ShortOpen, tradeData.ShortClose);
                                 addLogMessage(message);
+                                _proxy.LogAction(message);
                                 mw.stopTrading();
 
                                 _proxy.LogAction(message);
@@ -296,7 +300,7 @@ namespace AutoRobot
                                     QuikStopConditionTypes.TakeProfitStopLimit
                                 );
 
-                                _proxy.LogAction("Открытие LONG");
+                                _proxy.LogAction(string.Format("Открытие LONG({1}): {0}", Security.LastTrade.Price, tradeData.RuleId));
                                 return ProcessResults.Continue;
                             }
 
@@ -317,21 +321,24 @@ namespace AutoRobot
                                     QuikStopConditionTypes.TakeProfitStopLimit
                                 );
 
-                                _proxy.LogAction("Открытие SHORT");
+                                _proxy.LogAction(string.Format("Открытие SHORT{1}: {0}", Security.LastTrade.Price, tradeData.RuleId));
                                 return ProcessResults.Continue;
                             }
                         }
                         else if (TM.is_Position)
                         {
                             if (TM.is_Exit_From_Stop_Order())
+                            {
+                                _proxy.LogAction(string.Format("Закрытие позиции по стопу {0}", Security.LastTrade.Price));
                                 return ProcessResults.Continue;
+                            }
 
                             if (TM.last_EnterOrder.Direction == OrderDirections.Buy)
                             {
                                 // SELL
                                 if (tradeData.LongClose && (TM.last_ExitOrder == null || TM.last_ExitOrder.State == OrderStates.Done))
                                 {
-                                    _proxy.LogAction(string.Format("Закрытие LONG: {0}pnl", TM.Position_PNL));
+                                    _proxy.LogAction(string.Format("Закрытие LONG({2}): {1} {0}pnl", TM.Position_PNL, Security.LastTrade.Price, tradeData.RuleId));
 
                                     // Exit order
                                     TM.Register.ExitOrder(
@@ -345,7 +352,7 @@ namespace AutoRobot
                                 // COVER
                                 if (tradeData.ShortClose && (TM.last_ExitOrder == null || TM.last_ExitOrder.State == OrderStates.Done))
                                 {
-                                    _proxy.LogAction(string.Format("Закрытие SHORT {0}pnl", TM.Position_PNL));
+                                    _proxy.LogAction(string.Format("Закрытие SHORT({2}): {1} {0}pnl", TM.Position_PNL, Security.LastTrade.Price, tradeData.RuleId));
 
                                     // Exit order
                                     TM.Register.ExitOrder(
@@ -412,7 +419,7 @@ namespace AutoRobot
 
         private void updateMonitorValues(TradeState tradeState)
         {
-            mw.mw.Dispatcher.Invoke(new Action(() =>
+            mw.mw.GuiAsync(() =>
             {
                 mw.mw.tb_refreshInterval.Text = string.Format("{0:0}c", DateTime.Now.Subtract(lastRefreshTime).TotalSeconds);
                 lastRefreshTime = DateTime.Now;
@@ -473,7 +480,7 @@ namespace AutoRobot
                 mw.setTextboxText(mw.mw.tb_bv_p, tf[0].volume[0].bv_p.Round(MidpointRounding.AwayFromZero).ToString());
                 mw.setTextboxText(mw.mw.tb_sv, tf[0].volume[0].sv.Round(MidpointRounding.AwayFromZero).ToString());
                 mw.setTextboxText(mw.mw.tb_sv_p, tf[0].volume[0].sv_p.Round(MidpointRounding.AwayFromZero).ToString());*/
-            }));
+            });
         }
 
 

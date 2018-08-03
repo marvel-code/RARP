@@ -8,12 +8,12 @@ namespace stocksharp
     public class ADX
     {
         // Рабочие значения
-        public Decimal val { get { return DX_Values.Get_Value(); } }
-        public Decimal val_p { get { return DX_Values.Get_Value(1); } }
-        public Decimal dip { get { return DIPlus_Values.Get_Value(); } }
-        public Decimal dip_p { get { return DIPlus_Values.Get_Value(1); } }
-        public Decimal dim { get { return DIMinus_Values.Get_Value(); } }
-        public Decimal dim_p { get { return DIMinus_Values.Get_Value(1); } }
+        public Decimal val { get { return Math.Round(DX_Values.Get_Value()); } }
+        public Decimal val_p { get { return Math.Round(DX_Values.Get_Value(1)); } }
+        public Decimal dip { get { return Math.Round(DIPlus_Values.Get_Value()); } }
+        public Decimal dip_p { get { return Math.Round(DIPlus_Values.Get_Value(1)); } }
+        public Decimal dim { get { return Math.Round(DIMinus_Values.Get_Value()); } }
+        public Decimal dim_p { get { return Math.Round(DIMinus_Values.Get_Value(1)); } }
 
         // Параметры
         public MaType Ma_Type { get; private set; }
@@ -77,14 +77,14 @@ namespace stocksharp
                     Sdip = 0;
                     Sdim = 0;
                 }
-                
+
                 // Обновляем массивы значений +DI,-DI
                 DIPlus_Values.Update(new TimeFrameCandle { Time = candle.Time, ClosePrice = Sdip });
                 DIMinus_Values.Update(new TimeFrameCandle { Time = candle.Time, ClosePrice = Sdim });
                 // Считаем DX
-                Decimal DIPlus = DIPlus_Values.Get_Value();
-                Decimal DIMinus = DIMinus_Values.Get_Value();
-                Decimal DX = DIPlus + DIMinus == 0 ? 0 : (Math.Abs(DIPlus - DIMinus) / (DIPlus + DIMinus)) * 100;
+                Decimal DIPlus = Math.Round(DIPlus_Values.Get_Value());
+                Decimal DIMinus = Math.Round(DIMinus_Values.Get_Value());
+                Decimal DX = DIPlus + DIMinus == 0 ? 0 : Math.Abs(DIPlus - DIMinus) / (DIPlus + DIMinus) * 100;
                 // Обновляем значения DX
                 DX_Values.Update(new TimeFrameCandle { Time = candle.Time, ClosePrice = DX });
             }
