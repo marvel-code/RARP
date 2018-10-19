@@ -74,7 +74,7 @@
       <HintPath>..\dll\Ecng.Xaml.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>dll\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\dll\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="StockSharp.Algo, Version=4.0.17.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

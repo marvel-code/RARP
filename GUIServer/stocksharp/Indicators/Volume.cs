@@ -5,6 +5,8 @@ using System.Linq;
 using StockSharp.Algo.Candles;
 using StockSharp.BusinessEntities;
 
+using Ecng.Collections;
+
 namespace stocksharp
 {
     public class Vol
@@ -145,6 +147,9 @@ namespace stocksharp
 
             vectors_h = new List<decimal>();
             vectors_l = new List<decimal>();
+
+            _bvCache = new Dictionary<int, Dictionary<double, decimal>>();
+            _svCache = new Dictionary<int, Dictionary<double, decimal>>();
         }
         // Осциляторы
         public Decimal Get_VO(int shift = 0)
@@ -328,6 +333,13 @@ namespace stocksharp
 
             return result;
         }
+        public Decimal GetVv(int _Velocity_Period_Seconds, int shift = 0) // Get total volume velocity value
+        {
+            Decimal result = GetBv(_Velocity_Period_Seconds, shift) - GetSv(_Velocity_Period_Seconds, shift);
+            
+
+            return result;
+        }
         public Decimal GetBv(int _Velocity_Period_Seconds, int shift = 0) // Get buy volume velocity value
         {
             var AllTrades = _processingData.AllTrades;
@@ -402,6 +414,172 @@ namespace stocksharp
                 SVV_for_order_info[_Velocity_Period_Seconds][shift] = result;
             }
 
+            return result;
+        }
+
+
+        private Dictionary<int, Dictionary<double, decimal>> _bvCache; // Dict<period, Dict<tick, value>>
+        private Dictionary<int, Dictionary<double, decimal>> _svCache;
+        public Decimal GetAvrTv(int _Velocity_Period_Seconds, int _Tact = MySettings.VOL_VV_STD_TACT)
+        {
+            Decimal result = GetAvrBv(_Velocity_Period_Seconds, _Tact) + GetAvrSv(_Velocity_Period_Seconds, _Tact);
+
+            return result;
+        }
+        public Decimal GetAvrVv(int _Velocity_Period_Seconds, int _Tact = MySettings.VOL_VV_STD_TACT)
+        {
+            Decimal result = GetAvrBv(_Velocity_Period_Seconds, _Tact) - GetAvrSv(_Velocity_Period_Seconds, _Tact);
+
+            return result;
+        }
+        public Decimal GetAvrBv(int _Velocity_Period_Seconds, int _Tact = MySettings.VOL_VV_STD_TACT)
+        {
+            // Get AllTrades
+            List<Trade> AllTrades = null;
+            try
+            {
+                var tmp = _processingData.AllTrades;
+                AllTrades = tmp.ToList();
+            }
+            catch (Exception ex)
+            {
+                //Log.Add_Log_Message("Ошибка взятия таблицы всех сделок: " + ex.Message);
+                return 0;
+            }
+            if (AllTrades.Count == 0)
+                return 0;
+
+            // Process velocity cache
+            var currentDateTime = _processingData.TerminalTime;
+            double dayTotalSeconds = currentDateTime.TimeOfDay.TotalSeconds;
+            if (!_bvCache.ContainsKey(_Velocity_Period_Seconds))
+            {
+                _bvCache.Add(_Velocity_Period_Seconds, new Dictionary<double, decimal>());
+            }
+            else
+            {
+                _bvCache[_Velocity_Period_Seconds].RemoveWhere(x => x.Key < dayTotalSeconds - (_Tact + 1));
+            }
+            var cache = _bvCache[_Velocity_Period_Seconds];
+
+            // Calculate
+            OrderDirections _Order_Direction = OrderDirections.Buy;
+            Trade t;
+            TimeSpan timeDelta;
+            double left, right;
+            decimal result = 0, sum;
+            for (int k = 0; k < _Tact; k++)
+            {
+                right = dayTotalSeconds - dayTotalSeconds % (_Tact) - k;
+                if (cache.ContainsKey(right))
+                {
+                    result += cache[right];
+                    continue;
+                }
+
+                sum = 0;
+                for (int i = 0; i < AllTrades.Count; i++)
+                {
+                    t = AllTrades[AllTrades.Count - 1 - i];
+                    if (t.OrderDirection != _Order_Direction)
+                        continue;
+                    timeDelta = currentDateTime - t.Time;
+
+                    // Если сделка принадлежит более позднему периоду
+                    if (t.Time.TimeOfDay.TotalSeconds > right)
+                        continue;
+                    // Если сделка принадлежит более раннему периоду
+                    left = right - _Velocity_Period_Seconds;
+                    if (t.Time.TimeOfDay.TotalSeconds < left)
+                        break;
+
+                    sum += t.Volume;
+                }
+
+                result += sum;
+                if (k != 0)
+                    cache.Add(right, sum);
+            }
+
+            result /= _Tact * _Velocity_Period_Seconds;
+            _bvCache[_Velocity_Period_Seconds] = cache;
+
+            // Output
+            return result;
+        }
+        public Decimal GetAvrSv(int _Velocity_Period_Seconds, int _Tact = MySettings.VOL_VV_STD_TACT)
+        {
+            // Get AllTrades
+            List<Trade> AllTrades = null;
+            try
+            {
+                var tmp = _processingData.AllTrades;
+                AllTrades = tmp.ToList();
+            }
+            catch (Exception ex)
+            {
+                //Log.Add_Log_Message("Ошибка взятия таблицы всех сделок: " + ex.Message);
+                return 0;
+            }
+            if (AllTrades.Count == 0)
+                return 0;
+
+            // Process velocity cache
+            var currentDateTime = _processingData.TerminalTime;
+            double dayTotalSeconds = currentDateTime.TimeOfDay.TotalSeconds;
+            if (!_svCache.ContainsKey(_Velocity_Period_Seconds))
+            {
+                _svCache.Add(_Velocity_Period_Seconds, new Dictionary<double, decimal>());
+            }
+            else
+            {
+                _svCache[_Velocity_Period_Seconds].RemoveWhere(x => x.Key < dayTotalSeconds - (_Tact + 1));
+            }
+            var cache = _svCache[_Velocity_Period_Seconds];
+
+            // Calculate
+            OrderDirections _Order_Direction = OrderDirections.Sell;
+            Trade t;
+            TimeSpan timeDelta;
+            double left, right;
+            decimal result = 0, sum;
+            for (int k = 0; k < _Tact; k++)
+            {
+                right = dayTotalSeconds - dayTotalSeconds % (_Tact) - k;
+                if (cache.ContainsKey(right))
+                {
+                    result += cache[right];
+                    continue;
+                }
+
+                sum = 0;
+                for (int i = 0; i < AllTrades.Count; i++)
+                {
+                    t = AllTrades[AllTrades.Count - 1 - i];
+                    if (t.OrderDirection != _Order_Direction)
+                        continue;
+                    timeDelta = currentDateTime - t.Time;
+
+                    // Если сделка принадлежит более позднему периоду
+                    if (t.Time.TimeOfDay.TotalSeconds > right)
+                        continue;
+                    // Если сделка принадлежит более раннему периоду
+                    left = right - _Velocity_Period_Seconds;
+                    if (t.Time.TimeOfDay.TotalSeconds < left)
+                        break;
+
+                    sum += t.Volume;
+                }
+
+                result += sum;
+                if (k != 0)
+                    cache.Add(right, sum);
+            }
+
+            result /= _Tact * _Velocity_Period_Seconds;
+            _svCache[_Velocity_Period_Seconds] = cache;
+
+            // Output
             return result;
         }
         // Время открытия свечи
