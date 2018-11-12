@@ -13,6 +13,21 @@ namespace stocksharp
         /**
          * Работа со свечами
          **/
+        public Decimal GetCandleDuration(int shift = 0)
+        {
+            if (shift > 0)
+            {
+                return period;
+            }
+
+            if (shift == 0)
+            {
+                return (decimal)_processingData.TerminalTime.TimeOfDay.TotalSeconds % period;
+            }
+
+            return -1;
+        }
+
         public Boolean IsGreenCandle(int shift = 0, int cnt = 1)
         {
             if (Buffer.Count <= shift + cnt - 1) return false;
@@ -162,7 +177,48 @@ namespace stocksharp
                 time < _candle.Time.Add(Period);
         }
 
+        // PRICE CHANNEL
 
+        public decimal GetPriceChannelWidth(int count, int shift = 0)
+        {
+            return GetPriceChannelHigh(count, shift) - GetPriceChannelLow(count, shift);
+        }
+        public decimal GetPriceChannelHigh(int count, int shift = 0)
+        {
+            decimal result = 0;
+            Candle candle;
+            for (int i = shift; i < count + shift; i++)
+            {
+                candle = GetCandle(i);
+                if (candle == null)
+                    break;
+
+                if (candle.HighPrice > result)
+                    result = candle.HighPrice;
+            }
+
+            return result;
+        }
+        public decimal GetPriceChannelMid(int count, int shift = 0)
+        {
+            return (GetPriceChannelHigh(count, shift) + GetPriceChannelLow(count, shift)) / 2;
+        }
+        public decimal GetPriceChannelLow(int count, int shift = 0)
+        {
+            decimal result = 999999;
+            Candle candle;
+            for (int i = shift; i < count + shift; i++)
+            {
+                candle = GetCandle(i);
+                if (candle == null)
+                    break;
+
+                if (candle.LowPrice < result)
+                    result = candle.LowPrice;
+            }
+
+            return result;
+        }
 
 
         public Boolean IsDoji(int shift = 0, Decimal filter = 0)
