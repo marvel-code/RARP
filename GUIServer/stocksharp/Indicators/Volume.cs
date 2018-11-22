@@ -414,50 +414,27 @@ namespace stocksharp
         }
         public Decimal GetAvrTv(int _Velocity_Period_Seconds, int shift = 0)
         {
-
-            return GetAvrBv(_Velocity_Period_Seconds, shift) + GetAvrSv(_Velocity_Period_Seconds, shift);
+            return getAvrTvVal(_Velocity_Period_Seconds, shift);
         }
         public Decimal GetAvrVv(int _Velocity_Period_Seconds, int shift = 0)
         {
-            return GetAvrBv(_Velocity_Period_Seconds, shift) - GetAvrSv(_Velocity_Period_Seconds, shift);
+            return getAvrVvVal(_Velocity_Period_Seconds, shift);
         }
         public Decimal GetAvrBv(int _Velocity_Period_Seconds, int shift = 0)
         {
-            var curCandle = Get_Candle();
-            if (curCandle == null)
-                return 0;
-            int currentDaySecond = (int)_processingData.TerminalTime.TimeOfDay.TotalSeconds;
-            int calcDaySecond = currentDaySecond - currentDaySecond % VV_TACT - shift * VV_TACT;
-
-            // Calculating
-            decimal result = 0;
-            for (int i = 0; i < VV_TACT; i++)
-            {
-                result += getCachedBvVal(_Velocity_Period_Seconds, calcDaySecond - i, VCalcType.DaySecond);
-            }
-            result /= VV_TACT;
-
-            // Output
-            return result;
+            return getAvrBvVal(_Velocity_Period_Seconds, shift);
         }
         public Decimal GetAvrSv(int _Velocity_Period_Seconds, int shift = 0)
         {
-            var curCandle = Get_Candle();
-            if (curCandle == null)
-                return 0;
-            int currentDaySecond = (int)_processingData.TerminalTime.TimeOfDay.TotalSeconds;
-            int calcDaySecond = currentDaySecond - currentDaySecond % VV_TACT - shift * VV_TACT;
-
-            // Calculating
-            decimal result = 0;
-            for (int i = 0; i < VV_TACT; i++)
-            {
-                result += getCachedSvVal(_Velocity_Period_Seconds, calcDaySecond - i, VCalcType.DaySecond);
-            }
-            result /= VV_TACT;
-
-            // Output
-            return result;
+            return getAvrSvVal(_Velocity_Period_Seconds, shift);
+        }
+        public Decimal GetAvrPeriodVvMax(int _Period_Seconds, int _Offset, int shift = 0)
+        {
+            return GetAvrPeriodVvMax(_Period_Seconds, _Offset, shift);
+        }
+        public Decimal GetAvrPeriodVvMin(int _Period_Seconds, int _Offset, int shift = 0)
+        {
+            return GetAvrPeriodVvMin(_Period_Seconds, _Offset, shift);
         }
         // Технический код рассчёта скоростей (не для использования во вне)
         private const int VV_TACT = MySettings.VOL_VV_STD_TACT;
@@ -711,6 +688,81 @@ namespace stocksharp
                 if (_svCache[period].Count > maxCacheTimeDelta)
                 {
                     _svCache[period].RemoveWhere(x => x.Key < currentDaySecond - maxCacheTimeDelta);
+                }
+            }
+
+            return result;
+        }
+        private decimal getAvrTvVal(int period, int shift = 0)
+        {
+
+            return getAvrBvVal(period, shift) + getAvrSvVal(period, shift);
+        }
+        private decimal getAvrVvVal(int period, int shift = 0)
+        {
+            return getAvrBvVal(period, shift) - getAvrSvVal(period, shift);
+        }
+        private decimal getAvrBvVal(int period, int shift = 0)
+        {
+            var curCandle = Get_Candle();
+            if (curCandle == null)
+                return 0;
+            int currentDaySecond = (int)_processingData.TerminalTime.TimeOfDay.TotalSeconds;
+            int calcDaySecond = currentDaySecond - currentDaySecond % VV_TACT - shift * VV_TACT;
+
+            // Calculating
+            decimal result = 0;
+            for (int i = 0; i < VV_TACT; i++)
+            {
+                result += getCachedBvVal(period, calcDaySecond - i, VCalcType.DaySecond);
+            }
+            result /= VV_TACT;
+
+            // Output
+            return result;
+        }
+        private decimal getAvrSvVal(int period, int shift = 0)
+        {
+            var curCandle = Get_Candle();
+            if (curCandle == null)
+                return 0;
+            int currentDaySecond = (int)_processingData.TerminalTime.TimeOfDay.TotalSeconds;
+            int calcDaySecond = currentDaySecond - currentDaySecond % VV_TACT - shift * VV_TACT;
+
+            // Calculating
+            decimal result = 0;
+            for (int i = 0; i < VV_TACT; i++)
+            {
+                result += getCachedSvVal(period, calcDaySecond - i, VCalcType.DaySecond);
+            }
+            result /= VV_TACT;
+
+            // Output
+            return result;
+        }
+        private decimal getAvrPeriodVvMax(int periodSeconds, int offset, int shift = 0)
+        {
+            decimal result = getAvrVvVal(periodSeconds, offset);
+            for (int i = offset + 1; i < periodSeconds; i++)
+            {
+                decimal tmp = getAvrVvVal(periodSeconds, i);
+                if (result < tmp)
+                {
+                    result = tmp;
+                }
+            }
+
+            return result;
+        }
+        private decimal getAvrPeriodVvMin(int periodSeconds, int offset, int shift = 0)
+        {
+            decimal result = getAvrVvVal(periodSeconds, offset);
+            for (int i = offset + 1; i < periodSeconds; i++)
+            {
+                decimal tmp = getAvrVvVal(periodSeconds, i);
+                if (result > tmp)
+                {
+                    result = tmp;
                 }
             }
 
