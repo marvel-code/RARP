@@ -28,6 +28,19 @@ namespace stocksharp
             return -1;
         }
 
+        public Decimal GetCandleHigh(int shift = 0)
+        {
+            var candle = GetCandle(shift);
+            if (candle == null) return 0;
+            return candle.HighPrice;
+        }
+        public Decimal GetCandleLow(int shift = 0)
+        {
+            var candle = GetCandle(shift);
+            if (candle == null) return 0;
+            return candle.LowPrice;
+        }
+
         public Boolean IsGreenCandle(int shift = 0, int cnt = 1)
         {
             if (Buffer.Count <= shift + cnt - 1) return false;
