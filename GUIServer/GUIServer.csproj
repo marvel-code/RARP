@@ -80,7 +80,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MySettings.cs" />
+    <Compile Include="Settings.cs" />
     <Compile Include="PartnerManager.cs" />
     <Compile Include="MyServerManager.cs" />
     <Compile Include="Form1.cs">

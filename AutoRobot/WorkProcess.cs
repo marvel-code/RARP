@@ -34,12 +34,12 @@ namespace AutoRobot
         private volatile bool doStopConnectionReaffirmationThread;
         private Thread threadConnectionReaffirmation;
         private Thread threadLoading;
-
+        
         /// Settings
 
-        const string USERNAME = "ro#9019";
-        //const string IP = "185.158.153.217";
-        const string IP = "127.0.0.1";
+        const string USERNAME = "vz#1999";
+        const string IP = "185.158.153.217";
+        //const string IP = "127.0.0.1";
         const int PORT = 8020;
         const int maxServerExceptionCount = 5;
 
@@ -234,6 +234,7 @@ namespace AutoRobot
                     partnerData.Position_PNL = TM.Position_PNL;
                     partnerData.Position_PNL_MAX = TM.Max_Position_PNL;
                     partnerData.Is_Trading = isTrade;
+                    partnerData.lastEnterDirection = TM.last_EnterOrder == null ? "null" : TM.last_EnterOrder.Direction.ToString();
                     partnerData.securitiesData = TM.MyTrader.Securities.Select(x => new SecuritiesRow { code = x.Code }).ToList();
                     partnerData.derivativePortfolioData = new List<DerivativePortfolioRow>() { new DerivativePortfolioRow { beginAmount = TM.MyPortfolio.BeginAmount.Value, variationMargin = TM.MyPortfolio.VariationMargin.Value } };
                     partnerData.derivativePositionsData = new List<DerivativePositionsRow>() { new DerivativePositionsRow { currentPosition = (int)(TM.MyTrader.GetPosition(TM.MyPortfolio, TM.MySecurity) ?? new Position { CurrentValue = 0 }).CurrentValue } };

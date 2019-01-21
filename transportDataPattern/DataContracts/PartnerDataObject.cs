@@ -108,6 +108,8 @@ namespace transportDataParrern
         [DataMember]
         public bool Is_Trading { get; set; }
         [DataMember]
+        public string lastEnterDirection { get; set; }
+        [DataMember]
         public List<SecuritiesRow> securitiesData { get; set; }
         [DataMember]
         public List<DerivativePortfolioRow> derivativePortfolioData { get; set; }
