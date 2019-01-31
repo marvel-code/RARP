@@ -16,7 +16,7 @@ namespace GUIServer
 
     public static class LogManager
     {
-        private static string WrapMessageToLog(LogType logType, string message, params object[] args)
+        public static string WrapMessageToLog(LogType logType, string message, params object[] args)
         {
             return DateTime.Now.ToString(@"yyyy/MM/dd HH:mm:ss |  ") + string.Format("{0}:\t", logType) + string.Format(message, args);
         }

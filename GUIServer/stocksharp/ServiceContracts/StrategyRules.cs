@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Ecng.Common;
 using StockSharp.BusinessEntities;
 using StockSharp.Messages;
-using transportDataParrern;
 
 namespace stocksharp.ServiceContracts
 {

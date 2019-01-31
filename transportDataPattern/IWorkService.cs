@@ -17,9 +17,12 @@ namespace transportDataParrern
 
         [OperationContract(IsInitiating = false, IsTerminating = false)]
         List<int> GetTimeFramePeriods();
-        
+
         [OperationContract(IsInitiating = false, IsTerminating = false)]
-        void LogAction(string action);
+        void LogTrade(string action, int ruleId, decimal marketPrice, decimal pnl = 0);
+
+        [OperationContract(IsInitiating = false, IsTerminating = false)]
+        void LogMessage(string message);
 
         [OperationContract(IsInitiating = false, IsTerminating = false)]
         void ReaffirmConnection();

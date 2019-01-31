@@ -129,22 +129,6 @@ namespace stocksharp.ServiceContracts
                 }
             }
 
-            /*
-            if (_currentUser == "ro#9019")
-            {
-
-                GUIServer.MainWindow.Instance.UpdateInfoLabel(string.Format("_{0}_ _{1}_ _{2}_ _{3}_ _{4}_ _{5}_ _{6}_",
-                    Math.Round(tf[0].Volume[0].GetAvrBv(120), 1),
-                    Math.Round(tf[0].Volume[0].GetAvrSv(120), 1),
-                    Math.Round(tf[0].Volume[0].GetAvrTv(120), 1),
-                    Math.Round(tf[0].Volume[0].GetAvrVv(120), 1),
-                   Math.Round(tf[0].Volume[0].GetTv(120), 1),
-                    Math.Round(tf[0].Volume[0].GetVv(120), 1),
-                   Math.Round(tf[0].Volume[0].sv, 1)
-                   ));
-            }
-            */
-
             return tradeState;
         }
     }

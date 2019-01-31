@@ -63,7 +63,6 @@ namespace stocksharp.ServiceContracts
             tradesToAdd.Reverse();
             AllTrades.AddRange(tradesToAdd);
         }
-
         public void Update_TfCandles(Candle[][] candles)
         {
             int i = -1;
