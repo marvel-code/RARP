@@ -19,7 +19,7 @@ namespace transportDataParrern
         List<int> GetTimeFramePeriods();
 
         [OperationContract(IsInitiating = false, IsTerminating = false)]
-        void LogTrade(string action, int ruleId, decimal marketPrice, decimal pnl = 0);
+        void LogTrade(string action, int volume, decimal dayPnl, int ruleId, decimal securityPrice, decimal offset, decimal positionPnl = 0, decimal minPositionPnl = 0, decimal maxPositionPnl = 0);
 
         [OperationContract(IsInitiating = false, IsTerminating = false)]
         void LogMessage(string message);

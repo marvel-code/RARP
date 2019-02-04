@@ -66,6 +66,7 @@ namespace stocksharp.ServiceContracts
             try
             {
                 _currentData.Update_AllTrades(dataObj.NewTrades);
+                _currentData.Update_TradesIStarts();
                 _currentData.Update_TfCandles(dataObj.NewCandles);
             }
             catch (Exception ex)
@@ -76,7 +77,10 @@ namespace stocksharp.ServiceContracts
             // - Indicators
             try
             {
-                _currentData.Process_UpdateIndicators();
+                if (_currentData.GetTradeIStart(dataObj.NewCandles.Max(x => x.Max(y => y.Time))) != -1)
+                {
+                    _currentData.Process_UpdateIndicators();
+                }
             }
             catch (Exception ex)
             {
@@ -139,13 +143,13 @@ namespace stocksharp.ServiceContracts
         {
             return _currentData.tf_Periods;
         }
-        public void LogTrade(string action, int ruleId, decimal marketPrice, decimal pnl = 0)
+        public void LogTrade(string action, int volume, decimal dayPnl, int ruleId, decimal securityPrice, decimal offset, decimal positionPnl = 0, decimal minPositionPnl = 0, decimal maxPositionPnl = 0)
         {
             // - Action log
-            string message = string.Format("{0}({1}) по цене {2}", action, ruleId, marketPrice);
+            string message = string.Format("{0}({1}) по цене {2}", action, ruleId, securityPrice);
             if (action == "SELL" || action == "COVER")
             {
-                message += string.Format(" {0} PNL: {1}", pnl == 0 ? ' ' : pnl > 0 ? '\u8593' : '\u8595', pnl);
+                message += string.Format(" {0} PNL: {1}", positionPnl == 0 ? ' ' : positionPnl > 0 ? '+' : '-', positionPnl);
             }
             Log.addLog(GUIServer.LogType.Info, string.Format("{0} :: {1}", _currentUser, message));
 
@@ -153,16 +157,23 @@ namespace stocksharp.ServiceContracts
             string htmlLog = "";
             Dictionary<string, string> tradeInfo = new Dictionary<string, string>
             {
-                {"Время", DateTime.Now.ToString("dd.MM.yyyy hh:mm:ss")},
+                {"Время", _currentData.TerminalTime.ToString("yyyy/MM/dd <b>HH:mm:ss</b>")},
                 {"Действие", action},
+                {"Объем", volume.ToString()},
+                {"PNL дня", dayPnl.ToString()},
                 {"Правило", ruleId.ToString()},
-                {"Рын. цена", marketPrice.ToString()},
+                {"Цена инструмента", securityPrice.ToString()},
+                {"Сдвиг", offset.ToString()},
+                {"PNL позиции", action == "LONG" || action == "SHORT" ? "—" : positionPnl.ToString()},
+                {"Min PNL позиции", action == "LONG" || action == "SHORT" ? "—" : minPositionPnl.ToString()},
+                {"Max PNL позиции", action == "LONG" || action == "SHORT" ? "—" : maxPositionPnl.ToString()},
             };
             
             // Init trade log file if it doesnt exist
             if (!System.IO.File.Exists(GUIServer.Globals.tradesLog_fullFileName))
             {
-                htmlLog += "<table>\r\n";
+                System.IO.File.Create(GUIServer.Globals.tradesLog_fullFileName).Close();
+                htmlLog += "<table width=100% cellpadding=5 border=1 style=\"border-collapse:collapse\">\r\n";
                 htmlLog += "<tr>";
                 foreach (var i in tradeInfo)
                 {
@@ -183,103 +194,115 @@ namespace stocksharp.ServiceContracts
 
             // Log indicators values
             htmlLog += "<tr>";
-            htmlLog += "<td>";
-            htmlLog += "<details>";
+            htmlLog += "<td colspan=4>";
+            htmlLog += "<details style=\"padding-left:10px\">";
             htmlLog += "<summary>Значения индикаторов</summary>";
+            htmlLog += "<pre>";
+            int tf_k = -1;
             foreach (var tfi in _currentData.timeFrameList)
             {
-                int k;
+                tf_k++;
+                htmlLog += string.Format("<br><h1>{0}[{1}]</h1>", "TF", tf_k);
+
+                int ind_k;
 
                 // ADX
-                k = -1;
+                ind_k = -1;
                 foreach (var ind in tfi.adx)
                 {
-                    k++;
-                    htmlLog += string.Format("<br><h2>{0}[{1}]</h2><br>", "ADX", k);
+                    ind_k++;
+                    htmlLog += string.Format("<h4>{0}[{1}]</h4>", "ADX", ind_k);
 
-                    htmlLog += string.Format("val:\t\t{0}<br>", ind.val);
-                    htmlLog += string.Format("val_p:\t\t{0}<br>", ind.val_p);
-                    htmlLog += string.Format("dip:\t\t{0}<br>", ind.dip);
-                    htmlLog += string.Format("dip_p:\t\t{0}<br>", ind.dip_p);
-                    htmlLog += string.Format("dim:\t\t{0}<br>", ind.dim);
-                    htmlLog += string.Format("dim_p:\t\t{0}<br>", ind.dim_p);
+                    htmlLog += string.Format("val:\t\t{0:N0}<br>", ind.val);
+                    htmlLog += string.Format("val_p:\t\t{0:N0}<br>", ind.val_p);
+                    htmlLog += string.Format("dip:\t\t{0:N0}<br>", ind.dip);
+                    htmlLog += string.Format("dip_p:\t\t{0:N0}<br>", ind.dip_p);
+                    htmlLog += string.Format("dim:\t\t{0:N0}<br>", ind.dim);
+                    htmlLog += string.Format("dim_p:\t\t{0:N0}<br>", ind.dim_p);
                 }
+                htmlLog += "<br>";
 
                 // BBW
-                k = -1;
+                ind_k = -1;
                 foreach (var ind in tfi.bbw)
                 {
-                    k++;
-                    htmlLog += string.Format("<br><h2>{0}[{1}]</h2><br>", "BBW", k);
+                    ind_k++;
+                    htmlLog += string.Format("<h4>{0}[{1}]</h4>", "BBW", ind_k);
 
-                    htmlLog += string.Format("val:\t\t{0}<br>", ind.val);
-                    htmlLog += string.Format("val_p:\t\t{0}<br>", ind.val_p);
+                    htmlLog += string.Format("val:\t\t{0:N0}<br>", ind.val);
+                    htmlLog += string.Format("val_p:\t\t{0:N0}<br>", ind.val_p);
                 }
+                htmlLog += "<br>";
 
                 // KAMA
-                k = -1;
+                ind_k = -1;
                 foreach (var ind in tfi.kama)
                 {
-                    k++;
-                    htmlLog += string.Format("<br><h2>{0}[{1}]</h2><br>", "KAMA", k);
+                    ind_k++;
+                    htmlLog += string.Format("<h4>{0}[{1}]</h4>", "KAMA", ind_k);
 
-                    htmlLog += string.Format("val:\t\t{0}<br>", ind.val);
-                    htmlLog += string.Format("val_p:\t\t{0}<br>", ind.val_p);
+                    htmlLog += string.Format("val:\t\t{0:N0}<br>", ind.val);
+                    htmlLog += string.Format("val_p:\t\t{0:N0}<br>", ind.val_p);
                 }
+                htmlLog += "<br>";
 
                 // MA
-                k = -1;
+                ind_k = -1;
                 foreach (var ind in tfi.kama)
                 {
-                    k++;
-                    htmlLog += string.Format("<br><h2>{0}[{1}]</h2><br>", "MA", k);
+                    ind_k++;
+                    htmlLog += string.Format("<h4>{0}[{1}]</h4>", "MA", ind_k);
 
-                    htmlLog += string.Format("val:\t\t{0}<br>", ind.val);
-                    htmlLog += string.Format("val_p:\t\t{0}<br>", ind.val_p);
+                    htmlLog += string.Format("val:\t\t{0:N0}<br>", ind.val);
+                    htmlLog += string.Format("val_p:\t\t{0:N0}<br>", ind.val_p);
                 }
+                htmlLog += "<br>";
 
                 // ROC
-                k = -1;
+                ind_k = -1;
                 foreach (var ind in tfi.roc)
                 {
-                    k++;
-                    htmlLog += string.Format("<br><h2>{0}[{1}]</h2><br>", "ROC", k);
+                    ind_k++;
+                    htmlLog += string.Format("<h4>{0}[{1}]</h4>", "ROC", ind_k);
 
-                    htmlLog += string.Format("val:\t\t{0}<br>", ind.val);
-                    htmlLog += string.Format("val_p:\t\t{0}<br>", ind.val_p);
+                    htmlLog += string.Format("val:\t\t{0:N2}<br>", ind.val);
+                    htmlLog += string.Format("val_p:\t\t{0:N2}<br>", ind.val_p);
                 }
+                htmlLog += "<br>";
 
                 // VOLUME
-                k = -1;
+                ind_k = -1;
                 foreach (var ind in tfi.Volume)
                 {
-                    k++;
-                    htmlLog += string.Format("<br><h2>{0}[{1}]</h2><br>", "VOLUME", k);
+                    ind_k++;
+                    htmlLog += string.Format("<br><h4>{0}[{1}]</h4>", "VOLUME", ind_k);
 
                     htmlLog += string.Format("total:\t\t{0}<br>", ind.total);
-                    htmlLog += string.Format("total_p:\t\t{0}<br>", ind.total_p);
+                    htmlLog += string.Format("total_p:\t{0}<br>", ind.total_p);
                     htmlLog += string.Format("buy:\t\t{0}<br>", ind.buy);
                     htmlLog += string.Format("buy_p:\t\t{0}<br>", ind.buy_p);
                     htmlLog += string.Format("sell:\t\t{0}<br>", ind.sell);
                     htmlLog += string.Format("sell_p:\t\t{0}<br>", ind.sell_p);
                     htmlLog += string.Format("vector:\t\t{0}<br>", ind.vector);
-                    htmlLog += string.Format("vector_p:\t\t{0}<br>", ind.vector_p);
-                    htmlLog += string.Format("vector_h:\t\t{0}<br>", ind.vector_h);
-                    htmlLog += string.Format("vector_hp:\t\t{0}<br>", ind.vector_hp);
-                    htmlLog += string.Format("vector_l:\t\t{0}<br>", ind.vector_l);
-                    htmlLog += string.Format("vector_lp:\t\t{0}<br>", ind.vector_lp);
+                    htmlLog += string.Format("vector_p:\t{0}<br>", ind.vector_p);
+                    htmlLog += string.Format("vector_h:\t{0}<br>", ind.vector_h);
+                    htmlLog += string.Format("vector_hp:\t{0}<br>", ind.vector_hp);
+                    htmlLog += string.Format("vector_l:\t{0}<br>", ind.vector_l);
+                    htmlLog += string.Format("vector_lp:\t{0}<br>", ind.vector_lp);
                 }
+                htmlLog += "<br>";
             }
-            htmlLog += "</details>\r\n";
+            htmlLog += "</pre>";
+            htmlLog += "</details><br>\r\n";
 
             // Append trade log
             try
             {
-                System.IO.File.AppendAllText(GUIServer.Globals.log_fullFileName, message + "\r\n");
+                System.IO.File.AppendAllText(GUIServer.Globals.tradesLog_fullFileName, htmlLog);
             }
             catch (Exception ex)
             {
-                Log.addLog(GUIServer.LogType.Error, "Не удалось логировать в файл: {0}", ex.ToString());
+                Log.addLog(GUIServer.LogType.Error, "Не удалось логировать в файл: {0} content: {1}", ex.ToString(), htmlLog);
             }
         }
         public void LogMessage(string message)
