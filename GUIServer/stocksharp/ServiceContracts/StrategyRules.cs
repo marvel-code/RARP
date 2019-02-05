@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Ecng.Common;
 using StockSharp.BusinessEntities;
 using StockSharp.Messages;
+using transportDataParrern;
+using Ecng.Common;
 
 namespace stocksharp.ServiceContracts
 {
@@ -73,17 +75,7 @@ namespace stocksharp.ServiceContracts
 
                     //-// LONG общее условие......................
 
-                    //..tf[0]/1min; tf[1]/30min.
-
-                    tf[0].GetPriceChannelHigh(3, 0) > tf[0].GetPriceChannelHigh(3, 1)  //..1min
-
-                    &&
-
-                    tf[1].IsGreenCandle(0)                                             //..30min
-                    &&
-                    tf[1].kama[0].val > tf[1].kama[0].val_p
-
-                    //true
+                    true
 
                     //-//
                     && true;
@@ -113,7 +105,7 @@ namespace stocksharp.ServiceContracts
                     tf[1].volume.vector > tf[1].volume.vector_hp * new decimal(1.5)
                     &&
                     tf[1].volume.vector > -tf[1].volume.vector_lp * new decimal(1.5)
-
+                      
                     ,
                     tf[1].roc[1].val > tf[1].roc[1].val_p                           //..3
                     &&
