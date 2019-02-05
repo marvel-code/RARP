@@ -157,7 +157,7 @@ namespace stocksharp.ServiceContracts
             string htmlLog = "";
             Dictionary<string, string> tradeInfo = new Dictionary<string, string>
             {
-                {"Время", _currentData.TerminalTime.ToString("yyyy/MM/dd <b>HH:mm:ss</b>")},
+                {"Время", _currentData.TerminalTime.ToString("yyyy/MM/dd <b>HH:mm:ss")},
                 {"Действие", action},
                 {"Объем", volume.ToString()},
                 {"PNL дня", dayPnl.ToString()},
@@ -194,7 +194,7 @@ namespace stocksharp.ServiceContracts
 
             // Log indicators values
             htmlLog += "<tr>";
-            htmlLog += "<td colspan=4>";
+            htmlLog += "<td colspan=100>";
             htmlLog += "<details style=\"padding-left:10px\">";
             htmlLog += "<summary>Значения индикаторов</summary>";
             htmlLog += "<pre>";
@@ -214,11 +214,11 @@ namespace stocksharp.ServiceContracts
                     htmlLog += string.Format("<h4>{0}[{1}]</h4>", "ADX", ind_k);
 
                     htmlLog += string.Format("val:\t\t{0:N0}<br>", ind.val);
-                    htmlLog += string.Format("val_p:\t\t{0:N0}<br>", ind.val_p);
+                    htmlLog += string.Format("val_p:\t\t\t{0:N0}<br>", ind.val_p);
                     htmlLog += string.Format("dip:\t\t{0:N0}<br>", ind.dip);
-                    htmlLog += string.Format("dip_p:\t\t{0:N0}<br>", ind.dip_p);
+                    htmlLog += string.Format("dip_p:\t\t\t{0:N0}<br>", ind.dip_p);
                     htmlLog += string.Format("dim:\t\t{0:N0}<br>", ind.dim);
-                    htmlLog += string.Format("dim_p:\t\t{0:N0}<br>", ind.dim_p);
+                    htmlLog += string.Format("dim_p:\t\t\t{0:N0}<br>", ind.dim_p);
                 }
                 htmlLog += "<br>";
 
@@ -230,7 +230,7 @@ namespace stocksharp.ServiceContracts
                     htmlLog += string.Format("<h4>{0}[{1}]</h4>", "BBW", ind_k);
 
                     htmlLog += string.Format("val:\t\t{0:N0}<br>", ind.val);
-                    htmlLog += string.Format("val_p:\t\t{0:N0}<br>", ind.val_p);
+                    htmlLog += string.Format("val_p:\t\t\t{0:N0}<br>", ind.val_p);
                 }
                 htmlLog += "<br>";
 
@@ -242,7 +242,7 @@ namespace stocksharp.ServiceContracts
                     htmlLog += string.Format("<h4>{0}[{1}]</h4>", "KAMA", ind_k);
 
                     htmlLog += string.Format("val:\t\t{0:N0}<br>", ind.val);
-                    htmlLog += string.Format("val_p:\t\t{0:N0}<br>", ind.val_p);
+                    htmlLog += string.Format("val_p:\t\t\t{0:N0}<br>", ind.val_p);
                 }
                 htmlLog += "<br>";
 
@@ -254,7 +254,7 @@ namespace stocksharp.ServiceContracts
                     htmlLog += string.Format("<h4>{0}[{1}]</h4>", "MA", ind_k);
 
                     htmlLog += string.Format("val:\t\t{0:N0}<br>", ind.val);
-                    htmlLog += string.Format("val_p:\t\t{0:N0}<br>", ind.val_p);
+                    htmlLog += string.Format("val_p:\t\t\t{0:N0}<br>", ind.val_p);
                 }
                 htmlLog += "<br>";
 
@@ -266,7 +266,7 @@ namespace stocksharp.ServiceContracts
                     htmlLog += string.Format("<h4>{0}[{1}]</h4>", "ROC", ind_k);
 
                     htmlLog += string.Format("val:\t\t{0:N2}<br>", ind.val);
-                    htmlLog += string.Format("val_p:\t\t{0:N2}<br>", ind.val_p);
+                    htmlLog += string.Format("val_p:\t\t\t{0:N2}<br>", ind.val_p);
                 }
                 htmlLog += "<br>";
 
@@ -275,20 +275,20 @@ namespace stocksharp.ServiceContracts
                 foreach (var ind in tfi.Volume)
                 {
                     ind_k++;
-                    htmlLog += string.Format("<br><h4>{0}[{1}]</h4>", "VOLUME", ind_k);
+                    htmlLog += string.Format("<h4>{0}[{1}]</h4>", "VOLUME", ind_k);
 
                     htmlLog += string.Format("total:\t\t{0}<br>", ind.total);
-                    htmlLog += string.Format("total_p:\t{0}<br>", ind.total_p);
+                    htmlLog += string.Format("total_p:\t\t{0}<br>", ind.total_p);
                     htmlLog += string.Format("buy:\t\t{0}<br>", ind.buy);
-                    htmlLog += string.Format("buy_p:\t\t{0}<br>", ind.buy_p);
+                    htmlLog += string.Format("buy_p:\t\t\t{0}<br>", ind.buy_p);
                     htmlLog += string.Format("sell:\t\t{0}<br>", ind.sell);
-                    htmlLog += string.Format("sell_p:\t\t{0}<br>", ind.sell_p);
+                    htmlLog += string.Format("sell_p:\t\t\t{0}<br>", ind.sell_p);
                     htmlLog += string.Format("vector:\t\t{0}<br>", ind.vector);
-                    htmlLog += string.Format("vector_p:\t{0}<br>", ind.vector_p);
+                    htmlLog += string.Format("vector_p:\t\t{0}<br>", ind.vector_p);
                     htmlLog += string.Format("vector_h:\t{0}<br>", ind.vector_h);
-                    htmlLog += string.Format("vector_hp:\t{0}<br>", ind.vector_hp);
+                    htmlLog += string.Format("vector_hp:\t\t{0}<br>", ind.vector_hp);
                     htmlLog += string.Format("vector_l:\t{0}<br>", ind.vector_l);
-                    htmlLog += string.Format("vector_lp:\t{0}<br>", ind.vector_lp);
+                    htmlLog += string.Format("vector_lp:\t\t{0}<br>", ind.vector_lp);
                 }
                 htmlLog += "<br>";
             }
