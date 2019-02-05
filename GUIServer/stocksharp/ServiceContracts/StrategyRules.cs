@@ -8,385 +8,348 @@ using Ecng.Common;
 
 namespace stocksharp.ServiceContracts
 {
+    public partial class ProcessingData
+    {
+        // >> Customizable strategy settings
+        public List<int> tf_Periods = new List<int>
+        {
+            60,
+            1800
+        };
+        public List<ADX_Configuration> adx_cfgList = new List<ADX_Configuration>
+        {
+            new ADX_Configuration(
+                    0, 3, MaType.Exponential
+                ),
+        };
+        public List<BBW_Configuration> bbw_cfgList = new List<BBW_Configuration>
+        {
+            new BBW_Configuration(
+                    0, 3, 2, CalculationType.Median, MaType.Simple
+                ),
+        };
+        public List<KAMA_Configuration> kama_cfgList = new List<KAMA_Configuration>
+        {
+            new KAMA_Configuration(
+                    1, 3, CalculationType.Median, 2, 30
+                )
+        };
+        public List<MA_Configuration> ma_cfgList = new List<MA_Configuration>
+        {
+            new MA_Configuration(
+                    0, 2, MaType.Simple, CalculationType.Median
+                ),
+        };
+        public List<ROC_Configuration> roc_cfgList = new List<ROC_Configuration>
+        {
+            new ROC_Configuration(1, 1, CalculationType.Median),
+            new ROC_Configuration(1, 2, CalculationType.Median),
+        };
+        public List<Volume_Configuration> volume_cfgList = new List<Volume_Configuration>
+        {
+            new Volume_Configuration(0, 2, 1, 60),
+            new Volume_Configuration(1, 2, 1, 1),
+        };
+    }
+
     public partial class WorkService
     {
-        private int ruleId;
-        private bool fix(bool _newBlock = false)
+        //
+        // Разрешение входа после выхода
+        //
+
+        private bool isEntryAllowedAfterExitRule =>
+                    //-// Разрешение входа после выхода
+
+                    true
+
+                    //-//
+                    && true;
+
+
+        //
+        // LONG.......................................
+        //
+
+        private bool LongCommonRule =>
+
+                    //-// LONG общее условие......................
+
+                    true
+
+                    //-//
+                    && true;
+
+        private List<List<bool>> LongAdditionalRules => new List<List<bool>>
+                {
+//-// LONG добавочные условия..................
+
+/// Add.1...........................................................................
+ 
+                    new List<bool>
+                    {
+
+                    tf[1].roc[0].val > new decimal(0.0)          //..per=1          //..1
+                    &&
+                    tf[1].roc[0].val > tf[1].roc[0].val_p
+                    &&
+                    tf[1].roc[1].val > tf[1].roc[1].val_p
+                    &&
+                    tf[1].roc[1].val > new decimal(0.0)          //..per=2   
+                        
+                    ,
+                    tf[1].roc[0].val > new decimal(0.0)          //..per=1          //..2
+                    &&
+                    tf[1].roc[0].val > tf[1].roc[0].val_p
+                    &&
+                    tf[1].volume.vector > tf[1].volume.vector_hp * new decimal(1.5)
+                    &&
+                    tf[1].volume.vector > -tf[1].volume.vector_lp * new decimal(1.5)
+                      
+                    ,
+                    tf[1].roc[1].val > tf[1].roc[1].val_p                           //..3
+                    &&
+                    tf[1].roc[1].val > new decimal(0.0)          //..per=2   
+                    &&
+                    tf[1].volume.vector > tf[1].volume.vector_hp * new decimal(1.5)
+                    &&
+                    tf[1].volume.vector > -tf[1].volume.vector_lp * new decimal(1.5)
+
+                    },
+
+/// Add.2...........................................................................
+ 
+                    new List<bool>
+                    {
+
+                    tf[1].volume.vector > tf[1].volume.vector_hp * new decimal(1)
+                    &&
+                    tf[1].volume.vector > -tf[1].volume.vector_lp * new decimal(1)
+
+                    },
+
+/// Add.3...........................................................................
+ 
+                    new List<bool>
+                    {
+
+                    tf[1].GetPriceChannelHigh(4, 0) > tf[1].GetPriceChannelHigh(4, 1)
+
+                    ,
+                    tf[1].volume.vector > tf[1].volume.vector_hp * new decimal(1.5)
+                    &&
+                    tf[1].volume.vector > -tf[1].volume.vector_lp * new decimal(1.5)
+
+                    },
+
+           //-//
+                };
+
+
+        //
+        // SHORT......................................
+        //
+
+        private bool ShortCommonRule =>
+
+                    //-// SHORT общее условие....................
+
+                    tf[0].GetPriceChannelLow(3, 0) < tf[0].GetPriceChannelLow(3, 1)  //..1min
+
+                    &&
+
+                    tf[1].IsRedCandle(0)                                             //..30min
+                    &&
+                    tf[1].kama[0].val < tf[1].kama[0].val_p
+
+            //true
+
+            //-//
+            && true;
+
+        private List<List<bool>> ShortAdditionalRules => new List<List<bool>>
         {
-            if (_newBlock)
-                //.
-                ruleId *= 10;
-            else
-            {
-                // Работаем в 10 системе счисления
-                if (ruleId % 10 == 9)
-                {
-                    //addLogMessage("Незадача то какая.. Больше 9 условий в блоке!");
-                    //mw.stopTrading();
-                }
-                // ..
-                ruleId++;
-            }
+//-// SHORT добавочные условия................
 
-            return true;
-        }
+/// Add.1...........................................................................
+ 
+                    new List<bool>
+                    {
 
-        private const bool DYNAMIC = false; // true - включить; false - выключить (ДИНАМИЧЕСКОЕ УСЛОВИЕ)
+                    tf[1].roc[0].val < - new decimal(0.0)          //..per=1          //..1
+                    &&
+                    tf[1].roc[0].val < tf[1].roc[0].val_p
+                    &&
+                    tf[1].roc[1].val < tf[1].roc[1].val_p
+                    &&
+                    tf[1].roc[1].val < - new decimal(0.0)          //..per=2          
 
-        private bool waitCommonReverse = false;
-        private bool waitLongReverse = false;
-        private bool waitShortReverse = false;
-        public TradeState updateTradeState(List<TimeFrame> tf, NeedAction _needAction, PartnerDataObject PD)
+                    ,
+                    tf[1].roc[0].val < - new decimal(0.0)          //..per=1          //..2
+                    &&
+                    tf[1].roc[0].val < tf[1].roc[0].val_p
+                    &&
+                    tf[1].volume.vector < tf[1].volume.vector_lp * new decimal(1.5)
+                    &&
+                    tf[1].volume.vector < -tf[1].volume.vector_hp * new decimal(1.5)
+
+                    ,
+                    tf[1].roc[1].val < tf[1].roc[1].val_p                             //..3
+                    &&
+                    tf[1].roc[1].val < - new decimal(0.0)          //..per=2   
+                    &&
+                    tf[1].volume.vector < tf[1].volume.vector_lp * new decimal(1.5)
+                    &&
+                    tf[1].volume.vector < -tf[1].volume.vector_hp * new decimal(1.5)
+
+                    },
+
+/// Add.2...........................................................................
+ 
+                    new List<bool>
+                    {
+
+                    tf[1].volume.vector < tf[1].volume.vector_lp * new decimal(1)
+                    &&
+                    tf[1].volume.vector < -tf[1].volume.vector_hp * new decimal(1)
+
+                    },
+
+/// Add.2...........................................................................
+ 
+                    new List<bool>
+                    {
+
+                    tf[1].GetPriceChannelLow(4, 0) < tf[1].GetPriceChannelLow(4, 1)
+
+                    ,
+                    tf[1].volume.vector < tf[1].volume.vector_lp * new decimal(1.5)
+                    &&
+                    tf[1].volume.vector < -tf[1].volume.vector_hp * new decimal(1.5)
+
+                    },
+
+            //-//
+        };
+
+
+        //
+        // Запреты на вход
+        //
+
+        private bool isEntryDenyed =>
+               //-// Запрет на вход 
+
+               false
+            // tf[1].isExitCandle(1)
+
+            //-//
+            && true;
+
+        private bool isLongDenyed =>
+            //-// Запрет на LONG
+
+            false
+
+            //-//
+            && true;
+
+        private bool isShortDenyed =>
+            //-// Запрет на SHORT
+
+            false
+
+            //-//
+            && true;
+
+
+        //
+        // SELL....................................
+        //
+
+        private bool SellCommonRule =>
+                    //-// SELL общее условие...................
+
+                    true
+
+            //-//
+            && true;
+
+        private List<bool> SellAdditionalRules => new List<bool>
         {
-            TradeState tradeState = new TradeState();
-
-            decimal Position_PNL = PD.Position_PNL;
-            decimal Position_PNL_MAX = PD.Position_PNL_MAX;
-
-            if (_needAction == NeedAction.LongOrShortOpen)
-            {
-
-
-                /** Условие на общий реверс **/
-
-                if (waitCommonReverse) waitCommonReverse = false;
-
-
-                /** Условие на LONG реверс **/
-
-                if (waitLongReverse) waitLongReverse = false;
-
-
-                /** Условие на SHORT реверс **/
-
-                if (waitShortReverse) waitShortReverse = false;
-                
-
-/** LONG **///.....................................
-
-                {
-
-                ruleId = 0;
-                tradeState.LongOpen = !waitCommonReverse && !waitLongReverse
-                    //*//
-                &&
-
-                tf[0].IsGreenCandle(0)           //1min
-                &&
-                tf[0].GetPriceChannelHigh(3, 0) > tf[0].GetPriceChannelHigh(3, 1) +
-                new decimal(0)
-                &&
-                tf[1].IsGreenCandle(0)             //  5min
-                &&
-                tf[1].GetPriceChannelHigh(1, 0) > tf[1].GetPriceChannelHigh(1, 1) +
-                new decimal(0)
-                &&
-                tf[1].roc[1].val > new decimal(0.0)          //..per=2 
-                &&
-                tf[1].roc[1].val > tf[1].roc[1].val_p
-                &&
-
-//..Add.1..................                   
-
-                    (fix(true) && false
-
-                        || fix() &&
-                        tf[1].roc[0].val > new decimal(0.12)          //..per=1          //..1
-                        &&
-                        tf[1].roc[0].val > tf[1].roc[0].val_p
-
-                        || fix() &&
-                        tf[1].roc[1].val > new decimal(0.15)          //..per=2          //..2
-                        &&
-                        tf[1].roc[1].val > tf[1].roc[1].val_p
-
-                        || fix() &&
-                        tf[1].roc[2].val > new decimal(0.15)          //..per=3          //..3
-                        &&
-                        tf[1].roc[2].val > tf[1].roc[2].val_p
-
-                        || fix() &&
-                        tf[1].roc[0].val > new decimal(0.07)          //..per=1          //..4
-                        &&
-                        tf[1].volume.total > tf[1].volume.total_p * new decimal(2.5)
-
-                        || fix() &&
-                        tf[1].roc[0].val > new decimal(0.07)          //..per=1          //..5
-                        &&
-                        tf[1].GetCandleBodyRange(0) > tf[1].GetCandleHLRange(1) * new decimal(1.0)
-                        &&
-                        tf[1].volume.total > tf[1].volume.total_p * new decimal(1.0)
-
-                        || fix() &&
-                        tf[1].roc[0].val > new decimal(0.03)          //..per=1          //..6
-                        &&
-                        tf[1].roc[0].val > tf[1].roc[0].val_p
-                        &&
-                        tf[1].roc[1].val > new decimal(0.03)          //..per=2          
-                        &&
-                        tf[1].roc[1].val > tf[1].roc[1].val_p
-                        &&
-                        tf[1].roc[2].val > new decimal(0.03)          //..per=3          
-                        &&
-                        tf[1].roc[2].val > tf[1].roc[2].val_p
-                        &&
-                        tf[1].volume.total > tf[1].volume.total_p * new decimal(1.0)
-
-                    )
-
+//-// SELL дополнительные условия.........
+           
+                    tf[1].roc[0].val < tf[1].roc[0].val_p                               //..1
                     &&
-
-//..Add.2...................
-
-                    (fix(true) && false
-
-                        || fix() &&
-                        tf[1].volume.vector > tf[1].volume.vector_p                     //..1
-                        &&
-                        tf[1].volume.vector_p > 0
-
-                        || fix() &&
-                        tf[1].volume.vector > -tf[1].volume.vector_p                   //..2
-                        &&
-                        tf[1].volume.vector_p < 0
-
-                        || fix() &&
-                        tf[1].volume.vector > new decimal(300)                          //..3
-
-                    )
-                    //*//
-                    && true;
-                }
-                
-
-  /** SHORT **///...............................................
-
-                if (!tradeState.LongOpen)
-                {
-
-                ruleId = 0;
-                tradeState.ShortOpen = !waitCommonReverse && !waitShortReverse
-                    //*//
-                &&
-                tf[0].IsRedCandle(0)
-                &&
-                tf[0].GetPriceChannelLow(3, 0) < tf[0].GetPriceChannelLow(3, 1) -
-                new decimal(0)
-                &&
-                tf[1].IsRedCandle(0)
-                &&
-                tf[1].GetPriceChannelLow(1, 0) < tf[1].GetPriceChannelLow(1, 1) -
-                new decimal(0)
-                &&
-                tf[1].roc[1].val < new decimal(0.0)          //..per=2 
-                &&
-                tf[1].roc[1].val < tf[1].roc[1].val_p
-                &&
-
-//..Add.1...................
-
-                    (fix(true) && false   
-                    
-                        || fix() &&
-                        tf[1].roc[0].val < - new decimal(0.12)          //..per=1          //..1
-                        &&
-                        tf[1].roc[0].val < tf[1].roc[0].val_p
-
-                        || fix() &&
-                        tf[1].roc[1].val < - new decimal(0.15)          //..per=2          //..2
-                        &&
-                        tf[1].roc[1].val < tf[1].roc[1].val_p
-
-                        || fix() &&
-                        tf[1].roc[2].val < - new decimal(0.15)          //..per=3          //..3
-                        &&
-                        tf[1].roc[2].val < tf[1].roc[2].val_p
-
-                        || fix() &&
-                        tf[1].roc[0].val < - new decimal(0.07)          //..per=1         //..4
-                        &&
-                        tf[1].volume.total > tf[1].volume.total_p * new decimal(2.5)
-
-                        || fix() &&
-                        tf[1].roc[0].val < - new decimal(0.07)          //..per=1         //..5
-                        &&
-                        tf[1].GetCandleBodyRange(0) > tf[1].GetCandleHLRange(1) * new decimal(1.0)
-                        &&
-                        tf[1].volume.total > tf[1].volume.total_p * new decimal(1.0)
-
-                        || fix() &&
-                        tf[1].roc[0].val < - new decimal(0.03)          //..per=1         //..7
-                        &&
-                        tf[1].roc[0].val < tf[1].roc[0].val_p
-                        &&
-                        tf[1].roc[1].val < - new decimal(0.03)          //..per=2          
-                        &&
-                        tf[1].roc[1].val < tf[1].roc[1].val_p
-                        &&
-                        tf[1].roc[2].val < - new decimal(0.03)          //..per=3          
-                        &&
-                        tf[1].roc[2].val < tf[1].roc[2].val_p
-                        &&
-                        tf[1].volume.total > tf[1].volume.total_p * new decimal(1.0)  
-
-                    )
-
+                    tf[1].roc[1].val < tf[1].roc[1].val_p
                     &&
+                   (
+                    tf[1].volume.vector < tf[1].volume.vector_hp * new decimal(1.5)
+                    ||
+                    tf[1].volume.vector < -tf[1].volume.vector_lp * new decimal(1.5)
+                   )
 
-//..Add.2...................                    
-
-                    (fix(true) && false
-
-                        || fix() &&
-                        tf[1].volume.vector < tf[1].volume.vector_p                      //..1
-                        &&
-                        tf[1].volume.vector_p < 0
-
-                        || fix() &&
-                        tf[1].volume.vector < -tf[1].volume.vector_p                     //..2
-                        &&
-                        tf[1].volume.vector_p > 0
-
-                        || fix() &&
-                        tf[1].volume.vector < -new decimal(300)
-
-                    )
-                    //*//
-                    && true;
-                }
-
-
-                /** Разрешение на LONG или SHORT **/
-
-                bool allowEntry = true
-                    //*//
-                    && !tf[1].IsExitCandle()
-                    //*//
-                    && true;
-
-
-                /** Разрешение на LONG **/
-
-                tradeState.LongOpen &= allowEntry
-                    //*//
-                    && tf[0].IsExitCandle() == false || PD.lastEnterDirection != Sides.Buy.ToString()
-                    //*//
-                    && true;
-
-
-                /** Разрешение на SHORT **/
-
-                tradeState.ShortOpen &= allowEntry
-                    //*//
-                    && tf[0].IsExitCandle() == false || PD.lastEnterDirection != Sides.Sell.ToString()
-                    //*//
-                    && true;
-                
-
-                tradeState.RuleId = ruleId;
-                if (tradeState.LongOpen) waitLongReverse = true;
-                if (tradeState.ShortOpen) waitShortReverse = true;
-            }
-            {
-
-/** SELL **///...........................................
-
-                ruleId = 0;
-                tradeState.LongClose = false
-                    //*//
-                    || fix() &&
-                    tf[1].IsRedCandle(0)                                               //..1
+                    ,
+                    tf[1].IsRedCandle(0)
                     &&
-                    tf[1].GetCandleDuration(0) > tf[1].period * new decimal(0.7)
-
-                    || fix() &&
-                    tf[1].IsRedCandle(0)                                               //..2
+                    tf[1].volume.vector_p > new decimal(1000)
                     &&
-                    tf[1].GetCandleHLRange(0) > tf[1].GetCandleHLRange(1) * new decimal(0.7)
+                    tf[1].volume.vector < - tf[1].volume.vector_p * new decimal(0.5)
 
-                    || fix() &&
-                    tf[1].IsRedCandle(0)                                               //..3
-                    &&
-                    tf[1].GetPriceChannelLow(1, 0) < tf[1].GetPriceChannelLow(1, 1)
+                    ,
+                    Position_PNL <= Position_PNL_MAX - new decimal(400)                 //..2 
 
-                    || fix() &&
-                    Position_PNL <= Position_PNL_MAX - new decimal(150)                //..4 
-
-                    || fix() &&
-                    Position_PNL_MAX >= new decimal(100)                               //..5         
+                    ,
+                    Position_PNL_MAX >= new decimal(1000)                               //..3         
                     &&
                     Position_PNL <= Position_PNL_MAX - new decimal(10)
 
-                    || fix() &&
-                    tf[1].IsRedCandle(0)                                               //..6
+            //-//
+        };
+
+
+        //
+        // COVER....................................
+        //
+
+        private bool CoverCommonRule =>
+                   //-// COVER общее условие..................
+
+                   true
+
+            //-//
+            && true;
+
+        private List<bool> CoverAdditionalRules => new List<bool>
+        {
+//-// COVER дополнительные условия..........
+
+                    tf[1].roc[0].val > tf[1].roc[0].val_p                                 //..1
                     &&
-                    tf[1].currentPrice < tf[1].GetCandleHigh(1) - tf[1].GetCandleHLRange(1) *
-                    new decimal(0.7)
-
-                    //*//
-                    && true;
-                    if (_needAction == NeedAction.LongClose)
-                    tradeState.RuleId = ruleId;
-
-/** COVER **///...............................................
-
-                ruleId = 0;
-                tradeState.ShortClose = false
-                    //*//
-
-                    || fix() &&
-                    tf[1].IsGreenCandle(0)                                             //..1
+                    tf[1].roc[1].val > tf[1].roc[1].val_p
                     &&
-                    tf[1].GetCandleDuration(0) > tf[1].period * new decimal(0.7)
+                    (
+                    tf[1].volume.vector > tf[1].volume.vector_lp * new decimal(1.5)
+                    ||
+                    tf[1].volume.vector > -tf[1].volume.vector_hp * new decimal(1.5)
+                    )
 
-                    || fix() &&
-                    tf[1].IsGreenCandle(0)                                             //..2
+                    ,
+                    tf[1].IsGreenCandle(0)
                     &&
-                    tf[1].GetCandleHLRange(0) > tf[1].GetCandleHLRange(1) * new decimal(0.7)
-
-                    || fix() &&
-                    tf[1].IsGreenCandle(0)                                             //..3
+                    tf[1].volume.vector_p < - new decimal(1000)
                     &&
-                    tf[1].GetPriceChannelHigh(1, 0) > tf[1].GetPriceChannelHigh(1, 1)
+                    tf[1].volume.vector > - tf[1].volume.vector_p * new decimal(0.5)
 
-                    || fix() &&
-                    Position_PNL <= Position_PNL_MAX - new decimal(150)                //..4  
+                    ,
+                    Position_PNL <= Position_PNL_MAX - new decimal(400)                   //..2 
 
-                    || fix() &&
-                    Position_PNL_MAX >= new decimal(100)                               //..5         
+                    ,
+                    Position_PNL_MAX >= new decimal(1000)                                 //..3         
                     &&
                     Position_PNL <= Position_PNL_MAX - new decimal(10)
 
-                    || fix() &&
-                    tf[1].IsGreenCandle(0)                                             //..6
-                    &&
-                    tf[1].currentPrice > tf[1].GetCandleLow(1) + tf[1].GetCandleHLRange(1) *
-                    new decimal(0.7)
-
-                    //*//
-                    && true;
-
-                    if (_needAction == NeedAction.ShortClose)
-                    tradeState.RuleId = ruleId;
-            }
-
-            /*
-            if (_currentUser == "ro#9019")
-            {
-
-                GUIServer.MainWindow.Instance.UpdateInfoLabel(string.Format("_{0}_ _{1}_ _{2}_ _{3}_ _{4}_ _{5}_ _{6}_",
-                    Math.Round(tf[0].Volume[0].GetAvrBv(120), 1),
-                    Math.Round(tf[0].Volume[0].GetAvrSv(120), 1),
-                    Math.Round(tf[0].Volume[0].GetAvrTv(120), 1),
-                    Math.Round(tf[0].Volume[0].GetAvrVv(120), 1),
-                   Math.Round(tf[0].Volume[0].GetTv(120), 1),
-                    Math.Round(tf[0].Volume[0].GetVv(120), 1),
-                   Math.Round(tf[0].Volume[0].sv, 1)
-                   ));
-            }
-            */
-
-            return tradeState;
-        }
+            //-//
+        };
     }
 }

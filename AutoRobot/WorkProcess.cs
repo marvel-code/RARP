@@ -38,8 +38,8 @@ namespace AutoRobot
         /// Settings
 
         const string USERNAME = "vz#1999";
-        const string IP = "185.158.153.217";
-        //const string IP = "127.0.0.1";
+        //const string IP = "185.158.153.217";
+        const string IP = "127.0.0.1";
         const int PORT = 8020;
         const int maxServerExceptionCount = 5;
 
@@ -278,10 +278,10 @@ namespace AutoRobot
                             {
                                 string message = string.Format("Замечено OPEN&CLOSE. Выход из торговли. (LO-LC SO-SC):({0}-{1} {2}-{3})", tradeData.LongOpen, tradeData.LongClose, tradeData.ShortOpen, tradeData.ShortClose);
                                 addLogMessage(message);
-                                _proxy.LogAction(message);
+                                _proxy.LogMessage(message);
                                 mw.stopTrading();
 
-                                _proxy.LogAction(message);
+                                _proxy.LogMessage(message);
                                 return ProcessResults.Continue;
                             }
 
@@ -302,7 +302,7 @@ namespace AutoRobot
                                     QuikStopConditionTypes.TakeProfitStopLimit
                                 );
 
-                                _proxy.LogAction(string.Format("Открытие LONG({1}): {0}", Security.LastTrade.Price, tradeData.RuleId));
+                                _proxy.LogTrade("LONG", TM.tradeСfg.Order_Volume, TM.Day_PNL, tradeData.RuleId, Security.LastTrade.Price, TM.tradeСfg.Order_Shift);
                                 return ProcessResults.Continue;
                             }
 
@@ -322,8 +322,8 @@ namespace AutoRobot
                                     OrderDirections.Buy, 
                                     QuikStopConditionTypes.TakeProfitStopLimit
                                 );
-
-                                _proxy.LogAction(string.Format("Открытие SHORT{1}: {0}", Security.LastTrade.Price, tradeData.RuleId));
+                                
+                                _proxy.LogTrade("SHORT", TM.tradeСfg.Order_Volume, TM.Day_PNL, tradeData.RuleId, Security.LastTrade.Price, TM.tradeСfg.Order_Shift);
                                 return ProcessResults.Continue;
                             }
                         }
@@ -331,7 +331,7 @@ namespace AutoRobot
                         {
                             if (TM.is_Exit_From_Stop_Order())
                             {
-                                _proxy.LogAction(string.Format("Закрытие позиции по стопу {0}", Security.LastTrade.Price));
+                                _proxy.LogMessage(string.Format("Закрытие позиции по стопу {0}", Security.LastTrade.Price));
                                 return ProcessResults.Continue;
                             }
 
@@ -340,7 +340,7 @@ namespace AutoRobot
                                 // SELL
                                 if (tradeData.LongClose && (TM.last_ExitOrder == null || TM.last_ExitOrder.State == OrderStates.Done))
                                 {
-                                    _proxy.LogAction(string.Format("Закрытие LONG({2}): {1} {0}pnl", TM.Position_PNL, Security.LastTrade.Price, tradeData.RuleId));
+                                    _proxy.LogTrade("SELL", TM.tradeСfg.Order_Volume, TM.Day_PNL, tradeData.RuleId, Security.LastTrade.Price, TM.tradeСfg.Order_Shift, TM.Position_PNL, TM.Min_Position_PNL, TM.Max_Position_PNL);
 
                                     // Exit order
                                     TM.Register.ExitOrder(
@@ -354,7 +354,7 @@ namespace AutoRobot
                                 // COVER
                                 if (tradeData.ShortClose && (TM.last_ExitOrder == null || TM.last_ExitOrder.State == OrderStates.Done))
                                 {
-                                    _proxy.LogAction(string.Format("Закрытие SHORT({2}): {1} {0}pnl", TM.Position_PNL, Security.LastTrade.Price, tradeData.RuleId));
+                                    _proxy.LogTrade("COVER", TM.tradeСfg.Order_Volume, TM.Day_PNL, tradeData.RuleId, Security.LastTrade.Price, TM.tradeСfg.Order_Shift, TM.Position_PNL, TM.Min_Position_PNL, TM.Max_Position_PNL);
 
                                     // Exit order
                                     TM.Register.ExitOrder(
