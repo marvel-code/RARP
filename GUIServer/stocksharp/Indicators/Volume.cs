@@ -937,7 +937,7 @@ namespace stocksharp
 
             return result;
         }
-        // Время открытия свечи
+        // Общие данные
         public DateTimeOffset Get_OpenTime(int shift = 0)
         {
             if (Buffer.Count <= shift)
@@ -969,6 +969,59 @@ namespace stocksharp
             }
 
             return (decimal)(CloseTime - OpenTime).TotalSeconds;
+        }
+        Dictionary<int, decimal> _tactPrice_buffer = new Dictionary<int, decimal>();
+        public decimal GetTactPrice(int shift = 0)
+        {
+            var curCandle = Get_Candle();
+            if (curCandle == null)
+                return 0;
+            if (curCandle.Time.Day != Get_Candle(1).Time.Day)
+            {
+                _tactPrice_buffer = new Dictionary<int, decimal>();
+            }
+
+            int currentDaySecond = (int)_processingData.TerminalTime.TimeOfDay.TotalSeconds;
+            int calcDaySecond = currentDaySecond - currentDaySecond % VV_TACT - shift * VV_TACT;
+
+            decimal result;
+            if (_tactPrice_buffer.ContainsKey(calcDaySecond))
+            {
+                result = _tactPrice_buffer[calcDaySecond];
+            }
+            else
+            {
+                decimal lastCalcDaySecond = 0;
+                if (_tactPrice_buffer.Count != 0)
+                {
+                    lastCalcDaySecond = _tactPrice_buffer.Keys.Max();
+                }
+
+                var AllTrades = _processingData.AllTrades;
+                int k = VV_TACT;
+                int tradeDaySecond = (int)AllTrades.ElementAtFromEnd(k).Time.TimeOfDay.TotalSeconds;
+                if (calcDaySecond < tradeDaySecond)
+                {
+                    do
+                    {
+                        k--;
+                        tradeDaySecond = (int)AllTrades.ElementAtFromEnd(k).Time.TimeOfDay.TotalSeconds;
+                    } while (calcDaySecond < tradeDaySecond && k > 0);
+                }
+                else
+                {
+                    int AllTradesCount = AllTrades.Count();
+                    do
+                    {
+                        k++;
+                        tradeDaySecond = (int)AllTrades.ElementAtFromEnd(k).Time.TimeOfDay.TotalSeconds;
+                    } while (calcDaySecond < tradeDaySecond && k < AllTradesCount - 1);
+                }
+
+                result = AllTrades.ElementAtFromEnd(k).Price;
+            }
+
+            return result;
         }
     }
     public class Volume_Configuration
