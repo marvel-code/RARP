@@ -974,8 +974,10 @@ namespace stocksharp
         public decimal GetTactPrice(int shift = 0)
         {
             var curCandle = Get_Candle();
-            if (curCandle == null)
+            var prevCandle = Get_Candle(1);
+            if (curCandle == null || prevCandle == null)
                 return 0;
+
             if (curCandle.Time.Day != Get_Candle(1).Time.Day)
             {
                 _tactPrice_buffer = new Dictionary<int, decimal>();
@@ -991,24 +993,18 @@ namespace stocksharp
             }
             else
             {
+                /* TODO: complete calculation optimizes. Idea is to start from closest trade day second to calcDaySecond
                 decimal lastCalcDaySecond = 0;
                 if (_tactPrice_buffer.Count != 0)
                 {
                     lastCalcDaySecond = _tactPrice_buffer.Keys.Max();
                 }
+                */
 
                 var AllTrades = _processingData.AllTrades;
                 int k = VV_TACT;
                 int tradeDaySecond = (int)AllTrades.ElementAtFromEnd(k).Time.TimeOfDay.TotalSeconds;
                 if (calcDaySecond < tradeDaySecond)
-                {
-                    do
-                    {
-                        k--;
-                        tradeDaySecond = (int)AllTrades.ElementAtFromEnd(k).Time.TimeOfDay.TotalSeconds;
-                    } while (calcDaySecond < tradeDaySecond && k > 0);
-                }
-                else
                 {
                     int AllTradesCount = AllTrades.Count();
                     do
@@ -1016,6 +1012,15 @@ namespace stocksharp
                         k++;
                         tradeDaySecond = (int)AllTrades.ElementAtFromEnd(k).Time.TimeOfDay.TotalSeconds;
                     } while (calcDaySecond < tradeDaySecond && k < AllTradesCount - 1);
+                }
+                else
+                {
+                    do
+                    {
+                        k--;
+                        tradeDaySecond = (int)AllTrades.ElementAtFromEnd(k).Time.TimeOfDay.TotalSeconds;
+                    } while (calcDaySecond < tradeDaySecond && k > 0);
+                    k++;
                 }
 
                 result = AllTrades.ElementAtFromEnd(k).Price;
