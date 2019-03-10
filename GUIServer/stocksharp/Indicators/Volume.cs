@@ -970,62 +970,166 @@ namespace stocksharp
 
             return (decimal)(CloseTime - OpenTime).TotalSeconds;
         }
-        Dictionary<int, decimal> _tactPrice_buffer = new Dictionary<int, decimal>();
-        public decimal GetTactPrice(int shift = 0)
+
+        Dictionary<int, decimal> _tactRealPrice_buffer = new Dictionary<int, decimal>();
+        public decimal GetTactRealPrice(int shift = 0)
         {
+            decimal result = 0;
             var curCandle = Get_Candle();
             var prevCandle = Get_Candle(1);
-            if (curCandle == null || prevCandle == null)
-                return 0;
-
-            if (curCandle.Time.Day != Get_Candle(1).Time.Day)
+            if (curCandle != null)
+                result = curCandle.ClosePrice;
+            if (curCandle != null && prevCandle != null)
             {
-                _tactPrice_buffer = new Dictionary<int, decimal>();
-            }
+                // Reset cache
+                if (curCandle.Time.Day != prevCandle.Time.Day)
+                    _tactRealPrice_buffer = new Dictionary<int, decimal>();
 
-            int currentDaySecond = (int)_processingData.TerminalTime.TimeOfDay.TotalSeconds;
-            int calcDaySecond = currentDaySecond - currentDaySecond % VV_TACT - shift * VV_TACT;
+                // Init time bounds
+                int currentDaySecond = (int)_processingData.TerminalTime.TimeOfDay.TotalSeconds;
+                int calcDaySecond = currentDaySecond - currentDaySecond % VV_TACT - shift * VV_TACT;
 
-            decimal result;
-            if (_tactPrice_buffer.ContainsKey(calcDaySecond))
-            {
-                result = _tactPrice_buffer[calcDaySecond];
-            }
-            else
-            {
-                /* TODO: complete calculation optimizes. Idea is to start from closest trade day second to calcDaySecond
-                decimal lastCalcDaySecond = 0;
-                if (_tactPrice_buffer.Count != 0)
+                // Calculate new value
+                if (_tactRealPrice_buffer.ContainsKey(calcDaySecond))
                 {
-                    lastCalcDaySecond = _tactPrice_buffer.Keys.Max();
-                }
-                */
-
-                var AllTrades = _processingData.AllTrades;
-                int k = VV_TACT;
-                int tradeDaySecond = (int)AllTrades.ElementAtFromEnd(k).Time.TimeOfDay.TotalSeconds;
-                if (calcDaySecond < tradeDaySecond)
-                {
-                    int AllTradesCount = AllTrades.Count();
-                    do
-                    {
-                        k++;
-                        tradeDaySecond = (int)AllTrades.ElementAtFromEnd(k).Time.TimeOfDay.TotalSeconds;
-                    } while (calcDaySecond < tradeDaySecond && k < AllTradesCount - 1);
+                    result = _tactRealPrice_buffer[calcDaySecond];
                 }
                 else
                 {
-                    do
+                    decimal lastCalcDaySecond = 0;
+                    if (_tactRealPrice_buffer.Count != 0)
                     {
-                        k--;
-                        tradeDaySecond = (int)AllTrades.ElementAtFromEnd(k).Time.TimeOfDay.TotalSeconds;
-                    } while (calcDaySecond < tradeDaySecond && k > 0);
-                    k++;
+                        lastCalcDaySecond = _tactRealPrice_buffer.Keys.Max();
+                    }
+
+                    var AllTrades = _processingData.AllTrades;
+                    int k = VV_TACT;
+                    int tradeDaySecond = (int)AllTrades.ElementAtFromEnd(k).Time.TimeOfDay.TotalSeconds;
+                    if (calcDaySecond < tradeDaySecond)
+                    {
+                        int AllTradesCount = AllTrades.Count();
+                        do
+                        {
+                            k++;
+                            tradeDaySecond = (int)AllTrades.ElementAtFromEnd(k).Time.TimeOfDay.TotalSeconds;
+                        } while (calcDaySecond < tradeDaySecond && k < AllTradesCount - 1);
+                    }
+                    else
+                    {
+                        do
+                        {
+                            k--;
+                            tradeDaySecond = (int)AllTrades.ElementAtFromEnd(k).Time.TimeOfDay.TotalSeconds;
+                        } while (calcDaySecond >= tradeDaySecond && k > 0);
+                        k++;
+                    }
+
+                    result = AllTrades.ElementAtFromEnd(k).Price;
+                    _tactRealPrice_buffer.Add(calcDaySecond, result);
                 }
-
-                result = AllTrades.ElementAtFromEnd(k).Price;
             }
+            return result;
+        }
+        Dictionary<int, decimal> _tactAveragePriceByTrades = new Dictionary<int, decimal>();
+        public decimal GetTactAveragePriceByTrades(int shift = 0)
+        {
+            decimal result = GetTactRealPrice();
+            var curCandle = Get_Candle();
+            var prevCandle = Get_Candle(1);
+            if (curCandle != null && prevCandle != null)
+            {
+                // Reset cache
+                if (curCandle.Time.Day != prevCandle.Time.Day)
+                    _tactAveragePriceByTrades = new Dictionary<int, decimal>();
 
+                // Init time bounds
+                int currentDaySecond = (int)_processingData.TerminalTime.TimeOfDay.TotalSeconds;
+                int openDaySecond = currentDaySecond - currentDaySecond % VV_TACT - (shift + 1) * VV_TACT;
+                if (_tactAveragePriceByTrades.ContainsKey(openDaySecond))
+                {
+                    // Get cached value
+                    result = _tactAveragePriceByTrades[openDaySecond];
+                }
+                else
+                {
+                    int closeDaySecond = openDaySecond + VV_TACT;
+
+                    // Calculate new value
+                    var AllTrades = _processingData.AllTrades;
+                    int AllTradesCount = AllTrades.Count();
+                    Trade t;
+                    int k = 0;
+                    decimal sum = 0;
+                    decimal volume = 0;
+                    while (k < AllTradesCount && (int)(t = AllTrades.ElementAtFromEnd(k)).Time.TimeOfDay.TotalSeconds >= openDaySecond)
+                    {
+                        k++;
+                        int tradeDaySecond = (int)t.Time.TimeOfDay.TotalSeconds;
+                        if (tradeDaySecond >= closeDaySecond)
+                            continue;
+
+                        sum += t.Price * t.Volume;
+                        volume += t.Volume;
+                    }
+
+                    // Cache
+                    if (volume != 0)
+                        result = sum / volume;
+                    _tactAveragePriceByTrades.Add(openDaySecond, result);
+                }
+            }
+            return result;
+        }
+        Dictionary<int, decimal> _tactAveragePriceBySeconds = new Dictionary<int, decimal>();
+        public decimal GetTactAveragePriceBySeconds(int shift = 0)
+        {
+            decimal result = GetTactRealPrice(shift);
+            var curCandle = Get_Candle();
+            var prevCandle = Get_Candle(1);
+            if (curCandle != null && prevCandle != null)
+            {
+                // Reset cache
+                if (curCandle.Time.Day != prevCandle.Time.Day)
+                    _tactAveragePriceBySeconds = new Dictionary<int, decimal>();
+
+                // Init time bounds
+                int currentDaySecond = (int)_processingData.TerminalTime.TimeOfDay.TotalSeconds;
+                int openDaySecond = currentDaySecond - currentDaySecond % VV_TACT - (shift + 1) * VV_TACT;
+                if (_tactAveragePriceBySeconds.ContainsKey(openDaySecond))
+                {
+                    // Get cached value
+                    result = _tactAveragePriceBySeconds[openDaySecond];
+                }
+                else
+                {
+                    int closeDaySecond = openDaySecond + VV_TACT;
+
+                    // Calculate new value
+                    var AllTrades = _processingData.AllTrades;
+                    int AllTradesCount = AllTrades.Count();
+                    Trade t;
+                    int k = 0;
+                    decimal sum = 0;
+                    int count = 0;
+                    int prevTradeDaySecond = 0;
+                    while (k < AllTradesCount && (int)(t = AllTrades.ElementAtFromEnd(k)).Time.TimeOfDay.TotalSeconds >= openDaySecond)
+                    {
+                        k++;
+                        int tradeDaySecond = (int)t.Time.TimeOfDay.TotalSeconds;
+                        if (tradeDaySecond >= closeDaySecond || tradeDaySecond == prevTradeDaySecond)
+                            continue;
+                        prevTradeDaySecond = tradeDaySecond;
+
+                        sum += t.Price;
+                        count++;
+                    }
+
+                    // Cache
+                    if (count != 0)
+                        result = sum / count;
+                    _tactAveragePriceBySeconds.Add(openDaySecond, result);
+                }
+            }
             return result;
         }
     }
