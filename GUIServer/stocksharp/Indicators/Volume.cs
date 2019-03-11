@@ -951,6 +951,8 @@ namespace stocksharp
         }
         public Candle Get_Candle(int shift = 0)
         {
+            if (Buffer.Count <= shift)
+                return null;
             return Buffer[Buffer.Count - 1 - shift];
         }
         public decimal Get_Candle_Duration(int shift = 0)
