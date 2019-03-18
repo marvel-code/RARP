@@ -221,26 +221,42 @@ namespace AutoRobot
                     updatePnlDisplays();
                     if (isTrade) processPnlLimits();
 
-                    // Set quik data 
+                    // Set quik data
                     ServerDataObject quikData = new ServerDataObject();
-                    quikData.NewCandles = getNewCandles();
-                    quikData.NewTrades = getNewTrades();
-                    quikData.TerminalTime = TM.terminalDateTime;
-                    if (TM.last_EnterOrder != null) quikData.LastEnterTime = TM.last_EnterOrder.Time;
-                    if (TM.last_ExitOrder != null) quikData.LastExitTime = TM.last_ExitOrder.Time;
+                    try
+                    {
+                        quikData.NewCandles = getNewCandles();
+                        quikData.NewTrades = getNewTrades();
+                        quikData.TerminalTime = TM.terminalDateTime;
+                        if (TM.last_EnterOrder != null) quikData.LastEnterTime = TM.last_EnterOrder.Time;
+                        if (TM.last_ExitOrder != null) quikData.LastExitTime = TM.last_ExitOrder.Time;
+                    }
+                    catch (Exception ex)
+                    {
+                        addLogMessage("Ошибка сбора данных QUIK: " + ex.Message);
+                        return ProcessResults.Continue;
+                    }
 
                     // Set client data 
                     PartnerDataObject partnerData = new PartnerDataObject();
-                    partnerData.Position_PNL = TM.Position_PNL;
-                    partnerData.Position_PNL_MAX = TM.Max_Position_PNL;
-                    partnerData.Is_Trading = isTrade;
-                    partnerData.lastEnterDirection = TM.last_EnterOrder == null ? "null" : TM.last_EnterOrder.Direction.ToString();
-                    partnerData.securitiesData = TM.MyTrader.Securities.Select(x => new SecuritiesRow { code = x.Code }).ToList();
-                    partnerData.derivativePortfolioData = new List<DerivativePortfolioRow>() { new DerivativePortfolioRow { beginAmount = TM.MyPortfolio.BeginAmount.Value, variationMargin = TM.MyPortfolio.VariationMargin.Value } };
-                    partnerData.derivativePositionsData = new List<DerivativePositionsRow>() { new DerivativePositionsRow { currentPosition = (int)(TM.MyTrader.GetPosition(TM.MyPortfolio, TM.MySecurity) ?? new Position { CurrentValue = 0 }).CurrentValue } };
-                    partnerData.tradesData = TM.MyTrader.MyTrades.Select(x => new TradeData { id = x.Trade.Id, orderNumber = x.Order.Id, price = x.Trade.Price, volume = (int)x.Trade.Volume, dateTime = x.Trade.Time.ToString(@"yyyy/MM/dd HH:mm:ss") }).ToList();
-                    partnerData.ordersData = TM.MyTrader.Orders.Except(TM.MyTrader.StopOrders).Select(x => new OrderData { id = x.Id, price = x.Price, volume = (int)x.Volume, balance = (int)x.Balance, dateTime = x.Time.ToString(@"yyyy/MM/dd HH:mm:ss"), secCode = x.Security.Code, derivedOrderId = (x.DerivedOrder ?? new Order() { Id = 0}).Id, side = x.Direction.ToString(), state = x.State.ToString(), comment = x.Comment }).ToList();
-                    partnerData.stopOrdersData = TM.MyTrader.StopOrders.Select(x => new StopOrderData { id = x.Id, price = x.Price, stopPrice = (decimal)x.StopCondition.Parameters["StopPrice"], volume = (int)x.Volume, balance = (int)x.Balance, dateTime = x.Time.ToString(@"yyyy/MM/dd HH:mm:ss"), secCode = x.Security.Code, type = x.StopCondition.Parameters["Type"].ToString(), side = x.Direction.ToString(), state = x.State.ToString(), comment = x.Comment }).ToList();
+                    try
+                    {
+                        partnerData.Position_PNL = TM.Position_PNL;
+                        partnerData.Position_PNL_MAX = TM.Max_Position_PNL;
+                        partnerData.Is_Trading = isTrade;
+                        partnerData.lastEnterDirection = TM.last_EnterOrder == null ? "null" : TM.last_EnterOrder.Direction.ToString();
+                        partnerData.securitiesData = TM.MyTrader.Securities.Select(x => new SecuritiesRow { code = x.Code }).ToList();
+                        partnerData.derivativePortfolioData = new List<DerivativePortfolioRow>() { new DerivativePortfolioRow { beginAmount = TM.MyPortfolio.BeginAmount.Value, variationMargin = TM.MyPortfolio.VariationMargin.Value } };
+                        partnerData.derivativePositionsData = new List<DerivativePositionsRow>() { new DerivativePositionsRow { currentPosition = (int)(TM.MyTrader.GetPosition(TM.MyPortfolio, TM.MySecurity) ?? new Position { CurrentValue = 0 }).CurrentValue } };
+                        partnerData.tradesData = TM.MyTrader.MyTrades.Select(x => new TradeData { id = x.Trade.Id, orderNumber = x.Order.Id, price = x.Trade.Price, volume = (int)x.Trade.Volume, dateTime = x.Trade.Time.ToString(@"yyyy/MM/dd HH:mm:ss") }).ToList();
+                        partnerData.ordersData = TM.MyTrader.Orders.Except(TM.MyTrader.StopOrders).Select(x => new OrderData { id = x.Id, price = x.Price, volume = (int)x.Volume, balance = (int)x.Balance, dateTime = x.Time.ToString(@"yyyy/MM/dd HH:mm:ss"), secCode = x.Security.Code, derivedOrderId = (x.DerivedOrder ?? new Order() { Id = 0 }).Id, side = x.Direction.ToString(), state = x.State.ToString(), comment = x.Comment }).ToList();
+                        partnerData.stopOrdersData = TM.MyTrader.StopOrders.Select(x => new StopOrderData { id = x.Id, price = x.Price, stopPrice = (decimal)x.StopCondition.Parameters["StopPrice"], volume = (int)x.Volume, balance = (int)x.Balance, dateTime = x.Time.ToString(@"yyyy/MM/dd HH:mm:ss"), secCode = x.Security.Code, type = x.StopCondition.Parameters["Type"].ToString(), side = x.Direction.ToString(), state = x.State.ToString(), comment = x.Comment }).ToList();
+                    }
+                    catch (Exception ex)
+                    {
+                        addLogMessage("Ошибка формирования актуальных данных: " + ex.Message);
+                        return ProcessResults.Continue;
+                    }
 
                     // Get trade state
                     TradeState tradeData;
@@ -263,7 +279,7 @@ namespace AutoRobot
                     updateMonitorValues(tradeData);
                     
                     // Trading:
-                    if (isTrade && getLoadPercent() > 95)
+                    if (isTrade && getLoadPercent() > 98)
                     {
                         if (!wasEnterFalse && (needAction != NeedAction.LongOrShortOpen || !tradeData.LongOpen && !tradeData.ShortOpen))
                         {
@@ -276,7 +292,7 @@ namespace AutoRobot
                             // Check for loop existence 
                             if (tradeData.LongOpen && tradeData.LongClose || tradeData.ShortOpen && tradeData.ShortClose)
                             {
-                                string message = string.Format("Замечено OPEN&CLOSE. Выход из торговли. (LO-LC SO-SC):({0}-{1} {2}-{3})", tradeData.LongOpen, tradeData.LongClose, tradeData.ShortOpen, tradeData.ShortClose);
+                                string message = string.Format("Замечено OPEN & CLOSE. Выход из торговли. (LO-LC SO-SC):({0}-{1} {2}-{3})", tradeData.LongOpen, tradeData.LongClose, tradeData.ShortOpen, tradeData.ShortClose);
                                 addLogMessage(message);
                                 _proxy.LogMessage(message);
                                 mw.stopTrading();
