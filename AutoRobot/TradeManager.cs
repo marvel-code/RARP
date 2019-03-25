@@ -574,8 +574,10 @@ namespace AutoRobot
             ot.GuiSync(() =>
                 ot.Dispatcher.Invoke(new Action(() =>
                 {
+                    const int THREAD_SLEEP_MILLIS = 500;
+
                     while (New_Order.Id == 0 || New_Order.Time.Year != terminalDateTime.Year)
-                        continue;
+                        Thread.Sleep(THREAD_SLEEP_MILLIS);
                     var _OrderInfo = new OrderInfo(_Rule_ID, New_Order, _OrderType, _Comment);
                     // Значения индикаторов
                     mw.saveIndicatorsValuesToFile(_OrderInfo);
