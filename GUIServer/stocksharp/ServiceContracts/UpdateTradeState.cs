@@ -14,10 +14,15 @@ namespace stocksharp.ServiceContracts
         private bool allow_entry = true;
         private decimal Position_PNL;
         private decimal Position_PNL_MAX;
+        private decimal Position_AvrVv_MAX = 0;
+        private decimal Position_AvrVv_MIN = 0;
         private decimal Current_Price;
 
         public TradeState updateTradeState(List<TimeFrame> _tf, NeedAction _needAction, PartnerDataObject PD)
         {
+
+            // Variables init
+            
             int ruleId;
             TradeState tradeState = new TradeState();
             tradeState.RuleId = 0;
@@ -26,9 +31,26 @@ namespace stocksharp.ServiceContracts
             tradeState.ShortOpen = false;
             tradeState.ShortClose = false;
             tf = _tf;
+            Current_Price = tf[0].GetCandle().ClosePrice;
             Position_PNL = PD.Position_PNL;
             Position_PNL_MAX = PD.Position_PNL_MAX;
-            Current_Price = tf[0].GetCandle().ClosePrice;
+            if (_needAction == NeedAction.LongOrShortOpen)
+            {
+                Position_AvrVv_MAX = Position_AvrVv_MIN = 0;
+            }
+            else
+            {
+                if (avrVv_4maxmin > Position_AvrVv_MAX)
+                {
+                    Position_AvrVv_MAX = avrVv_4maxmin;
+                }
+                else if (avrVv_4maxmin < Position_AvrVv_MIN)
+                {
+                    Position_AvrVv_MIN = avrVv_4maxmin;
+                }
+            }
+
+            // Strategy implementation
 
             if (_needAction == NeedAction.LongOrShortOpen)
             {
@@ -94,6 +116,8 @@ namespace stocksharp.ServiceContracts
                     {
                         tradeState.RuleId = ruleId;
                         allow_entry = false;
+
+                        Position_AvrVv_MAX = Position_AvrVv_MIN = avrVv_4maxmin;
                     }
                 }
             }
@@ -128,6 +152,8 @@ namespace stocksharp.ServiceContracts
                     }
                 }
             }
+
+
 
             return tradeState;
         }
