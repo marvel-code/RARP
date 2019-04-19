@@ -37,9 +37,9 @@ namespace AutoRobot
         
         /// Settings
 
-        const string USERNAME = "vz#1999";
-        //const string IP = "185.158.153.217";
-        const string IP = "127.0.0.1";
+        const string USERNAME = "ro#9019";
+        const string IP = "185.158.153.217"; // Раскоментировать для клиента
+        //const string IP = "127.0.0.1";  // Закомментировать
         const int PORT = 8020;
         const int maxServerExceptionCount = 5;
 
