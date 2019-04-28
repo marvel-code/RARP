@@ -64,34 +64,22 @@ namespace stocksharp.ServiceContracts
 
             tf[1].volume.GetAvrVv(300, 0);
 
-        private bool Is_Tv_Crocodile =>
-                avrTv1_4CrocodileMaxMin < avrTv2_4CrocodileMaxMin &&
-                avrTv2_4CrocodileMaxMin < avrTv3_4CrocodileMaxMin;
-        private decimal avrTv1_4CrocodileMaxMin => // Low TV
+        int avrTvPeriod_1 = 600, // LOW
+            avrTvPeriod_2 = 300, // MID
+            avrTvPeriod_3 = 180; // HIGH
+        private bool Is_Tv_Crocodile(int shift = 0) =>
+                tf[0].volume.GetAvrTv(avrTvPeriod_1, shift) < tf[0].volume.GetAvrTv(avrTvPeriod_2, shift) &&
+                tf[0].volume.GetAvrTv(avrTvPeriod_2, shift) < tf[0].volume.GetAvrTv(avrTvPeriod_3, shift);
 
-            tf[1].volume.GetAvrTv(600);
-        private decimal avrTv2_4CrocodileMaxMin => // Mid TV
-
-            tf[1].volume.GetAvrTv(300);
-        private decimal avrTv3_4CrocodileMaxMin => // High TV
-
-            tf[1].volume.GetAvrTv(180);
-
-        private bool Is_Vv_Crocodile =>
-                avrVv1_4CrocodileMaxMin < avrVv2_4CrocodileMaxMin &&
-                avrVv2_4CrocodileMaxMin < avrVv3_4CrocodileMaxMin
+        int avrVvPeriod_1 = 600,
+            avrVvPeriod_2 = 300,
+            avrVvPeriod_3 = 180;
+        private bool Is_Vv_Crocodile(int shift = 0) =>
+                tf[0].volume.GetAvrVv(avrVvPeriod_1, shift) < tf[0].volume.GetAvrVv(avrVvPeriod_2, shift) &&
+                tf[0].volume.GetAvrVv(avrVvPeriod_2, shift) < tf[0].volume.GetAvrVv(avrVvPeriod_3, shift)
                 ||
-                avrVv1_4CrocodileMaxMin > avrVv2_4CrocodileMaxMin &&
-                avrVv2_4CrocodileMaxMin > avrVv3_4CrocodileMaxMin;
-        private decimal avrVv1_4CrocodileMaxMin =>
-
-            tf[1].volume.GetAvrVv(600);
-        private decimal avrVv2_4CrocodileMaxMin =>
-
-            tf[1].volume.GetAvrVv(300);
-        private decimal avrVv3_4CrocodileMaxMin =>
-
-            tf[1].volume.GetAvrVv(180);
+                tf[0].volume.GetAvrVv(avrVvPeriod_1, shift) > tf[0].volume.GetAvrVv(avrVvPeriod_2, shift) &&
+                tf[0].volume.GetAvrVv(avrVvPeriod_2, shift) > tf[0].volume.GetAvrVv(avrVvPeriod_3, shift);
 
 
         //
