@@ -54,9 +54,44 @@ namespace stocksharp.ServiceContracts
 
     public partial class WorkService
     {
-        private decimal avrVv_4maxmin =>
+        // Position_AvrTv_MAX, Position_AvrTv_MIN.................................................
+        private decimal avrTv_4PositionMaxMin =>
+
+            tf[1].volume.GetAvrTv(300, 0);
+
+        // Position_AvrVv_MAX, Position_AvrVv_MIN.................................................
+        private decimal avrVv_4PositionMaxMin =>
 
             tf[1].volume.GetAvrVv(300, 0);
+
+        private bool Is_Tv_Crocodile =>
+                avrTv1_4CrocodileMaxMin < avrTv2_4CrocodileMaxMin &&
+                avrTv2_4CrocodileMaxMin < avrTv3_4CrocodileMaxMin;
+        private decimal avrTv1_4CrocodileMaxMin => // Low TV
+
+            tf[1].volume.GetAvrTv(600);
+        private decimal avrTv2_4CrocodileMaxMin => // Mid TV
+
+            tf[1].volume.GetAvrTv(300);
+        private decimal avrTv3_4CrocodileMaxMin => // High TV
+
+            tf[1].volume.GetAvrTv(180);
+
+        private bool Is_Vv_Crocodile =>
+                avrVv1_4CrocodileMaxMin < avrVv2_4CrocodileMaxMin &&
+                avrVv2_4CrocodileMaxMin < avrVv3_4CrocodileMaxMin
+                ||
+                avrVv1_4CrocodileMaxMin > avrVv2_4CrocodileMaxMin &&
+                avrVv2_4CrocodileMaxMin > avrVv3_4CrocodileMaxMin;
+        private decimal avrVv1_4CrocodileMaxMin =>
+
+            tf[1].volume.GetAvrVv(600);
+        private decimal avrVv2_4CrocodileMaxMin =>
+
+            tf[1].volume.GetAvrVv(300);
+        private decimal avrVv3_4CrocodileMaxMin =>
+
+            tf[1].volume.GetAvrVv(180);
 
 
         //
@@ -82,10 +117,6 @@ namespace stocksharp.ServiceContracts
 
                     tf[0].GetPriceChannelHigh(1, 0) > tf[0].GetPriceChannelHigh(1, 1) +
                     new decimal(0)
-
-                    &&
-
-                    tf[1].GetPriceChannelWidth(24, 0) < new decimal(1400)
 
                     &&
 
@@ -406,9 +437,9 @@ namespace stocksharp.ServiceContracts
 
             ||
 
-            _currentData.TerminalTime.TimeOfDay.TotalMinutes < 11 * 60 + 00
+            _currentData.TerminalTime.TimeOfDay.TotalMinutes < 18 * 60 + 00
             ||
-            tf[0].GetCandle().Time.TimeOfDay.TotalMinutes >= 18 * 60 + 20
+            tf[0].GetCandle().Time.TimeOfDay.TotalMinutes >= 18 * 60 + 00
 
             //-//
             && true;
@@ -452,8 +483,8 @@ namespace stocksharp.ServiceContracts
                     ,
                     Position_AvrVv_MAX != 0
                     &&
-                    tf[1].volume.GetAvrVv(300, 0) < Position_AvrVv_MAX -                //..2
-                    new decimal(2)
+                    tf[1].volume.GetAvrVv(300, 0) < Position_AvrVv_MAX *                //..2
+                    new decimal(0.85)
 
             //-//
         };
@@ -466,8 +497,8 @@ namespace stocksharp.ServiceContracts
         private bool CoverCommonRule =>
 //-// COVER общее условие..................
 
-                    tf[1].IsGreenCandle(0)
-            //true
+           //         tf[1].IsGreenCandle(0)
+            true
             //-//
             && true;
 
@@ -476,13 +507,13 @@ namespace stocksharp.ServiceContracts
 //-// COVER дополнительные условия..........
 
 
-                    tf[1].volume.GetAvrVv(300, 0) > tf[1].volume.GetAvrVv(600, 0)       //..1
+                    tf[1].volume.GetAvrVv(300, 0) > - tf[1].volume.GetAvrVv(600, 0)       //..1
 
                     ,
                     Position_AvrVv_MIN != 0
                     &&
-                    tf[1].volume.GetAvrVv(300, 0) > Position_AvrVv_MIN +                //..2
-                    new decimal(2)
+                    tf[1].volume.GetAvrVv(300, 0) > Position_AvrVv_MIN *                //..2
+                    new decimal(0.85)
 
             //-//
         };
