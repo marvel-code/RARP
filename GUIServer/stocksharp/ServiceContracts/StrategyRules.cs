@@ -55,14 +55,30 @@ namespace stocksharp.ServiceContracts
     public partial class WorkService
     {
         // Position_AvrTv_MAX, Position_AvrTv_MIN.................................................
-        private decimal avrTv_4PositionMaxMin =>
+        private decimal avrTv_4PositionMaxMin_1 =>
+
+            tf[1].volume.GetAvrTv(600, 0);
+        // Position_AvrTv_MAX, Position_AvrTv_MIN.................................................
+        private decimal avrTv_4PositionMaxMin_2 =>
 
             tf[1].volume.GetAvrTv(300, 0);
+        // Position_AvrTv_MAX, Position_AvrTv_MIN.................................................
+        private decimal avrTv_4PositionMaxMin_3 =>
+
+            tf[1].volume.GetAvrTv(180, 0);
 
         // Position_AvrVv_MAX, Position_AvrVv_MIN.................................................
-        private decimal avrVv_4PositionMaxMin =>
+        private decimal avrVv_4PositionMaxMin_1 =>
+
+            tf[1].volume.GetAvrVv(600, 0);
+        // Position_AvrVv_MAX, Position_AvrVv_MIN.................................................
+        private decimal avrVv_4PositionMaxMin_2 =>
 
             tf[1].volume.GetAvrVv(300, 0);
+        // Position_AvrVv_MAX, Position_AvrVv_MIN.................................................
+        private decimal avrVv_4PositionMaxMin_3 =>
+
+            tf[1].volume.GetAvrVv(180, 0);
 
         int avrTvPeriod_1 = 600, // LOW
             avrTvPeriod_2 = 300, // MID
@@ -469,9 +485,9 @@ namespace stocksharp.ServiceContracts
                     tf[1].volume.GetAvrVv(300, 0) < tf[1].volume.GetAvrVv(600, 0)       //..1
 
                     ,
-                    Position_AvrVv_MAX != 0
+                    Is_Position
                     &&
-                    tf[1].volume.GetAvrVv(300, 0) < Position_AvrVv_MAX *                //..2
+                    tf[1].volume.GetAvrVv(300, 0) < Position_AvrVv1_MAX *                //..2
                     new decimal(0.85)
 
             //-//
@@ -498,9 +514,9 @@ namespace stocksharp.ServiceContracts
                     tf[1].volume.GetAvrVv(300, 0) > - tf[1].volume.GetAvrVv(600, 0)       //..1
 
                     ,
-                    Position_AvrVv_MIN != 0
+                    Is_Position
                     &&
-                    tf[1].volume.GetAvrVv(300, 0) > Position_AvrVv_MIN *                //..2
+                    tf[1].volume.GetAvrVv(300, 0) > Position_AvrVv1_MIN *                //..2
                     new decimal(0.85)
 
             //-//

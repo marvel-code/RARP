@@ -18,10 +18,18 @@ namespace stocksharp.ServiceContracts
         private decimal Position_PNL;
         private decimal Position_PNL_MAX;
         private decimal Position_PNL_MIN;
-        private decimal Position_AvrTv_MAX = 0;
-        private decimal Position_AvrTv_MIN = 0;
-        private decimal Position_AvrVv_MAX = 0;
-        private decimal Position_AvrVv_MIN = 0;
+        private decimal Position_AvrTv1_MAX = 0;
+        private decimal Position_AvrTv1_MIN = 0;
+        private decimal Position_AvrVv1_MAX = 0;
+        private decimal Position_AvrVv1_MIN = 0;
+        private decimal Position_AvrTv2_MAX = 0;
+        private decimal Position_AvrTv2_MIN = 0;
+        private decimal Position_AvrVv2_MAX = 0;
+        private decimal Position_AvrVv2_MIN = 0;
+        private decimal Position_AvrTv3_MAX = 0;
+        private decimal Position_AvrTv3_MIN = 0;
+        private decimal Position_AvrVv3_MAX = 0;
+        private decimal Position_AvrVv3_MIN = 0;
 
         private decimal Crocodile_AvrTv1_MAX = 0;
         private decimal Crocodile_AvrTv2_MAX = 0;
@@ -136,8 +144,12 @@ namespace stocksharp.ServiceContracts
             {
                 // Clear block.
                 Is_Position = false;
-                Position_AvrTv_MAX = Position_AvrTv_MIN = 0;
-                Position_AvrVv_MAX = Position_AvrVv_MIN = 0;
+                Position_AvrTv1_MAX = Position_AvrTv1_MIN = 0;
+                Position_AvrVv1_MAX = Position_AvrVv1_MIN = 0;
+                Position_AvrTv2_MAX = Position_AvrTv2_MIN = 0;
+                Position_AvrVv2_MAX = Position_AvrVv2_MIN = 0;
+                Position_AvrTv3_MAX = Position_AvrTv3_MIN = 0;
+                Position_AvrVv3_MAX = Position_AvrVv3_MIN = 0;
             }
 
             if (Is_Position)
@@ -151,15 +163,37 @@ namespace stocksharp.ServiceContracts
                     Position_PNL_MIN = Position_PNL;
                 */
                 // Position TV MAX\MIN
-                if (avrTv_4PositionMaxMin > Position_AvrTv_MAX)
-                    Position_AvrTv_MAX = avrTv_4PositionMaxMin;
-                else if (avrTv_4PositionMaxMin < Position_AvrTv_MIN)
-                    Position_AvrTv_MIN = avrTv_4PositionMaxMin;
+                //1
+                if (avrTv_4PositionMaxMin_1 > Position_AvrTv1_MAX)
+                    Position_AvrTv1_MAX = avrTv_4PositionMaxMin_1;
+                else if (avrTv_4PositionMaxMin_1 < Position_AvrTv1_MIN)
+                    Position_AvrTv1_MIN = avrTv_4PositionMaxMin_1;
+                //2
+                if (avrTv_4PositionMaxMin_2 > Position_AvrTv2_MAX)
+                    Position_AvrTv2_MAX = avrTv_4PositionMaxMin_2;
+                else if (avrTv_4PositionMaxMin_2 < Position_AvrTv2_MIN)
+                    Position_AvrTv2_MIN = avrTv_4PositionMaxMin_2;
+                //3
+                if (avrTv_4PositionMaxMin_3 > Position_AvrTv3_MAX)
+                    Position_AvrTv3_MAX = avrTv_4PositionMaxMin_3;
+                else if (avrTv_4PositionMaxMin_3 < Position_AvrTv3_MIN)
+                    Position_AvrTv3_MIN = avrTv_4PositionMaxMin_3;
                 // Position VV MAX\MIN
-                if (avrVv_4PositionMaxMin > Position_AvrVv_MAX)
-                    Position_AvrVv_MAX = avrVv_4PositionMaxMin;
-                else if (avrVv_4PositionMaxMin < Position_AvrVv_MIN)
-                    Position_AvrVv_MIN = avrVv_4PositionMaxMin;
+                //1
+                if (avrVv_4PositionMaxMin_1 > Position_AvrVv1_MAX)
+                    Position_AvrVv1_MAX = avrVv_4PositionMaxMin_1;
+                else if (avrVv_4PositionMaxMin_1 < Position_AvrVv1_MIN)
+                    Position_AvrVv1_MIN = avrVv_4PositionMaxMin_1;
+                //2
+                if (avrVv_4PositionMaxMin_2 > Position_AvrVv2_MAX)
+                    Position_AvrVv2_MAX = avrVv_4PositionMaxMin_2;
+                else if (avrVv_4PositionMaxMin_2 < Position_AvrVv2_MIN)
+                    Position_AvrVv2_MIN = avrVv_4PositionMaxMin_2;
+                //3
+                if (avrVv_4PositionMaxMin_3 > Position_AvrVv3_MAX)
+                    Position_AvrVv3_MAX = avrVv_4PositionMaxMin_3;
+                else if (avrVv_4PositionMaxMin_3 < Position_AvrVv3_MIN)
+                    Position_AvrVv3_MIN = avrVv_4PositionMaxMin_3;
             }
             updateCrocodileAvrTvs();
             updateCrocodileAvrVvs();
@@ -234,8 +268,12 @@ namespace stocksharp.ServiceContracts
                         // Init block.
                         Is_Position = true;
                         //Position_PNL_MAX = Position_PNL_MIN = 0; These comes from client.
-                        Position_AvrTv_MAX = Position_AvrTv_MIN = avrTv_4PositionMaxMin;
-                        Position_AvrVv_MAX = Position_AvrVv_MIN = avrVv_4PositionMaxMin;
+                        Position_AvrTv1_MAX = Position_AvrTv1_MIN = avrTv_4PositionMaxMin_1;
+                        Position_AvrVv1_MAX = Position_AvrVv1_MIN = avrVv_4PositionMaxMin_1;
+                        Position_AvrTv2_MAX = Position_AvrTv2_MIN = avrTv_4PositionMaxMin_2;
+                        Position_AvrVv2_MAX = Position_AvrVv2_MIN = avrVv_4PositionMaxMin_2;
+                        Position_AvrTv3_MAX = Position_AvrTv3_MIN = avrTv_4PositionMaxMin_3;
+                        Position_AvrVv3_MAX = Position_AvrVv3_MIN = avrVv_4PositionMaxMin_3;
                     }
                 }
             }
