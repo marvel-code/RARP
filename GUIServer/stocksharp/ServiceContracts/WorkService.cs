@@ -91,7 +91,7 @@ namespace stocksharp.ServiceContracts
             // -- Processing
             try
             {
-                result = updateTradeState(_currentData.timeFrameList, needAction, partnerDataObject);
+                result = getTradeState(_currentData.timeFrameList, needAction, partnerDataObject);
             }
             catch (Exception ex)
             {
