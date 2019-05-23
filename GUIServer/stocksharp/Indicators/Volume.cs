@@ -1134,6 +1134,30 @@ namespace stocksharp
             }
             return result;
         }
+        public decimal GetTactRealPriceLocalMax(int number = 0) // number=0 is last
+        {
+            int shift = 0;
+            while (number >= 0)
+            {
+                ++shift;
+                if (GetTactRealPrice(shift) > GetTactRealPrice(shift - 1) && GetTactRealPrice(shift) > GetTactRealPrice(shift + 1))
+                    --number;
+            }
+
+            return GetTactRealPrice(shift);
+        }
+        public decimal GetTactRealPriceLocalMin(int number = 0) // number=0 is last
+        {
+            int shift = 0;
+            while (number >= 0)
+            {
+                ++shift;
+                if (GetTactRealPrice(shift) < GetTactRealPrice(shift - 1) && GetTactRealPrice(shift) < GetTactRealPrice(shift + 1))
+                    --number;
+            }
+
+            return GetTactRealPrice(shift);
+        }
     }
     public class Volume_Configuration
     {
