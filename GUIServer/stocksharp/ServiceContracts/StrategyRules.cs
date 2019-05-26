@@ -86,6 +86,13 @@ namespace stocksharp.ServiceContracts
         private bool Is_Tv_Crocodile(int shift = 0) =>
                 tf[0].volume.GetAvrTv(avrTvPeriod_1, shift) < tf[0].volume.GetAvrTv(avrTvPeriod_2, shift) &&
                 tf[0].volume.GetAvrTv(avrTvPeriod_2, shift) < tf[0].volume.GetAvrTv(avrTvPeriod_3, shift);
+        private bool Are_Tv_CrocodileExtremums_Inited =>
+            Crocodile_AvrTv1_MAX != 0 &&
+            Crocodile_AvrTv2_MAX != 0 &&
+            Crocodile_AvrTv3_MAX != 0 &&
+            Crocodile_AvrTv1_MIN != 0 &&
+            Crocodile_AvrTv2_MIN != 0 &&
+            Crocodile_AvrTv3_MIN != 0;
 
         int avrVvPeriod_1 = 600,
             avrVvPeriod_2 = 300,
@@ -96,6 +103,13 @@ namespace stocksharp.ServiceContracts
                 ||
                 tf[0].volume.GetAvrVv(avrVvPeriod_1, shift) > tf[0].volume.GetAvrVv(avrVvPeriod_2, shift) &&
                 tf[0].volume.GetAvrVv(avrVvPeriod_2, shift) > tf[0].volume.GetAvrVv(avrVvPeriod_3, shift);
+        private bool Are_Vv_CrocodileExtremums_Inited =>
+            Crocodile_AvrVv1_MAX != 0 &&
+            Crocodile_AvrVv2_MAX != 0 &&
+            Crocodile_AvrVv3_MAX != 0 &&
+            Crocodile_AvrVv1_MIN != 0 &&
+            Crocodile_AvrVv2_MIN != 0 &&
+            Crocodile_AvrVv3_MIN != 0;
 
 
         //
