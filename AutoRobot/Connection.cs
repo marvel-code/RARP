@@ -249,6 +249,7 @@ namespace AutoRobot
                     TM.Register.ExitOrder(0, "(стоп робота)");
             }
             // Стратегия
+            stopTrading();
             workProcess.Stop();
             // Интерфейс покоя
             grid_connection.IsEnabled = true;
