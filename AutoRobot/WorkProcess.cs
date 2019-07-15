@@ -399,11 +399,20 @@ namespace AutoRobot
 
                     // Reregistering failed orders
                     if (TM.last_EnterOrder != null && TM.last_EnterOrder.State == OrderStates.Failed)
+                    {
                         TM.Register.FailedOrder(TM.last_EnterOrder, OrderType.Enter);
+                        Thread.Sleep(1000);
+                    }
                     if (TM.last_ExitOrder != null && TM.last_ExitOrder.State == OrderStates.Failed)
+                    {
                         TM.Register.FailedOrder(TM.last_ExitOrder, OrderType.Exit);
+                        Thread.Sleep(1000);
+                    }
                     if (TM.last_StopOrder != null && TM.last_StopOrder.State == OrderStates.Failed)
+                    {
                         TM.Register.FailedOrder(TM.last_StopOrder, OrderType.Stop);
+                        Thread.Sleep(1000);
+                    }
                 }
 
                 return ProcessResults.Continue;
