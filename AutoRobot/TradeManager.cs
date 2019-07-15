@@ -68,6 +68,7 @@ namespace AutoRobot
             testTrades = _Test_Trades;
         }
         public static void updateValues() { }
+        public static void zeroExceptionsCount() { Exceptions_Count = 0; }
 
         // Connection
         public static Security MySecurity { get; private set; }

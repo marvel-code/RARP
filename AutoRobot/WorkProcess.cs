@@ -390,6 +390,7 @@ namespace AutoRobot
                     // Exceptions overflow 
                     if (TM.Exceptions_Count >= TM.tradeСfg.Max_Exceptions_Count)
                     {
+                        TM.zeroExceptionsCount();
                         addLogMessage("Кол-во исключений превысило максимально допустимый порог");
                         mw.stopTrading();
                         TM.resetExceptionsCount();
