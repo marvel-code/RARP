@@ -443,37 +443,34 @@ namespace stocksharp.ServiceContracts
 
 
 //
-// Запреты на вход...........................................
+// Разрешение на вход...........................................
 //
 
-            private bool isEntryDenyed =>
+            private bool isEntryAllowed =>
 
-//-// Запрет на вход на свече выхода
+//-// Разрешение на вход на свече выхода
 
-        //      false
-            tf[1].IsExitCandle()
-
-            ||
-
-            _currentData.TerminalTime.TimeOfDay.TotalMinutes < 18 * 60 + 00
-            ||
-            tf[0].GetCandle().Time.TimeOfDay.TotalMinutes >= 18 * 60 + 00
+            !tf[1].IsExitCandle()
+            &&
+            _currentData.TerminalTime.TimeOfDay > new TimeSpan(10, 30, 00)
+            &&
+            _currentData.TerminalTime.TimeOfDay < new TimeSpan(18, 30, 00)
 
             //-//
             && true;
 
-        private bool isLongDenyed =>
-            //-// Запрет на LONG
+        private bool isLongAllowed =>
+            //-// Разрешение на LONG
 
-            false
+            true
 
             //-//
             && true;
 
-        private bool isShortDenyed =>
-            //-// Запрет на SHORT
+        private bool isShortAllowed =>
+            //-// Разрешение на SHORT
 
-            false
+            true
 
             //-//
             && true;

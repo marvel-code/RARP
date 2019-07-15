@@ -152,7 +152,7 @@ namespace stocksharp.ServiceContracts
                 {
                     ruleId = 0;
 
-                    if (LongCommonRule && !isLongDenyed)
+                    if (LongCommonRule && isLongAllowed)
                     {
                         for (int i = 0; i < LongAdditionalRules.Count; i++)
                         {
@@ -178,7 +178,7 @@ namespace stocksharp.ServiceContracts
                 {
                     ruleId = 0;
 
-                    if (ShortCommonRule && !isShortDenyed)
+                    if (ShortCommonRule && isShortAllowed)
                     {
                         for (int i = 0; i < ShortAdditionalRules.Count; i++)
                         {
@@ -271,7 +271,7 @@ namespace stocksharp.ServiceContracts
                     allow_entry = true;
                 }
 
-                if (allow_entry && !isEntryDenyed)
+                if (allow_entry && isEntryAllowed)
                 {
                     updateTradeStateLongShort(ref tradeState, needAction);
 
