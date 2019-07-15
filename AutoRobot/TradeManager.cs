@@ -157,7 +157,7 @@ namespace AutoRobot
                 if (Result.Abs() > 10000)
                     Add_Log_Message("Зафиксирован невалидный PNL: " + Result);
 
-                return Result;
+                return Result.Round();
             }
         }
         public static Decimal Session_PNL
@@ -193,7 +193,7 @@ namespace AutoRobot
                 if (Result.Abs() > 10000)
                     Add_Log_Message("Зафиксирован невалидный PNL: " + Result);
 
-                return Result;
+                return Result.Round();
             }
         }
         public static Decimal _Position_PNL { get; private set; }
@@ -244,7 +244,7 @@ namespace AutoRobot
                 }
 
                 _Position_PNL = Result;
-                return Result;
+                return Result.Round();
             }
         }
         public static Decimal _Max_Position_PNL { get; private set; }
