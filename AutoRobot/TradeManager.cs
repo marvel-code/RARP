@@ -324,7 +324,7 @@ namespace AutoRobot
                 else
                 {
                     Orders_Exit.Add(New_Order);
-                    _Comment += " — " + _Position_PNL + "pnl";
+                    _Comment += ": " + _Position_PNL + "pnl";
                 }
                 // Регистрируем заявку на бирже
                 RegisterOrder(New_Order);
