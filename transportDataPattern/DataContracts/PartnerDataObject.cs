@@ -102,6 +102,12 @@ namespace transportDataParrern
     public class PartnerDataObject
     {
         [DataMember]
+        public decimal Current_Price;
+        [DataMember]
+        public decimal Day_PNL;
+        [DataMember]
+        public DateTimeOffset TerminalTime;
+        [DataMember]
         public decimal Position_PNL { get; set; }
         [DataMember]
         public decimal Position_PNL_MAX { get; set; }

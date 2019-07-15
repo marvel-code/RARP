@@ -241,16 +241,19 @@ namespace AutoRobot
                     PartnerDataObject partnerData = new PartnerDataObject();
                     try
                     {
-                        partnerData.Position_PNL = TM.Position_PNL;
-                        partnerData.Position_PNL_MAX = TM.Max_Position_PNL;
-                        partnerData.Is_Trading = isTrade;
-                        partnerData.lastEnterDirection = TM.last_EnterOrder == null ? "null" : TM.last_EnterOrder.Direction.ToString();
-                        partnerData.securitiesData = TM.MyTrader.Securities.Select(x => new SecuritiesRow { code = x.Code }).ToList();
-                        partnerData.derivativePortfolioData = new List<DerivativePortfolioRow>() { new DerivativePortfolioRow { beginAmount = TM.MyPortfolio.BeginAmount.Value, variationMargin = TM.MyPortfolio.VariationMargin.Value } };
-                        partnerData.derivativePositionsData = new List<DerivativePositionsRow>() { new DerivativePositionsRow { currentPosition = (int)(TM.MyTrader.GetPosition(TM.MyPortfolio, TM.MySecurity) ?? new Position { CurrentValue = 0 }).CurrentValue } };
-                        partnerData.tradesData = TM.MyTrader.MyTrades.Select(x => new TradeData { id = x.Trade.Id, orderNumber = x.Order.Id, price = x.Trade.Price, volume = (int)x.Trade.Volume, dateTime = x.Trade.Time.ToString(@"yyyy/MM/dd HH:mm:ss") }).ToList();
-                        partnerData.ordersData = TM.MyTrader.Orders.Except(TM.MyTrader.StopOrders).Select(x => new OrderData { id = x.Id, price = x.Price, volume = (int)x.Volume, balance = (int)x.Balance, dateTime = x.Time.ToString(@"yyyy/MM/dd HH:mm:ss"), secCode = x.Security.Code, derivedOrderId = (x.DerivedOrder ?? new Order() { Id = 0 }).Id, side = x.Direction.ToString(), state = x.State.ToString(), comment = x.Comment }).ToList();
-                        partnerData.stopOrdersData = TM.MyTrader.StopOrders.Select(x => new StopOrderData { id = x.Id, price = x.Price, stopPrice = (decimal)x.StopCondition.Parameters["StopPrice"], volume = (int)x.Volume, balance = (int)x.Balance, dateTime = x.Time.ToString(@"yyyy/MM/dd HH:mm:ss"), secCode = x.Security.Code, type = x.StopCondition.Parameters["Type"].ToString(), side = x.Direction.ToString(), state = x.State.ToString(), comment = x.Comment }).ToList();
+                        partnerData.TerminalTime =              TM.terminalDateTime;
+                        partnerData.Day_PNL =                   TM.Day_PNL;
+                        partnerData.Current_Price =             TM.Current_Price;
+                        partnerData.Position_PNL =              TM.Position_PNL;
+                        partnerData.Position_PNL_MAX =          TM.Max_Position_PNL;
+                        partnerData.Is_Trading =                isTrade;
+                        partnerData.lastEnterDirection =        TM.last_EnterOrder == null ? "null" : TM.last_EnterOrder.Direction.ToString();
+                        partnerData.securitiesData =            TM.MyTrader.Securities.Select(x => new SecuritiesRow { code = x.Code }).ToList();
+                        partnerData.derivativePortfolioData =   new List<DerivativePortfolioRow>() { new DerivativePortfolioRow { beginAmount = TM.MyPortfolio.BeginAmount.Value, variationMargin = TM.MyPortfolio.VariationMargin.Value } };
+                        partnerData.derivativePositionsData =   new List<DerivativePositionsRow>() { new DerivativePositionsRow { currentPosition = (int)(TM.MyTrader.GetPosition(TM.MyPortfolio, TM.MySecurity) ?? new Position { CurrentValue = 0 }).CurrentValue } };
+                        partnerData.tradesData =                TM.MyTrader.MyTrades.Select(x => new TradeData { id = x.Trade.Id, orderNumber = x.Order.Id, price = x.Trade.Price, volume = (int)x.Trade.Volume, dateTime = x.Trade.Time.ToString(@"yyyy/MM/dd HH:mm:ss") }).ToList();
+                        partnerData.ordersData =                TM.MyTrader.Orders.Except(TM.MyTrader.StopOrders).Select(x => new OrderData { id = x.Id, price = x.Price, volume = (int)x.Volume, balance = (int)x.Balance, dateTime = x.Time.ToString(@"yyyy/MM/dd HH:mm:ss"), secCode = x.Security.Code, derivedOrderId = (x.DerivedOrder ?? new Order() { Id = 0 }).Id, side = x.Direction.ToString(), state = x.State.ToString(), comment = x.Comment }).ToList();
+                        partnerData.stopOrdersData =            TM.MyTrader.StopOrders.Select(x => new StopOrderData { id = x.Id, price = x.Price, stopPrice = (decimal)x.StopCondition.Parameters["StopPrice"], volume = (int)x.Volume, balance = (int)x.Balance, dateTime = x.Time.ToString(@"yyyy/MM/dd HH:mm:ss"), secCode = x.Security.Code, type = x.StopCondition.Parameters["Type"].ToString(), side = x.Direction.ToString(), state = x.State.ToString(), comment = x.Comment }).ToList();
                     }
                     catch (Exception ex)
                     {
