@@ -4,7 +4,6 @@ using Ecng.Common;
 using StockSharp.BusinessEntities;
 using StockSharp.Messages;
 using transportDataParrern;
-using Ecng.Common;
 
 namespace stocksharp.ServiceContracts
 {
@@ -13,7 +12,6 @@ namespace stocksharp.ServiceContracts
         // >> Customizable strategy settings
         public List<int> tf_Periods = new List<int>
         {
-           120,
            300   
         };
         public List<ADX_Configuration> adx_cfgList = new List<ADX_Configuration>
@@ -30,25 +28,19 @@ namespace stocksharp.ServiceContracts
         };
         public List<KAMA_Configuration> kama_cfgList = new List<KAMA_Configuration>
         {
-            new KAMA_Configuration(
-                    1, 3, CalculationType.Median, 2, 30
-                )
+            new KAMA_Configuration(0, 3, CalculationType.Median, 2, 30)
         };
         public List<MA_Configuration> ma_cfgList = new List<MA_Configuration>
         {
-            new MA_Configuration(1, 1, MaType.Simple, CalculationType.Median),
-            new MA_Configuration(1, 3, MaType.Simple, CalculationType.Median),
-            new MA_Configuration(1, 12, MaType.Simple, CalculationType.Median),
+            new MA_Configuration(0, 1, MaType.Simple, CalculationType.Median),
         };
         public List<ROC_Configuration> roc_cfgList = new List<ROC_Configuration>
         {
-            new ROC_Configuration(1, 1, CalculationType.Median),
-            new ROC_Configuration(1, 2, CalculationType.Median),
+            new ROC_Configuration(0, 1, CalculationType.Median),
         };
         public List<Volume_Configuration> volume_cfgList = new List<Volume_Configuration>
         {
             new Volume_Configuration(0, 2, 1, 1),
-            new Volume_Configuration(1, 2, 1, 1),
         };
     }
 
