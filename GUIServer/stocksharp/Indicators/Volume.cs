@@ -551,6 +551,52 @@ namespace stocksharp
         {
             return getAvrTvVal(_Velocity_Period_Seconds, shift);
         }
+        public decimal GetAvrTvMax(int _Velocity_Period_Seconds, int shift = 0)
+        {
+            decimal left, mid, right;
+            right = GetAvrTv(_Velocity_Period_Seconds, 0);
+            mid = GetAvrTv(_Velocity_Period_Seconds, 1);
+            left = GetAvrTv(_Velocity_Period_Seconds, 2);
+            for (int i = 3; (left == mid && mid == right && right == 0) == false; i++)
+            {
+                if (mid > left && mid > right)
+                {
+                    shift--;
+                    if (shift == -1)
+                    {
+                        break;
+                    }
+                }
+                right = mid;
+                mid = left;
+                left = GetAvrTv(_Velocity_Period_Seconds, i);
+            }
+
+            return mid;
+        }
+        public decimal GetAvrTvMin(int _Velocity_Period_Seconds, int shift = 0)
+        {
+            decimal left, mid, right;
+            right = GetAvrTv(_Velocity_Period_Seconds, 0);
+            mid = GetAvrTv(_Velocity_Period_Seconds, 1);
+            left = GetAvrTv(_Velocity_Period_Seconds, 2);
+            for (int i = 3; (left == mid && mid == right && right == 0) == false; i++)
+            {
+                if (mid < left && mid < right)
+                {
+                    shift--;
+                    if (shift == -1)
+                    {
+                        break;
+                    }
+                }
+                right = mid;
+                mid = left;
+                left = GetAvrTv(_Velocity_Period_Seconds, i);
+            }
+
+            return mid;
+        }
         public decimal GetAvrVv(int _Velocity_Period_Seconds, int shift = 0)
         {
             return getAvrVvVal(_Velocity_Period_Seconds, shift);
