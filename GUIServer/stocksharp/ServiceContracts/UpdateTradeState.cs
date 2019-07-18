@@ -113,6 +113,7 @@ namespace stocksharp.ServiceContracts
         }
         public TradeState getTradeState(List<TimeFrame> timeFrames, NeedAction needAction, PartnerDataObject TM_)
         {
+            tf = timeFrames;
             TM = TM_;
 
             if (needAction == NeedAction.LongOrShortOpen && !wasLastExitByStrategy && !isPostPositionBlockUpdated)
