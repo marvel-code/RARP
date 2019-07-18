@@ -609,13 +609,61 @@ namespace stocksharp
         {
             return getAvrSvVal(_Velocity_Period_Seconds, shift);
         }
-        public decimal GetAvrPeriodVvMax(int _Period_Seconds, int _Offset, int shift = 0)
+        public decimal GetAvrTvTactsMax(int periodSeconds, int tacts_count, int shift = 0)
         {
-            return GetAvrPeriodVvMax(_Period_Seconds, _Offset, shift);
+            decimal result = getAvrTvVal(periodSeconds, shift);
+            for (int i = shift + 1; i < shift + tacts_count; i++)
+            {
+                decimal tmp = getAvrTvVal(periodSeconds, i);
+                if (result < tmp)
+                {
+                    result = tmp;
+                }
+            }
+
+            return result;
         }
-        public decimal GetAvrPeriodVvMin(int _Period_Seconds, int _Offset, int shift = 0)
+        public decimal GetAvrTvTactsMin(int periodSeconds, int tacts_count, int shift = 0)
         {
-            return GetAvrPeriodVvMin(_Period_Seconds, _Offset, shift);
+            decimal result = getAvrTvVal(periodSeconds, shift);
+            for (int i = shift + 1; i < shift + tacts_count; i++)
+            {
+                decimal tmp = getAvrTvVal(periodSeconds, i);
+                if (result > tmp)
+                {
+                    result = tmp;
+                }
+            }
+
+            return result;
+        }
+        public decimal GetAvrVvTactsMax(int periodSeconds, int tacts_count, int shift = 0)
+        {
+            decimal result = getAvrVvVal(periodSeconds, shift);
+            for (int i = shift + 1; i < shift + tacts_count; i++)
+            {
+                decimal tmp = getAvrVvVal(periodSeconds, i);
+                if (result < tmp)
+                {
+                    result = tmp;
+                }
+            }
+
+            return result;
+        }
+        public decimal GetAvrVvTactsMin(int periodSeconds, int tacts_count, int shift = 0)
+        {
+            decimal result = getAvrVvVal(periodSeconds, shift);
+            for (int i = shift + 1; i < shift + tacts_count; i++)
+            {
+                decimal tmp = getAvrVvVal(periodSeconds, i);
+                if (result > tmp)
+                {
+                    result = tmp;
+                }
+            }
+
+            return result;
         }
         // Технический код рассчёта скоростей (не для использования во вне)
         private const int VV_TACT = MySettings.VOL_VV_STD_TACT;
@@ -955,34 +1003,6 @@ namespace stocksharp
             // Output
             return result;
         }
-        private decimal getAvrPeriodVvMax(int periodSeconds, int offset, int shift = 0)
-        {
-            decimal result = getAvrVvVal(periodSeconds, offset);
-            for (int i = offset + 1; i < periodSeconds; i++)
-            {
-                decimal tmp = getAvrVvVal(periodSeconds, i);
-                if (result < tmp)
-                {
-                    result = tmp;
-                }
-            }
-
-            return result;
-        }
-        private decimal getAvrPeriodVvMin(int periodSeconds, int offset, int shift = 0)
-        {
-            decimal result = getAvrVvVal(periodSeconds, offset);
-            for (int i = offset + 1; i < periodSeconds; i++)
-            {
-                decimal tmp = getAvrVvVal(periodSeconds, i);
-                if (result > tmp)
-                {
-                    result = tmp;
-                }
-            }
-
-            return result;
-        }
         // Общие данные
         public DateTimeOffset Get_OpenTime(int shift = 0)
         {
@@ -1180,7 +1200,7 @@ namespace stocksharp
             }
             return result;
         }
-        public decimal GetTactRealPriceLocalMax(int number = 0) // number=0 is last
+        public decimal GetTactRealPriceLocalMax(int number = 0) 
         {
             int shift = 0;
             while (number >= 0)
@@ -1192,7 +1212,7 @@ namespace stocksharp
 
             return GetTactRealPrice(shift);
         }
-        public decimal GetTactRealPriceLocalMin(int number = 0) // number=0 is last
+        public decimal GetTactRealPriceLocalMin(int number = 0) 
         {
             int shift = 0;
             while (number >= 0)
@@ -1204,6 +1224,35 @@ namespace stocksharp
 
             return GetTactRealPrice(shift);
         }
+        public decimal GetTactRealPriceTactsMax(int tacts_count, int shift = 0)
+        {
+            decimal result = GetTactRealPrice(shift);
+            for (int i = shift + 1; i < shift + tacts_count; i++)
+            {
+                decimal tmp = GetTactRealPrice(i);
+                if (result < tmp)
+                {
+                    result = tmp;
+                }
+            }
+
+            return result;
+        }
+        public decimal GetTactRealPriceTactsMin(int tacts_count, int shift = 0)
+        {
+            decimal result = GetTactRealPrice(shift);
+            for (int i = shift + 1; i < shift + tacts_count; i++)
+            {
+                decimal tmp = GetTactRealPrice(i);
+                if (result > tmp)
+                {
+                    result = tmp;
+                }
+            }
+
+            return result;
+        }
+
     }
     public class Volume_Configuration
     {
