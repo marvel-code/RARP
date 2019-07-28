@@ -8,6 +8,6 @@ namespace stocksharp
 {
     public static class MySettings
     {
-        public const int VOL_VV_STD_TACT = 5;
+        public const int VV_TACT = 5;
     }
 }

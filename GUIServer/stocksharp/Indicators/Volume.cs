@@ -666,7 +666,7 @@ namespace stocksharp
             return result;
         }
         // Технический код рассчёта скоростей (не для использования во вне)
-        private const int VV_TACT = MySettings.VOL_VV_STD_TACT;
+        private const int VV_TACT = MySettings.VV_TACT;
         private enum VCalcType { Shift, DaySecond }
         private const int maxCacheTimeDelta = 5000;
         private Dictionary<int, Dictionary<int, decimal>> _bvCache; // Dict<period, Dict<daySecond, value>
