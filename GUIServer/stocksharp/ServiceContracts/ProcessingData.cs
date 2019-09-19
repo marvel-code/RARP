@@ -14,9 +14,9 @@ namespace stocksharp.ServiceContracts
         public List<Trade> AllTrades;
         private DateTime _lastTradeIStartDatetime;
         public Dictionary<DateTime, int> TradesIStarts;
-        public DateTimeOffset TerminalTime;
-        public DateTimeOffset LastEnterTime;
-        public DateTimeOffset LastExitTime;
+        public DateTime TerminalTime;
+        public DateTime LastEnterTime;
+        public DateTime LastExitTime;
 
         public int GetTradeIStart(DateTime time)
         {
@@ -44,9 +44,9 @@ namespace stocksharp.ServiceContracts
             AllTrades = new List<Trade>();
             _lastTradeIStartDatetime = DateTime.Now.Date.AddDays(-2);
             TradesIStarts = new Dictionary<DateTime, int>();
-            TerminalTime = DateTimeOffset.Now;
-            LastEnterTime = DateTimeOffset.Now;
-            LastExitTime = DateTimeOffset.Now;
+            TerminalTime = DateTime.Now;
+            LastEnterTime = DateTime.Now;
+            LastExitTime = DateTime.Now;
 
             timeFrameList = new List<TimeFrame>();
             foreach (int tf_per in tf_Periods)

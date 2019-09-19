@@ -19,12 +19,14 @@ namespace stocksharp
         public int Period { get; private set; }
         public MaType Ma_Type { get; private set; }
         public CalculationType Calc_Type { get; private set; }
+        public bool IsUnlimitedCache { get; private set; }
         // Инициализация
-        public MA(int _Period, MaType _Ma_Type, CalculationType _Calc_type)
+        public MA(int _Period, MaType _Ma_Type, CalculationType _Calc_type, bool isUnlimitedCache = false)
         {
             Period = _Period;
             Ma_Type = _Ma_Type;
             Calc_Type = _Calc_type;
+            IsUnlimitedCache = isUnlimitedCache;
 
             Reset();
         }
@@ -40,7 +42,7 @@ namespace stocksharp
                 Buffer.RemoveAt(Buffer.Count - 1);
             }
             // Удаляем избыточные значения
-            if (Values.Count > Period)
+            if (Values.Count > Period && !IsUnlimitedCache)
             {
                 Values.RemoveAt(0);
                 Buffer.RemoveAt(0);
@@ -56,7 +58,7 @@ namespace stocksharp
             switch (Ma_Type)
             {
                 case MaType.Exponential:
-                    if (Values.Count >= Period)
+                    if (Values.Count >= 1)
                         new_Value = (Values[Values.Count - 1].Value * (Period - 1) + 2 * new_Value) / (Period + 1);
                     break;
                 case MaType.Simple:
@@ -82,6 +84,14 @@ namespace stocksharp
         {
             if (Values.Count > shift)
                 return Values[Values.Count - 1 - shift].Value;
+            else
+                return 0;
+        }
+        public decimal Get_Value(DateTime openTime)
+        {
+            var val = Values.Find(x => x.OpenTime == openTime);
+            if (val != null)
+                return val.Value;
             else
                 return 0;
         }

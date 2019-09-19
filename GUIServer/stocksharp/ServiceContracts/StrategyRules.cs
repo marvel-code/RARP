@@ -13,7 +13,7 @@ namespace stocksharp.ServiceContracts
         public List<int> tf_Periods = new List<int>
         {
            120,
-           300   
+           300
         };
         public List<ADX_Configuration> adx_cfgList = new List<ADX_Configuration>
         {

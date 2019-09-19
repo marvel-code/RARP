@@ -156,7 +156,11 @@ namespace AutoRobot
                     Result += Current_Price;
                 // Если PNL ненормальный какой-то
                 if (Result.Abs() > 10000)
+                {
                     Add_Log_Message("Зафиксирован невалидный PNL: " + Result);
+                    Add_Log_Message("Position: " + Trade_Position);
+                    Add_Log_Message("");
+                }
 
                 return Result.Round();
             }

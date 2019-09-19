@@ -59,9 +59,9 @@ namespace stocksharp.ServiceContracts
 
             // -- Synchronizing of current via received
             // - Time
-            _currentData.TerminalTime = dataObj.TerminalTime;
-            _currentData.LastEnterTime = dataObj.LastEnterTime;
-            _currentData.LastExitTime = dataObj.LastExitTime;
+            _currentData.TerminalTime = dataObj.TerminalTime.DateTime;
+            _currentData.LastEnterTime = dataObj.LastEnterTime.DateTime;
+            _currentData.LastExitTime = dataObj.LastExitTime.DateTime;
             // - Data
             try
             {
