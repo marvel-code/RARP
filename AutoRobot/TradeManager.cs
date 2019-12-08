@@ -48,19 +48,19 @@ namespace AutoRobot
             Orders_Exit = new List<Order>();
             Orders_Stop = new List<Order>();
             Orders_Failed = new List<Order>();
-            if (!tradeСfg.is_New_Session)
+            //if (!tradeСfg.is_New_Session)
             {
-                Orders_Enter.Add(MyDayOrders.LastOrDefault(or => or.Comment == string.Format("{0} {1}", Robot_Trade_Name, OrderType.Enter)));
-                if (Orders_Enter[0] == null)
-                    Orders_Enter = new List<Order>();
+                var orders2add = MyDayOrders.Where(or => or.Comment.Contains(string.Format("{0} {1}", Robot_Trade_Name, OrderType.Enter)));
+                if (orders2add.Count() != 0)
+                    Orders_Enter.AddRange(orders2add);
 
-                Orders_Exit.Add(MyDayOrders.LastOrDefault(or => or.Comment == string.Format("{0} {1}", Robot_Trade_Name, OrderType.Exit) || or.Comment == string.Format("{0} {1}", Robot_Trade_Name, OrderType.Stop) && or.StopCondition == null));
-                if (Orders_Exit[0] == null || last_ExitOrder.Time < last_EnterOrder.Time)
-                    Orders_Exit = new List<Order>();
+                orders2add = MyDayOrders.Where(or => or.Comment.Contains(string.Format("{0} {1}", Robot_Trade_Name, OrderType.Exit)) || or.Comment.Contains(string.Format("{0} {1}", Robot_Trade_Name, OrderType.Stop)) && or.StopCondition == null));
+                if (orders2add.Count() != 0)
+                    Orders_Exit.AddRange(orders2add);
 
-                Orders_Stop.Add(MyDayOrders.LastOrDefault(or => or.Comment == string.Format("{0} {1}", Robot_Trade_Name, OrderType.Stop) && or.StopCondition != null));
-                if (Orders_Stop[0] == null)
-                    Orders_Stop = new List<Order>();
+                orders2add = MyDayOrders.Where(or => or.Comment.Contains(string.Format("{0} {1}", Robot_Trade_Name, OrderType.Stop)) && or.StopCondition != null);
+                if (orders2add.Count() != 0)
+                    Orders_Stop.AddRange(orders2add);
             }
         }
         public static void loadTestTrades(List<MyTrade> _Test_Trades)
@@ -318,7 +318,7 @@ namespace AutoRobot
                     Direction = _Order_Direction,
                     Volume = _Order_Volume,
 
-                    Comment = string.Format("{0} {1}", Robot_Trade_Name, _OrderType)
+                    Comment = string.Format("{0} {1} {2}#{3}", Robot_Trade_Name, _OrderType, _OrderType == OrderType.Enter ? Orders_Enter.Count : Orders_Exit.Count, _Rule_ID)
                 };
                 // Регистрируем тип заявки
                 if (_OrderType == OrderType.Enter)

@@ -306,7 +306,7 @@ namespace stocksharp
             vectors_h = new List<decimal>();
             vectors_l = new List<decimal>();
 
-            _lastExpTactUpdateDateTime = GetTactDateTime(IAllTrades.ElementAt(0).Time);
+            _lastExpTactUpdateDateTime = new DateTime();
             _tactExpPrices = new Dictionary<int, MA>();
             _buyExpTactCache = new Dictionary<KeyValuePair<int, int>, MA>();
             _sellExpTactCache = new Dictionary<KeyValuePair<int, int>, MA>();

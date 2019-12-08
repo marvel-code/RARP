@@ -40,6 +40,8 @@ namespace transportDataParrern
         [DataMember]
         public string dateTime { get; set; }
         [DataMember]
+        public string direction { get; set; }
+        [DataMember]
         public decimal price { get; set; }
         [DataMember]
         public int volume { get; set; }
@@ -50,11 +52,11 @@ namespace transportDataParrern
     public class OrderData
     {
         [DataMember]
-        public long id { get; set; }
+            public long id { get; set; }
         [DataMember]
-        public long derivedOrderId { get; set; }
+            public long derivedOrderId { get; set; }
         [DataMember]
-        public string dateTime { get; set; }
+            public string dateTime { get; set; }
         [DataMember]
         public string secCode { get; set; }
         [DataMember]
@@ -127,5 +129,11 @@ namespace transportDataParrern
         public List<OrderData> ordersData { get; set; }
         [DataMember]
         public List<StopOrderData> stopOrdersData { get; set; }
+        [DataMember]
+        public List<OrderData> ordersEnter { get; set; }
+        [DataMember]
+        public List<OrderData> ordersExit { get; set; }
+        [DataMember]
+        public List<StopOrderData> stopOrders { get; set; }
     }
 }

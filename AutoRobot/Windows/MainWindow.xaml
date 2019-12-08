@@ -37,7 +37,7 @@
                     <Label x:Name="lbl_mdl" Content="MDL:" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center" Margin="0,62,0,0" ToolTip="Максимальный дневной убыток (0 - без ограничений)"/>
                     <TextBox x:Name="tb_mdl" HorizontalAlignment="Left" Height="26" Margin="50,62,0,0" VerticalAlignment="Top" Width="48" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="White" Text="{Binding Path=Max_Day_Loss}"/>
                     <CheckBox x:Name="cb_test_mode" IsEnabled="False" Content="Режим теста" HorizontalAlignment="Left" Margin="113,92,0,0" VerticalAlignment="Top"  Checked="cb_test_mode_Checked" IsChecked="{Binding Path=is_Test}"/>
-                    <CheckBox x:Name="cb_new_session" Content="Новая сессия" HorizontalAlignment="Left" Margin="113,107,0,0" VerticalAlignment="Top"  Checked="cb_test_mode_Checked" IsChecked="{Binding Path=is_New_Session}" ToolTip="Сброс предыдущих заявок робота на старте"/>
+                    <CheckBox x:Name="cb_new_session" Content="Новая сессия" HorizontalAlignment="Left" Margin="113,107,0,0" VerticalAlignment="Top"  Checked="cb_test_mode_Checked" IsChecked="{Binding Path=is_New_Session}" ToolTip="Сброс предыдущих заявок робота на старте" IsEnabled="False"/>
                 </Grid>
             </GroupBox>
             <Button x:Name="btn_options" Content="Параметры" HorizontalAlignment="Left" Margin="233,52,0,0" VerticalAlignment="Top" Width="80" Height="33" Background="#FFFFFEEB" Click="btn_options_Click" IsEnabled="False"/>

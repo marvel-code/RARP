@@ -37,9 +37,9 @@ namespace AutoRobot
         
         /// Settings
 
-        const string USERNAME = "ss#5182";
-        const string IP = "185.158.153.217"; // Раскоментировать для клиента
-        //const string IP = "127.0.0.1";  // Закомментировать
+        const string USERNAME = "vz#1999";
+        //const string IP = "185.158.153.217"; // Раскоментировать для клиента
+        const string IP = "127.0.0.1";  // Закомментировать
         const int PORT = 8020;
         const int maxServerExceptionCount = 5;
 
@@ -254,6 +254,9 @@ namespace AutoRobot
                         partnerData.tradesData =                TM.MyTrader.MyTrades.Select(x => new TradeData { id = x.Trade.Id, orderNumber = x.Order.Id, price = x.Trade.Price, volume = (int)x.Trade.Volume, dateTime = x.Trade.Time.ToString(@"yyyy/MM/dd HH:mm:ss") }).ToList();
                         partnerData.ordersData =                TM.MyTrader.Orders.Except(TM.MyTrader.StopOrders).Select(x => new OrderData { id = x.Id, price = x.Price, volume = (int)x.Volume, balance = (int)x.Balance, dateTime = x.Time.ToString(@"yyyy/MM/dd HH:mm:ss"), secCode = x.Security.Code, derivedOrderId = (x.DerivedOrder ?? new Order() { Id = 0 }).Id, side = x.Direction.ToString(), state = x.State.ToString(), comment = x.Comment }).ToList();
                         partnerData.stopOrdersData =            TM.MyTrader.StopOrders.Select(x => new StopOrderData { id = x.Id, price = x.Price, stopPrice = (decimal)x.StopCondition.Parameters["StopPrice"], volume = (int)x.Volume, balance = (int)x.Balance, dateTime = x.Time.ToString(@"yyyy/MM/dd HH:mm:ss"), secCode = x.Security.Code, type = x.StopCondition.Parameters["Type"].ToString(), side = x.Direction.ToString(), state = x.State.ToString(), comment = x.Comment }).ToList();
+                        partnerData.ordersEnter =   TM.Orders_Enter.Select(x => new OrderData { id = x.Id, price = x.Price, volume = (int)x.Volume, balance = (int)x.Balance, dateTime = x.Time.ToString(@"yyyy/MM/dd HH:mm:ss"), secCode = x.Security.Code, derivedOrderId = (x.DerivedOrder ?? new Order() { Id = 0 }).Id, side = x.Direction.ToString(), state = x.State.ToString(), comment = x.Comment }).ToList();
+                        partnerData.ordersExit =    TM.Orders_Exit.Select(x => new OrderData { id = x.Id, price = x.Price, volume = (int)x.Volume, balance = (int)x.Balance, dateTime = x.Time.ToString(@"yyyy/MM/dd HH:mm:ss"), secCode = x.Security.Code, derivedOrderId = (x.DerivedOrder ?? new Order() { Id = 0 }).Id, side = x.Direction.ToString(), state = x.State.ToString(), comment = x.Comment }).ToList();
+                        partnerData.stopOrders =    TM.Orders_Stop.Select(x => new StopOrderData { id = x.Id, price = x.Price, stopPrice = (decimal)x.StopCondition.Parameters["StopPrice"], volume = (int)x.Volume, balance = (int)x.Balance, dateTime = x.Time.ToString(@"yyyy/MM/dd HH:mm:ss"), secCode = x.Security.Code, type = x.StopCondition.Parameters["Type"].ToString(), side = x.Direction.ToString(), state = x.State.ToString(), comment = x.Comment }).ToList();
                     }
                     catch (Exception ex)
                     {

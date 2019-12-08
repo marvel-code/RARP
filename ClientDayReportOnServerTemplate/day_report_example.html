@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Дневной отчёт за 24.11.2019</title>
+
+    <style type="text/css">
+        section {
+            margin-bottom: 100px;
+        }
+
+        #curve_chart {
+            margin: auto;
+            min-height: 500px;
+        }
+        #log_wrapper {
+            max-height: 500px;
+            overflow: auto;
+            font: 12pt monospace;
+        }
+    </style>
+
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+
+    <script src="js/jquery-3.4.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js/gstatic.charts.loader.js"></script>
+    <script type="text/javascript">
+        google.charts.load('current', {'packages': ['corechart']});
+        google.charts.setOnLoadCallback(drawChart);
+
+        function drawChart() {
+            $($chart_loading_status_id).hide();
+            const data = google.visualization.arrayToDataTable([
+                ['DayTime', 'Balance'],
+                ['09:30',  1120500],
+                ['10:30',  1120200],
+                ['11:30',  1120400],
+                ['12:30',  1120800]
+            ]);
+            const options = {
+                legend: {
+                    position: 'none'
+                },
+                chartArea: {
+                    left: 80,
+                    top: 40,
+                    bottom: 40,
+                    width: '100%',
+                    height: '100%'
+                }
+            };
+            const chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+            chart.draw(data, options);
+        }
+    </script>
+</head>
+<body>
+    <header class="modal-header">
+        <div>header</div>
+    </header>
+    <main class="modal-body">
+        <section class="container">
+            <h1>График баланса</h1>
+            <div id="chart-loading-status" class="spinner-border text-primary" role="status">
+                <div class="sr-only">Loading...</div>
+            </div>
+            <div id="curve_chart"></div>
+        </section>
+        <section class="container">
+            <h1>Таблица входов</h1>
+            <details>
+                <table class="table table-bordered text-center">
+
+                <!-- Header -->
+                <tr class="font-weight-bold">
+                    <td>#</td>
+                    <td class="border-right-0">PnL сделки</td>
+                    <td class="border-left-0">PnL дня</td>
+                    <td class="border-right-0">ID входа</td>
+                    <td class="border-left-0">ID выхода</td>
+                    <td class="border-right-0">Время входа</td>
+                    <td class="border-left-0">Время выхода</td>
+                    <td>Направление</td>
+                </tr>
+
+                <!-- Profit -->
+                <tr>
+                    <td>1</td>
+                    <td class="table-success">+100</td>
+                    <td class="table-success">100</td>
+                    <td>1</td>
+                    <td>1</td>
+                    <td>10:05:35</td>
+                    <td>10:05:35</td>
+                    <td>Long</td>
+                </tr>
+
+                <!-- Loss -->
+                <tr>
+                    <td>2</td>
+                    <td class="table-danger">-10</td>
+                    <td class="table-success">90</td>
+                    <td>2</td>
+                    <td>2</td>
+                    <td>11:15:35</td>
+                    <td>11:15:35</td>
+                    <td>Short</td>
+                </tr>
+
+                <!-- In position -->
+                <tr class="table-warning">
+                    <td>3</td>
+                    <td>#</td>
+                    <td class="table-success">90</td>
+                    <td>2</td>
+                    <td>#</td>
+                    <td>14:15:35</td>
+                    <td>#</td>
+                    <td>Short</td>
+                </tr>
+            </table>
+            </details>
+        </section>
+        <section class="container">
+            <h1>Таблица заявок</h1>
+            <details>
+                <table class="table table-bordered text-center">
+
+                    <!-- Header -->
+                    <tr class="font-weight-bold">
+                        <td>ID</td>
+                        <td>Время</td>
+                        <td>Направление</td>
+                        <td>Цена</td>
+                        <td>Объем</td>
+                        <td>Состояние</td>
+                        <td>Баланс</td>
+                        <td>Инструмент</td>
+                        <td>Комментарий</td>
+                        <td>ID заявки родителя</td>
+                    </tr>
+
+                    <!-- Trade -->
+                    <tr>
+                        <td>2132121441</td>
+                        <td>10:05:35</td>
+                        <td class="table-danger">Sell</td>
+                        <td>119000</td>
+                        <td>43</td>
+                        <td>OK</td>
+                        <td>7</td>
+                        <td>RIU9</td>
+                        <td>AR</td>
+                        <td>0</td>
+                    </tr>
+                </table>
+            </details>
+        </section>
+        <section class="container">
+            <h1>Таблица стоп-заявок</h1>
+            <details>
+                <table class="table table-bordered text-center">
+
+                    <!-- Header -->
+                    <tr class="font-weight-bold">
+                        <td>ID</td>
+                        <td>Время</td>
+                        <td>Направление</td>
+                        <td>Тип</td>
+                        <td>Стоп-цена</td>
+                        <td>Цена</td>
+                        <td>Объем</td>
+                        <td>Состояние</td>
+                        <td>Баланс</td>
+                        <td>Инструмент</td>
+                        <td>Комментарий</td>
+                        <td>ID заявки родителя</td>
+                    </tr>
+
+                    <!-- Trade -->
+                    <tr>
+                        <td>2132121441</td>
+                        <td>10:05:35</td>
+                        <td class="table-danger">Sell</td>
+                        <td>TakeProfit</td>
+                        <td>119100</td>
+                        <td>119000</td>
+                        <td>43</td>
+                        <td>OK</td>
+                        <td>7</td>
+                        <td>RIU9</td>
+                        <td>AR</td>
+                        <td>0</td>
+                    </tr>
+                </table>
+            </details>
+        </section>
+        <section class="container">
+            <h1>Таблица сделок</h1>
+            <details>
+                <table class="table table-bordered text-center">
+
+                    <!-- Header -->
+                    <tr class="font-weight-bold">
+                        <td>ID</td>
+                        <td>Время</td>
+                        <td>Направление</td>
+                        <td>Цена</td>
+                        <td>Объем</td>
+                        <td>ID заявки</td>
+                    </tr>
+
+                    <!-- Trade -->
+                    <tr>
+                        <td>21321342131</td>
+                        <td>10:05:35</td>
+                        <td class="table-success">Buy</td>
+                        <td>119000</td>
+                        <td>43</td>
+                        <td>1239213</td>
+                    </tr>
+                </table>
+            </details>
+        </section>
+        <section class="container">
+            <h1>Лог</h1>
+            <details>
+                <div class="container border" id="log_wrapper">
+                <details>
+                    <summary><span class="font-weight-bold">2019.11.24 10:44:52 |</span> Summary</summary>
+                    <p class="card-body"><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores deserunt libero minus mollitia obcaecati quod saepe! Architecto at dicta harum necessitatibus, officiis quam quasi quod repudiandae sapiente sunt suscipit vero.</span><span>Asperiores cupiditate enim eum hic inventore ipsa ipsum, laborum minima non nulla qui, quisquam quo tempora temporibus ullam vero voluptas, voluptate! Adipisci atque dicta facilis modi officia officiis omnis repellendus.</span><span>At labore nam necessitatibus vel? Commodi consequatur cum dolor dolorum ducimus eos fuga ipsam labore laboriosam molestiae nesciunt nihil nobis optio provident, quas quibusdam reiciendis repellat sapiente suscipit tempora! Officia?</span><span>Cum ea ex fugit, libero nihil numquam sed suscipit. Commodi fugiat id ipsum laborum qui quibusdam tempora? A aperiam eaque impedit ipsa maxime nostrum odio, optio, qui quia, quos ratione.</span><span>Ab, asperiores cumque earum est expedita harum in itaque iure magnam mollitia omnis optio quam quidem quisquam reiciendis repellat temporibus tenetur ullam. Aut deserunt fugiat quis voluptatibus? Adipisci, cum voluptatum?</span></p>
+                </details>
+                <details>
+                    <summary><span class="font-weight-bold">2019.11.24 10:44:52 |</span> Summary</summary>
+                    <p class="card-body"><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores deserunt libero minus mollitia obcaecati quod saepe! Architecto at dicta harum necessitatibus, officiis quam quasi quod repudiandae sapiente sunt suscipit vero.</span><span>Asperiores cupiditate enim eum hic inventore ipsa ipsum, laborum minima non nulla qui, quisquam quo tempora temporibus ullam vero voluptas, voluptate! Adipisci atque dicta facilis modi officia officiis omnis repellendus.</span><span>At labore nam necessitatibus vel? Commodi consequatur cum dolor dolorum ducimus eos fuga ipsam labore laboriosam molestiae nesciunt nihil nobis optio provident, quas quibusdam reiciendis repellat sapiente suscipit tempora! Officia?</span><span>Cum ea ex fugit, libero nihil numquam sed suscipit. Commodi fugiat id ipsum laborum qui quibusdam tempora? A aperiam eaque impedit ipsa maxime nostrum odio, optio, qui quia, quos ratione.</span><span>Ab, asperiores cumque earum est expedita harum in itaque iure magnam mollitia omnis optio quam quidem quisquam reiciendis repellat temporibus tenetur ullam. Aut deserunt fugiat quis voluptatibus? Adipisci, cum voluptatum?</span></p>
+                </details>
+                <details>
+                    <summary><span class="font-weight-bold">2019.11.24 10:44:52 |</span> Summary</summary>
+                    <p class="card-body"><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores deserunt libero minus mollitia obcaecati quod saepe! Architecto at dicta harum necessitatibus, officiis quam quasi quod repudiandae sapiente sunt suscipit vero.</span><span>Asperiores cupiditate enim eum hic inventore ipsa ipsum, laborum minima non nulla qui, quisquam quo tempora temporibus ullam vero voluptas, voluptate! Adipisci atque dicta facilis modi officia officiis omnis repellendus.</span><span>At labore nam necessitatibus vel? Commodi consequatur cum dolor dolorum ducimus eos fuga ipsam labore laboriosam molestiae nesciunt nihil nobis optio provident, quas quibusdam reiciendis repellat sapiente suscipit tempora! Officia?</span><span>Cum ea ex fugit, libero nihil numquam sed suscipit. Commodi fugiat id ipsum laborum qui quibusdam tempora? A aperiam eaque impedit ipsa maxime nostrum odio, optio, qui quia, quos ratione.</span><span>Ab, asperiores cumque earum est expedita harum in itaque iure magnam mollitia omnis optio quam quidem quisquam reiciendis repellat temporibus tenetur ullam. Aut deserunt fugiat quis voluptatibus? Adipisci, cum voluptatum?</span></p>
+                </details>
+                <details>
+                    <summary><span class="font-weight-bold">2019.11.24 10:44:52 |</span> Summary</summary>
+                    <p class="card-body"><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores deserunt libero minus mollitia obcaecati quod saepe! Architecto at dicta harum necessitatibus, officiis quam quasi quod repudiandae sapiente sunt suscipit vero.</span><span>Asperiores cupiditate enim eum hic inventore ipsa ipsum, laborum minima non nulla qui, quisquam quo tempora temporibus ullam vero voluptas, voluptate! Adipisci atque dicta facilis modi officia officiis omnis repellendus.</span><span>At labore nam necessitatibus vel? Commodi consequatur cum dolor dolorum ducimus eos fuga ipsam labore laboriosam molestiae nesciunt nihil nobis optio provident, quas quibusdam reiciendis repellat sapiente suscipit tempora! Officia?</span><span>Cum ea ex fugit, libero nihil numquam sed suscipit. Commodi fugiat id ipsum laborum qui quibusdam tempora? A aperiam eaque impedit ipsa maxime nostrum odio, optio, qui quia, quos ratione.</span><span>Ab, asperiores cumque earum est expedita harum in itaque iure magnam mollitia omnis optio quam quidem quisquam reiciendis repellat temporibus tenetur ullam. Aut deserunt fugiat quis voluptatibus? Adipisci, cum voluptatum?</span></p>
+                </details>
+                <details>
+                    <summary><span class="font-weight-bold">2019.11.24 10:44:52 |</span> Summary</summary>
+                    <p class="card-body"><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores deserunt libero minus mollitia obcaecati quod saepe! Architecto at dicta harum necessitatibus, officiis quam quasi quod repudiandae sapiente sunt suscipit vero.</span><span>Asperiores cupiditate enim eum hic inventore ipsa ipsum, laborum minima non nulla qui, quisquam quo tempora temporibus ullam vero voluptas, voluptate! Adipisci atque dicta facilis modi officia officiis omnis repellendus.</span><span>At labore nam necessitatibus vel? Commodi consequatur cum dolor dolorum ducimus eos fuga ipsam labore laboriosam molestiae nesciunt nihil nobis optio provident, quas quibusdam reiciendis repellat sapiente suscipit tempora! Officia?</span><span>Cum ea ex fugit, libero nihil numquam sed suscipit. Commodi fugiat id ipsum laborum qui quibusdam tempora? A aperiam eaque impedit ipsa maxime nostrum odio, optio, qui quia, quos ratione.</span><span>Ab, asperiores cumque earum est expedita harum in itaque iure magnam mollitia omnis optio quam quidem quisquam reiciendis repellat temporibus tenetur ullam. Aut deserunt fugiat quis voluptatibus? Adipisci, cum voluptatum?</span></p>
+                </details>
+                <details>
+                    <summary><span class="font-weight-bold">2019.11.24 10:44:52 |</span> Summary</summary>
+                    <p class="card-body"><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores deserunt libero minus mollitia obcaecati quod saepe! Architecto at dicta harum necessitatibus, officiis quam quasi quod repudiandae sapiente sunt suscipit vero.</span><span>Asperiores cupiditate enim eum hic inventore ipsa ipsum, laborum minima non nulla qui, quisquam quo tempora temporibus ullam vero voluptas, voluptate! Adipisci atque dicta facilis modi officia officiis omnis repellendus.</span><span>At labore nam necessitatibus vel? Commodi consequatur cum dolor dolorum ducimus eos fuga ipsam labore laboriosam molestiae nesciunt nihil nobis optio provident, quas quibusdam reiciendis repellat sapiente suscipit tempora! Officia?</span><span>Cum ea ex fugit, libero nihil numquam sed suscipit. Commodi fugiat id ipsum laborum qui quibusdam tempora? A aperiam eaque impedit ipsa maxime nostrum odio, optio, qui quia, quos ratione.</span><span>Ab, asperiores cumque earum est expedita harum in itaque iure magnam mollitia omnis optio quam quidem quisquam reiciendis repellat temporibus tenetur ullam. Aut deserunt fugiat quis voluptatibus? Adipisci, cum voluptatum?</span></p>
+                </details>
+                <details>
+                    <summary><span class="font-weight-bold">2019.11.24 10:44:52 |</span> Summary</summary>
+                    <p class="card-body"><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores deserunt libero minus mollitia obcaecati quod saepe! Architecto at dicta harum necessitatibus, officiis quam quasi quod repudiandae sapiente sunt suscipit vero.</span><span>Asperiores cupiditate enim eum hic inventore ipsa ipsum, laborum minima non nulla qui, quisquam quo tempora temporibus ullam vero voluptas, voluptate! Adipisci atque dicta facilis modi officia officiis omnis repellendus.</span><span>At labore nam necessitatibus vel? Commodi consequatur cum dolor dolorum ducimus eos fuga ipsam labore laboriosam molestiae nesciunt nihil nobis optio provident, quas quibusdam reiciendis repellat sapiente suscipit tempora! Officia?</span><span>Cum ea ex fugit, libero nihil numquam sed suscipit. Commodi fugiat id ipsum laborum qui quibusdam tempora? A aperiam eaque impedit ipsa maxime nostrum odio, optio, qui quia, quos ratione.</span><span>Ab, asperiores cumque earum est expedita harum in itaque iure magnam mollitia omnis optio quam quidem quisquam reiciendis repellat temporibus tenetur ullam. Aut deserunt fugiat quis voluptatibus? Adipisci, cum voluptatum?</span></p>
+                </details>
+                <details>
+                    <summary><span class="font-weight-bold">2019.11.24 10:44:52 |</span> Summary</summary>
+                    <p class="card-body"><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores deserunt libero minus mollitia obcaecati quod saepe! Architecto at dicta harum necessitatibus, officiis quam quasi quod repudiandae sapiente sunt suscipit vero.</span><span>Asperiores cupiditate enim eum hic inventore ipsa ipsum, laborum minima non nulla qui, quisquam quo tempora temporibus ullam vero voluptas, voluptate! Adipisci atque dicta facilis modi officia officiis omnis repellendus.</span><span>At labore nam necessitatibus vel? Commodi consequatur cum dolor dolorum ducimus eos fuga ipsam labore laboriosam molestiae nesciunt nihil nobis optio provident, quas quibusdam reiciendis repellat sapiente suscipit tempora! Officia?</span><span>Cum ea ex fugit, libero nihil numquam sed suscipit. Commodi fugiat id ipsum laborum qui quibusdam tempora? A aperiam eaque impedit ipsa maxime nostrum odio, optio, qui quia, quos ratione.</span><span>Ab, asperiores cumque earum est expedita harum in itaque iure magnam mollitia omnis optio quam quidem quisquam reiciendis repellat temporibus tenetur ullam. Aut deserunt fugiat quis voluptatibus? Adipisci, cum voluptatum?</span></p>
+                </details>
+                <details>
+                    <summary><span class="font-weight-bold">2019.11.24 10:44:52 |</span> Summary</summary>
+                    <p class="card-body"><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores deserunt libero minus mollitia obcaecati quod saepe! Architecto at dicta harum necessitatibus, officiis quam quasi quod repudiandae sapiente sunt suscipit vero.</span><span>Asperiores cupiditate enim eum hic inventore ipsa ipsum, laborum minima non nulla qui, quisquam quo tempora temporibus ullam vero voluptas, voluptate! Adipisci atque dicta facilis modi officia officiis omnis repellendus.</span><span>At labore nam necessitatibus vel? Commodi consequatur cum dolor dolorum ducimus eos fuga ipsam labore laboriosam molestiae nesciunt nihil nobis optio provident, quas quibusdam reiciendis repellat sapiente suscipit tempora! Officia?</span><span>Cum ea ex fugit, libero nihil numquam sed suscipit. Commodi fugiat id ipsum laborum qui quibusdam tempora? A aperiam eaque impedit ipsa maxime nostrum odio, optio, qui quia, quos ratione.</span><span>Ab, asperiores cumque earum est expedita harum in itaque iure magnam mollitia omnis optio quam quidem quisquam reiciendis repellat temporibus tenetur ullam. Aut deserunt fugiat quis voluptatibus? Adipisci, cum voluptatum?</span></p>
+                </details>
+                <details>
+                    <summary><span class="font-weight-bold">2019.11.24 10:44:52 |</span> Summary</summary>
+                    <p class="card-body"><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores deserunt libero minus mollitia obcaecati quod saepe! Architecto at dicta harum necessitatibus, officiis quam quasi quod repudiandae sapiente sunt suscipit vero.</span><span>Asperiores cupiditate enim eum hic inventore ipsa ipsum, laborum minima non nulla qui, quisquam quo tempora temporibus ullam vero voluptas, voluptate! Adipisci atque dicta facilis modi officia officiis omnis repellendus.</span><span>At labore nam necessitatibus vel? Commodi consequatur cum dolor dolorum ducimus eos fuga ipsam labore laboriosam molestiae nesciunt nihil nobis optio provident, quas quibusdam reiciendis repellat sapiente suscipit tempora! Officia?</span><span>Cum ea ex fugit, libero nihil numquam sed suscipit. Commodi fugiat id ipsum laborum qui quibusdam tempora? A aperiam eaque impedit ipsa maxime nostrum odio, optio, qui quia, quos ratione.</span><span>Ab, asperiores cumque earum est expedita harum in itaque iure magnam mollitia omnis optio quam quidem quisquam reiciendis repellat temporibus tenetur ullam. Aut deserunt fugiat quis voluptatibus? Adipisci, cum voluptatum?</span></p>
+                </details>
+                <details>
+                    <summary><span class="font-weight-bold">2019.11.24 10:44:52 |</span> Summary</summary>
+                    <p class="card-body"><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores deserunt libero minus mollitia obcaecati quod saepe! Architecto at dicta harum necessitatibus, officiis quam quasi quod repudiandae sapiente sunt suscipit vero.</span><span>Asperiores cupiditate enim eum hic inventore ipsa ipsum, laborum minima non nulla qui, quisquam quo tempora temporibus ullam vero voluptas, voluptate! Adipisci atque dicta facilis modi officia officiis omnis repellendus.</span><span>At labore nam necessitatibus vel? Commodi consequatur cum dolor dolorum ducimus eos fuga ipsam labore laboriosam molestiae nesciunt nihil nobis optio provident, quas quibusdam reiciendis repellat sapiente suscipit tempora! Officia?</span><span>Cum ea ex fugit, libero nihil numquam sed suscipit. Commodi fugiat id ipsum laborum qui quibusdam tempora? A aperiam eaque impedit ipsa maxime nostrum odio, optio, qui quia, quos ratione.</span><span>Ab, asperiores cumque earum est expedita harum in itaque iure magnam mollitia omnis optio quam quidem quisquam reiciendis repellat temporibus tenetur ullam. Aut deserunt fugiat quis voluptatibus? Adipisci, cum voluptatum?</span></p>
+                </details>
+                <details>
+                    <summary><span class="font-weight-bold">2019.11.24 10:44:52 |</span> Summary</summary>
+                    <p class="card-body"><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores deserunt libero minus mollitia obcaecati quod saepe! Architecto at dicta harum necessitatibus, officiis quam quasi quod repudiandae sapiente sunt suscipit vero.</span><span>Asperiores cupiditate enim eum hic inventore ipsa ipsum, laborum minima non nulla qui, quisquam quo tempora temporibus ullam vero voluptas, voluptate! Adipisci atque dicta facilis modi officia officiis omnis repellendus.</span><span>At labore nam necessitatibus vel? Commodi consequatur cum dolor dolorum ducimus eos fuga ipsam labore laboriosam molestiae nesciunt nihil nobis optio provident, quas quibusdam reiciendis repellat sapiente suscipit tempora! Officia?</span><span>Cum ea ex fugit, libero nihil numquam sed suscipit. Commodi fugiat id ipsum laborum qui quibusdam tempora? A aperiam eaque impedit ipsa maxime nostrum odio, optio, qui quia, quos ratione.</span><span>Ab, asperiores cumque earum est expedita harum in itaque iure magnam mollitia omnis optio quam quidem quisquam reiciendis repellat temporibus tenetur ullam. Aut deserunt fugiat quis voluptatibus? Adipisci, cum voluptatum?</span></p>
+                </details>
+                <details>
+                    <summary><span class="font-weight-bold">2019.11.24 10:44:52 |</span> Summary</summary>
+                    <p class="card-body"><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores deserunt libero minus mollitia obcaecati quod saepe! Architecto at dicta harum necessitatibus, officiis quam quasi quod repudiandae sapiente sunt suscipit vero.</span><span>Asperiores cupiditate enim eum hic inventore ipsa ipsum, laborum minima non nulla qui, quisquam quo tempora temporibus ullam vero voluptas, voluptate! Adipisci atque dicta facilis modi officia officiis omnis repellendus.</span><span>At labore nam necessitatibus vel? Commodi consequatur cum dolor dolorum ducimus eos fuga ipsam labore laboriosam molestiae nesciunt nihil nobis optio provident, quas quibusdam reiciendis repellat sapiente suscipit tempora! Officia?</span><span>Cum ea ex fugit, libero nihil numquam sed suscipit. Commodi fugiat id ipsum laborum qui quibusdam tempora? A aperiam eaque impedit ipsa maxime nostrum odio, optio, qui quia, quos ratione.</span><span>Ab, asperiores cumque earum est expedita harum in itaque iure magnam mollitia omnis optio quam quidem quisquam reiciendis repellat temporibus tenetur ullam. Aut deserunt fugiat quis voluptatibus? Adipisci, cum voluptatum?</span></p>
+                </details>
+                <details>
+                    <summary><span class="font-weight-bold">2019.11.24 10:44:52 |</span> Summary</summary>
+                    <p class="card-body"><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores deserunt libero minus mollitia obcaecati quod saepe! Architecto at dicta harum necessitatibus, officiis quam quasi quod repudiandae sapiente sunt suscipit vero.</span><span>Asperiores cupiditate enim eum hic inventore ipsa ipsum, laborum minima non nulla qui, quisquam quo tempora temporibus ullam vero voluptas, voluptate! Adipisci atque dicta facilis modi officia officiis omnis repellendus.</span><span>At labore nam necessitatibus vel? Commodi consequatur cum dolor dolorum ducimus eos fuga ipsam labore laboriosam molestiae nesciunt nihil nobis optio provident, quas quibusdam reiciendis repellat sapiente suscipit tempora! Officia?</span><span>Cum ea ex fugit, libero nihil numquam sed suscipit. Commodi fugiat id ipsum laborum qui quibusdam tempora? A aperiam eaque impedit ipsa maxime nostrum odio, optio, qui quia, quos ratione.</span><span>Ab, asperiores cumque earum est expedita harum in itaque iure magnam mollitia omnis optio quam quidem quisquam reiciendis repellat temporibus tenetur ullam. Aut deserunt fugiat quis voluptatibus? Adipisci, cum voluptatum?</span></p>
+                </details>
+                <details>
+                    <summary><span class="font-weight-bold">2019.11.24 10:44:52 |</span> Summary</summary>
+                    <p class="card-body"><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores deserunt libero minus mollitia obcaecati quod saepe! Architecto at dicta harum necessitatibus, officiis quam quasi quod repudiandae sapiente sunt suscipit vero.</span><span>Asperiores cupiditate enim eum hic inventore ipsa ipsum, laborum minima non nulla qui, quisquam quo tempora temporibus ullam vero voluptas, voluptate! Adipisci atque dicta facilis modi officia officiis omnis repellendus.</span><span>At labore nam necessitatibus vel? Commodi consequatur cum dolor dolorum ducimus eos fuga ipsam labore laboriosam molestiae nesciunt nihil nobis optio provident, quas quibusdam reiciendis repellat sapiente suscipit tempora! Officia?</span><span>Cum ea ex fugit, libero nihil numquam sed suscipit. Commodi fugiat id ipsum laborum qui quibusdam tempora? A aperiam eaque impedit ipsa maxime nostrum odio, optio, qui quia, quos ratione.</span><span>Ab, asperiores cumque earum est expedita harum in itaque iure magnam mollitia omnis optio quam quidem quisquam reiciendis repellat temporibus tenetur ullam. Aut deserunt fugiat quis voluptatibus? Adipisci, cum voluptatum?</span></p>
+                </details>
+                <details>
+                    <summary><span class="font-weight-bold">2019.11.24 10:44:52 |</span> Summary</summary>
+                    <p class="card-body"><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores deserunt libero minus mollitia obcaecati quod saepe! Architecto at dicta harum necessitatibus, officiis quam quasi quod repudiandae sapiente sunt suscipit vero.</span><span>Asperiores cupiditate enim eum hic inventore ipsa ipsum, laborum minima non nulla qui, quisquam quo tempora temporibus ullam vero voluptas, voluptate! Adipisci atque dicta facilis modi officia officiis omnis repellendus.</span><span>At labore nam necessitatibus vel? Commodi consequatur cum dolor dolorum ducimus eos fuga ipsam labore laboriosam molestiae nesciunt nihil nobis optio provident, quas quibusdam reiciendis repellat sapiente suscipit tempora! Officia?</span><span>Cum ea ex fugit, libero nihil numquam sed suscipit. Commodi fugiat id ipsum laborum qui quibusdam tempora? A aperiam eaque impedit ipsa maxime nostrum odio, optio, qui quia, quos ratione.</span><span>Ab, asperiores cumque earum est expedita harum in itaque iure magnam mollitia omnis optio quam quidem quisquam reiciendis repellat temporibus tenetur ullam. Aut deserunt fugiat quis voluptatibus? Adipisci, cum voluptatum?</span></p>
+                </details>
+                <details>
+                    <summary><span class="font-weight-bold">2019.11.24 10:44:52 |</span> Summary</summary>
+                    <p class="card-body"><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores deserunt libero minus mollitia obcaecati quod saepe! Architecto at dicta harum necessitatibus, officiis quam quasi quod repudiandae sapiente sunt suscipit vero.</span><span>Asperiores cupiditate enim eum hic inventore ipsa ipsum, laborum minima non nulla qui, quisquam quo tempora temporibus ullam vero voluptas, voluptate! Adipisci atque dicta facilis modi officia officiis omnis repellendus.</span><span>At labore nam necessitatibus vel? Commodi consequatur cum dolor dolorum ducimus eos fuga ipsam labore laboriosam molestiae nesciunt nihil nobis optio provident, quas quibusdam reiciendis repellat sapiente suscipit tempora! Officia?</span><span>Cum ea ex fugit, libero nihil numquam sed suscipit. Commodi fugiat id ipsum laborum qui quibusdam tempora? A aperiam eaque impedit ipsa maxime nostrum odio, optio, qui quia, quos ratione.</span><span>Ab, asperiores cumque earum est expedita harum in itaque iure magnam mollitia omnis optio quam quidem quisquam reiciendis repellat temporibus tenetur ullam. Aut deserunt fugiat quis voluptatibus? Adipisci, cum voluptatum?</span></p>
+                </details>
+                <details>
+                    <summary><span class="font-weight-bold">2019.11.24 10:44:52 |</span> Summary</summary>
+                    <p class="card-body"><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores deserunt libero minus mollitia obcaecati quod saepe! Architecto at dicta harum necessitatibus, officiis quam quasi quod repudiandae sapiente sunt suscipit vero.</span><span>Asperiores cupiditate enim eum hic inventore ipsa ipsum, laborum minima non nulla qui, quisquam quo tempora temporibus ullam vero voluptas, voluptate! Adipisci atque dicta facilis modi officia officiis omnis repellendus.</span><span>At labore nam necessitatibus vel? Commodi consequatur cum dolor dolorum ducimus eos fuga ipsam labore laboriosam molestiae nesciunt nihil nobis optio provident, quas quibusdam reiciendis repellat sapiente suscipit tempora! Officia?</span><span>Cum ea ex fugit, libero nihil numquam sed suscipit. Commodi fugiat id ipsum laborum qui quibusdam tempora? A aperiam eaque impedit ipsa maxime nostrum odio, optio, qui quia, quos ratione.</span><span>Ab, asperiores cumque earum est expedita harum in itaque iure magnam mollitia omnis optio quam quidem quisquam reiciendis repellat temporibus tenetur ullam. Aut deserunt fugiat quis voluptatibus? Adipisci, cum voluptatum?</span></p>
+                </details>
+                <details>
+                    <summary><span class="font-weight-bold">2019.11.24 10:44:52 |</span> Summary</summary>
+                    <p class="card-body"><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores deserunt libero minus mollitia obcaecati quod saepe! Architecto at dicta harum necessitatibus, officiis quam quasi quod repudiandae sapiente sunt suscipit vero.</span><span>Asperiores cupiditate enim eum hic inventore ipsa ipsum, laborum minima non nulla qui, quisquam quo tempora temporibus ullam vero voluptas, voluptate! Adipisci atque dicta facilis modi officia officiis omnis repellendus.</span><span>At labore nam necessitatibus vel? Commodi consequatur cum dolor dolorum ducimus eos fuga ipsam labore laboriosam molestiae nesciunt nihil nobis optio provident, quas quibusdam reiciendis repellat sapiente suscipit tempora! Officia?</span><span>Cum ea ex fugit, libero nihil numquam sed suscipit. Commodi fugiat id ipsum laborum qui quibusdam tempora? A aperiam eaque impedit ipsa maxime nostrum odio, optio, qui quia, quos ratione.</span><span>Ab, asperiores cumque earum est expedita harum in itaque iure magnam mollitia omnis optio quam quidem quisquam reiciendis repellat temporibus tenetur ullam. Aut deserunt fugiat quis voluptatibus? Adipisci, cum voluptatum?</span></p>
+                </details>
+                <details>
+                    <summary><span class="font-weight-bold">2019.11.24 10:44:52 |</span> Summary</summary>
+                    <p class="card-body"><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores deserunt libero minus mollitia obcaecati quod saepe! Architecto at dicta harum necessitatibus, officiis quam quasi quod repudiandae sapiente sunt suscipit vero.</span><span>Asperiores cupiditate enim eum hic inventore ipsa ipsum, laborum minima non nulla qui, quisquam quo tempora temporibus ullam vero voluptas, voluptate! Adipisci atque dicta facilis modi officia officiis omnis repellendus.</span><span>At labore nam necessitatibus vel? Commodi consequatur cum dolor dolorum ducimus eos fuga ipsam labore laboriosam molestiae nesciunt nihil nobis optio provident, quas quibusdam reiciendis repellat sapiente suscipit tempora! Officia?</span><span>Cum ea ex fugit, libero nihil numquam sed suscipit. Commodi fugiat id ipsum laborum qui quibusdam tempora? A aperiam eaque impedit ipsa maxime nostrum odio, optio, qui quia, quos ratione.</span><span>Ab, asperiores cumque earum est expedita harum in itaque iure magnam mollitia omnis optio quam quidem quisquam reiciendis repellat temporibus tenetur ullam. Aut deserunt fugiat quis voluptatibus? Adipisci, cum voluptatum?</span></p>
+                </details>
+                <details>
+                    <summary><span class="font-weight-bold">2019.11.24 10:44:52 |</span> Summary</summary>
+                    <p class="card-body"><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores deserunt libero minus mollitia obcaecati quod saepe! Architecto at dicta harum necessitatibus, officiis quam quasi quod repudiandae sapiente sunt suscipit vero.</span><span>Asperiores cupiditate enim eum hic inventore ipsa ipsum, laborum minima non nulla qui, quisquam quo tempora temporibus ullam vero voluptas, voluptate! Adipisci atque dicta facilis modi officia officiis omnis repellendus.</span><span>At labore nam necessitatibus vel? Commodi consequatur cum dolor dolorum ducimus eos fuga ipsam labore laboriosam molestiae nesciunt nihil nobis optio provident, quas quibusdam reiciendis repellat sapiente suscipit tempora! Officia?</span><span>Cum ea ex fugit, libero nihil numquam sed suscipit. Commodi fugiat id ipsum laborum qui quibusdam tempora? A aperiam eaque impedit ipsa maxime nostrum odio, optio, qui quia, quos ratione.</span><span>Ab, asperiores cumque earum est expedita harum in itaque iure magnam mollitia omnis optio quam quidem quisquam reiciendis repellat temporibus tenetur ullam. Aut deserunt fugiat quis voluptatibus? Adipisci, cum voluptatum?</span></p>
+                </details>
+                <details>
+                    <summary><span class="font-weight-bold">2019.11.24 10:44:52 |</span> Summary</summary>
+                    <p class="card-body"><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores deserunt libero minus mollitia obcaecati quod saepe! Architecto at dicta harum necessitatibus, officiis quam quasi quod repudiandae sapiente sunt suscipit vero.</span><span>Asperiores cupiditate enim eum hic inventore ipsa ipsum, laborum minima non nulla qui, quisquam quo tempora temporibus ullam vero voluptas, voluptate! Adipisci atque dicta facilis modi officia officiis omnis repellendus.</span><span>At labore nam necessitatibus vel? Commodi consequatur cum dolor dolorum ducimus eos fuga ipsam labore laboriosam molestiae nesciunt nihil nobis optio provident, quas quibusdam reiciendis repellat sapiente suscipit tempora! Officia?</span><span>Cum ea ex fugit, libero nihil numquam sed suscipit. Commodi fugiat id ipsum laborum qui quibusdam tempora? A aperiam eaque impedit ipsa maxime nostrum odio, optio, qui quia, quos ratione.</span><span>Ab, asperiores cumque earum est expedita harum in itaque iure magnam mollitia omnis optio quam quidem quisquam reiciendis repellat temporibus tenetur ullam. Aut deserunt fugiat quis voluptatibus? Adipisci, cum voluptatum?</span></p>
+                </details>
+                <details>
+                    <summary><span class="font-weight-bold">2019.11.24 10:44:52 |</span> Summary</summary>
+                    <p class="card-body"><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores deserunt libero minus mollitia obcaecati quod saepe! Architecto at dicta harum necessitatibus, officiis quam quasi quod repudiandae sapiente sunt suscipit vero.</span><span>Asperiores cupiditate enim eum hic inventore ipsa ipsum, laborum minima non nulla qui, quisquam quo tempora temporibus ullam vero voluptas, voluptate! Adipisci atque dicta facilis modi officia officiis omnis repellendus.</span><span>At labore nam necessitatibus vel? Commodi consequatur cum dolor dolorum ducimus eos fuga ipsam labore laboriosam molestiae nesciunt nihil nobis optio provident, quas quibusdam reiciendis repellat sapiente suscipit tempora! Officia?</span><span>Cum ea ex fugit, libero nihil numquam sed suscipit. Commodi fugiat id ipsum laborum qui quibusdam tempora? A aperiam eaque impedit ipsa maxime nostrum odio, optio, qui quia, quos ratione.</span><span>Ab, asperiores cumque earum est expedita harum in itaque iure magnam mollitia omnis optio quam quidem quisquam reiciendis repellat temporibus tenetur ullam. Aut deserunt fugiat quis voluptatibus? Adipisci, cum voluptatum?</span></p>
+                </details>
+                <details>
+                    <summary><span class="font-weight-bold">2019.11.24 10:44:52 |</span> Summary</summary>
+                    <p class="card-body"><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores deserunt libero minus mollitia obcaecati quod saepe! Architecto at dicta harum necessitatibus, officiis quam quasi quod repudiandae sapiente sunt suscipit vero.</span><span>Asperiores cupiditate enim eum hic inventore ipsa ipsum, laborum minima non nulla qui, quisquam quo tempora temporibus ullam vero voluptas, voluptate! Adipisci atque dicta facilis modi officia officiis omnis repellendus.</span><span>At labore nam necessitatibus vel? Commodi consequatur cum dolor dolorum ducimus eos fuga ipsam labore laboriosam molestiae nesciunt nihil nobis optio provident, quas quibusdam reiciendis repellat sapiente suscipit tempora! Officia?</span><span>Cum ea ex fugit, libero nihil numquam sed suscipit. Commodi fugiat id ipsum laborum qui quibusdam tempora? A aperiam eaque impedit ipsa maxime nostrum odio, optio, qui quia, quos ratione.</span><span>Ab, asperiores cumque earum est expedita harum in itaque iure magnam mollitia omnis optio quam quidem quisquam reiciendis repellat temporibus tenetur ullam. Aut deserunt fugiat quis voluptatibus? Adipisci, cum voluptatum?</span></p>
+                </details>
+                <details>
+                    <summary><span class="font-weight-bold">2019.11.24 10:44:52 |</span> Summary</summary>
+                    <p class="card-body"><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores deserunt libero minus mollitia obcaecati quod saepe! Architecto at dicta harum necessitatibus, officiis quam quasi quod repudiandae sapiente sunt suscipit vero.</span><span>Asperiores cupiditate enim eum hic inventore ipsa ipsum, laborum minima non nulla qui, quisquam quo tempora temporibus ullam vero voluptas, voluptate! Adipisci atque dicta facilis modi officia officiis omnis repellendus.</span><span>At labore nam necessitatibus vel? Commodi consequatur cum dolor dolorum ducimus eos fuga ipsam labore laboriosam molestiae nesciunt nihil nobis optio provident, quas quibusdam reiciendis repellat sapiente suscipit tempora! Officia?</span><span>Cum ea ex fugit, libero nihil numquam sed suscipit. Commodi fugiat id ipsum laborum qui quibusdam tempora? A aperiam eaque impedit ipsa maxime nostrum odio, optio, qui quia, quos ratione.</span><span>Ab, asperiores cumque earum est expedita harum in itaque iure magnam mollitia omnis optio quam quidem quisquam reiciendis repellat temporibus tenetur ullam. Aut deserunt fugiat quis voluptatibus? Adipisci, cum voluptatum?</span></p>
+                </details>
+                <details>
+                    <summary><span class="font-weight-bold">2019.11.24 10:44:52 |</span> Summary</summary>
+                    <p class="card-body"><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores deserunt libero minus mollitia obcaecati quod saepe! Architecto at dicta harum necessitatibus, officiis quam quasi quod repudiandae sapiente sunt suscipit vero.</span><span>Asperiores cupiditate enim eum hic inventore ipsa ipsum, laborum minima non nulla qui, quisquam quo tempora temporibus ullam vero voluptas, voluptate! Adipisci atque dicta facilis modi officia officiis omnis repellendus.</span><span>At labore nam necessitatibus vel? Commodi consequatur cum dolor dolorum ducimus eos fuga ipsam labore laboriosam molestiae nesciunt nihil nobis optio provident, quas quibusdam reiciendis repellat sapiente suscipit tempora! Officia?</span><span>Cum ea ex fugit, libero nihil numquam sed suscipit. Commodi fugiat id ipsum laborum qui quibusdam tempora? A aperiam eaque impedit ipsa maxime nostrum odio, optio, qui quia, quos ratione.</span><span>Ab, asperiores cumque earum est expedita harum in itaque iure magnam mollitia omnis optio quam quidem quisquam reiciendis repellat temporibus tenetur ullam. Aut deserunt fugiat quis voluptatibus? Adipisci, cum voluptatum?</span></p>
+                </details>
+                <details>
+                    <summary><span class="font-weight-bold">2019.11.24 10:44:52 |</span> Summary</summary>
+                    <p class="card-body"><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores deserunt libero minus mollitia obcaecati quod saepe! Architecto at dicta harum necessitatibus, officiis quam quasi quod repudiandae sapiente sunt suscipit vero.</span><span>Asperiores cupiditate enim eum hic inventore ipsa ipsum, laborum minima non nulla qui, quisquam quo tempora temporibus ullam vero voluptas, voluptate! Adipisci atque dicta facilis modi officia officiis omnis repellendus.</span><span>At labore nam necessitatibus vel? Commodi consequatur cum dolor dolorum ducimus eos fuga ipsam labore laboriosam molestiae nesciunt nihil nobis optio provident, quas quibusdam reiciendis repellat sapiente suscipit tempora! Officia?</span><span>Cum ea ex fugit, libero nihil numquam sed suscipit. Commodi fugiat id ipsum laborum qui quibusdam tempora? A aperiam eaque impedit ipsa maxime nostrum odio, optio, qui quia, quos ratione.</span><span>Ab, asperiores cumque earum est expedita harum in itaque iure magnam mollitia omnis optio quam quidem quisquam reiciendis repellat temporibus tenetur ullam. Aut deserunt fugiat quis voluptatibus? Adipisci, cum voluptatum?</span></p>
+                </details>
+                <details>
+                    <summary><span class="font-weight-bold">2019.11.24 10:44:52 |</span> Summary</summary>
+                    <p class="card-body"><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores deserunt libero minus mollitia obcaecati quod saepe! Architecto at dicta harum necessitatibus, officiis quam quasi quod repudiandae sapiente sunt suscipit vero.</span><span>Asperiores cupiditate enim eum hic inventore ipsa ipsum, laborum minima non nulla qui, quisquam quo tempora temporibus ullam vero voluptas, voluptate! Adipisci atque dicta facilis modi officia officiis omnis repellendus.</span><span>At labore nam necessitatibus vel? Commodi consequatur cum dolor dolorum ducimus eos fuga ipsam labore laboriosam molestiae nesciunt nihil nobis optio provident, quas quibusdam reiciendis repellat sapiente suscipit tempora! Officia?</span><span>Cum ea ex fugit, libero nihil numquam sed suscipit. Commodi fugiat id ipsum laborum qui quibusdam tempora? A aperiam eaque impedit ipsa maxime nostrum odio, optio, qui quia, quos ratione.</span><span>Ab, asperiores cumque earum est expedita harum in itaque iure magnam mollitia omnis optio quam quidem quisquam reiciendis repellat temporibus tenetur ullam. Aut deserunt fugiat quis voluptatibus? Adipisci, cum voluptatum?</span></p>
+                </details>
+                <details>
+                    <summary><span class="font-weight-bold">2019.11.24 10:44:52 |</span> Summary</summary>
+                    <p class="card-body"><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores deserunt libero minus mollitia obcaecati quod saepe! Architecto at dicta harum necessitatibus, officiis quam quasi quod repudiandae sapiente sunt suscipit vero.</span><span>Asperiores cupiditate enim eum hic inventore ipsa ipsum, laborum minima non nulla qui, quisquam quo tempora temporibus ullam vero voluptas, voluptate! Adipisci atque dicta facilis modi officia officiis omnis repellendus.</span><span>At labore nam necessitatibus vel? Commodi consequatur cum dolor dolorum ducimus eos fuga ipsam labore laboriosam molestiae nesciunt nihil nobis optio provident, quas quibusdam reiciendis repellat sapiente suscipit tempora! Officia?</span><span>Cum ea ex fugit, libero nihil numquam sed suscipit. Commodi fugiat id ipsum laborum qui quibusdam tempora? A aperiam eaque impedit ipsa maxime nostrum odio, optio, qui quia, quos ratione.</span><span>Ab, asperiores cumque earum est expedita harum in itaque iure magnam mollitia omnis optio quam quidem quisquam reiciendis repellat temporibus tenetur ullam. Aut deserunt fugiat quis voluptatibus? Adipisci, cum voluptatum?</span></p>
+                </details>
+                <details>
+                    <summary><span class="font-weight-bold">2019.11.24 10:44:52 |</span> Summary</summary>
+                    <p class="card-body"><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores deserunt libero minus mollitia obcaecati quod saepe! Architecto at dicta harum necessitatibus, officiis quam quasi quod repudiandae sapiente sunt suscipit vero.</span><span>Asperiores cupiditate enim eum hic inventore ipsa ipsum, laborum minima non nulla qui, quisquam quo tempora temporibus ullam vero voluptas, voluptate! Adipisci atque dicta facilis modi officia officiis omnis repellendus.</span><span>At labore nam necessitatibus vel? Commodi consequatur cum dolor dolorum ducimus eos fuga ipsam labore laboriosam molestiae nesciunt nihil nobis optio provident, quas quibusdam reiciendis repellat sapiente suscipit tempora! Officia?</span><span>Cum ea ex fugit, libero nihil numquam sed suscipit. Commodi fugiat id ipsum laborum qui quibusdam tempora? A aperiam eaque impedit ipsa maxime nostrum odio, optio, qui quia, quos ratione.</span><span>Ab, asperiores cumque earum est expedita harum in itaque iure magnam mollitia omnis optio quam quidem quisquam reiciendis repellat temporibus tenetur ullam. Aut deserunt fugiat quis voluptatibus? Adipisci, cum voluptatum?</span></p>
+                </details>
+            </div>
+            </details>
+        </section>
+    </main>
+    <footer class="modal-footer">
+        <div>footer</div>
+    </footer>
+</body>
+</html>

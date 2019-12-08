@@ -46,13 +46,13 @@ namespace stocksharp.ServiceContracts
         {
             try
             {
+                GUIServer.LogManager.RenderHtmlReport(_currentUser, partnerDataObject);
                 UserManager.Update_UserData(_currentUser);
                 GUIServer.MainWindow.Instance.SetPartnerData(_currentUser, partnerDataObject);
             }
             catch (Exception ex)
             {
-                Log.addLog(GUIServer.LogType.Warn, "Ошибка обновления информации о пользователе");
-                TerminateConnection();
+                Log.addLog(GUIServer.LogType.Warn, "Ошибка обновления информации о пользователе" + ex);
             }
             
             TradeState result = null;

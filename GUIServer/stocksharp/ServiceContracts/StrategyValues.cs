@@ -84,7 +84,7 @@ namespace stocksharp.ServiceContracts
         private decimal Crocodile_2Tv2_MIN = 0;
         private decimal Crocodile_2Tv3_MIN = 0;
         private bool Crocodile_AvrVv_IsInited = false;
-        private bool Is_Vv_Crocodile(int shift = 0) => // TODO: IT'S NOT VV CROCODILE
+        private bool Is_Vv_Crocodile(int shift = 0) =>
                 tf[0].volume.GetAvrVv(avrVvPeriod_1, shift) > 0
                 &&
                 tf[0].volume.GetAvrVv(avrVvPeriod_2, shift) > tf[0].volume.GetAvrVv(avrVvPeriod_1, shift)
