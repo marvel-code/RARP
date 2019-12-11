@@ -64,6 +64,7 @@ namespace AutoRobot
         {
             // -- init proxy
             binding = new WSHttpBinding(SecurityMode.None, true);
+            binding.SendTimeout = TimeSpan.FromMinutes(5);
             address = new EndpointAddress(string.Format("http://{0}:{1}/WorkService", IP, PORT));
             //address = new EndpointAddress(string.Format("http://127.0.0.1:{0}/WorkService", PORT));
             threadConnectionReaffirmation = new Thread(() =>

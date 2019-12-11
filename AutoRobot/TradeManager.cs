@@ -54,7 +54,7 @@ namespace AutoRobot
                 if (orders2add.Count() != 0)
                     Orders_Enter.AddRange(orders2add);
 
-                orders2add = MyDayOrders.Where(or => or.Comment.Contains(string.Format("{0} {1}", Robot_Trade_Name, OrderType.Exit)) || or.Comment.Contains(string.Format("{0} {1}", Robot_Trade_Name, OrderType.Stop)) && or.StopCondition == null));
+                orders2add = MyDayOrders.Where(or => or.Comment.Contains(string.Format("{0} {1}", Robot_Trade_Name, OrderType.Exit)) || or.Comment.Contains(string.Format("{0} {1}", Robot_Trade_Name, OrderType.Stop)) && or.StopCondition == null);
                 if (orders2add.Count() != 0)
                     Orders_Exit.AddRange(orders2add);
 

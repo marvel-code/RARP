@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.ServiceModel;
+using System.Threading;
 
 using StockSharp.Algo.Candles;
 using StockSharp.BusinessEntities;
@@ -23,6 +24,31 @@ namespace stocksharp.ServiceContracts
             _currentData = new ProcessingData();
             _currentData.Init();
 
+            if (!_queue.ContainsKey(username))
+            {
+                _queue.Add(username, new Queue<Action>());
+                _qThreads.Add(username, new Thread(() =>
+                {
+                    while (true)
+                    {
+                        Action act = null;
+                        lock (_queue_locker)
+                        {
+                            if (_queue[username].Count != 0)
+                            {
+                                act = _queue[username].Dequeue();
+                            }
+                        }
+                        if (act != null)
+                        {
+                            act();
+                        }
+                        Thread.Sleep(50);
+                    }
+                }));
+                //_qThreads[username].Start();
+            }
+
             bool result = UserManager.Process_UserConnect(username);
 
             if (!result)
@@ -37,108 +63,131 @@ namespace stocksharp.ServiceContracts
         public void TerminateConnection()
         {
             UserManager.Process_UserDisconnect(_currentUser);
+            _queue.Remove(_currentUser);
+            _qThreads.Remove(_currentUser);
         }
 
         // >> Server data processing
         private ProcessingData _currentData;
 
-        public TradeState GetTradeState(PartnerDataObject partnerDataObject, ServerDataObject dataObj, NeedAction needAction)
+        private int c = 0;
+        private static Dictionary<string, Thread> _qThreads = new Dictionary<string, Thread>();
+        private volatile TradeState _tradeState = new TradeState();
+        private static volatile object _queue_locker = new object();
+        private static volatile Dictionary<string, Queue<Action>> _queue = new Dictionary<string, Queue<Action>>();
+        private static volatile object _update_locker = new object();
+        private void updateTradeState(PartnerDataObject partnerDataObject, ServerDataObject dataObj, NeedAction needAction)
         {
-            try
+            lock (_update_locker)
             {
-                GUIServer.LogManager.RenderHtmlReport(_currentUser, partnerDataObject);
-                UserManager.Update_UserData(_currentUser);
-                GUIServer.MainWindow.Instance.SetPartnerData(_currentUser, partnerDataObject);
-            }
-            catch (Exception ex)
-            {
-                Log.addLog(GUIServer.LogType.Warn, "Ошибка обновления информации о пользователе" + ex);
-            }
-            
-            TradeState result = null;
+                try
+                {
+                    GUIServer.LogManager.RenderHtmlReport(_currentUser, partnerDataObject);
+                    UserManager.Update_UserData(_currentUser);
+                    GUIServer.MainWindow.Instance.SetPartnerData(_currentUser, partnerDataObject);
+                }
+                catch (Exception ex)
+                {
+                    Log.addLog(GUIServer.LogType.Warn, "Ошибка обновления информации о пользователе" + ex);
+                }
 
-            // -- Synchronizing of current via received
-            // - Time
-            _currentData.TerminalTime = dataObj.TerminalTime.DateTime;
-            _currentData.LastEnterTime = dataObj.LastEnterTime.DateTime;
-            _currentData.LastExitTime = dataObj.LastExitTime.DateTime;
-            // - Data
-            try
-            {
-                _currentData.Update_AllTrades(dataObj.NewTrades);
-                _currentData.Update_TradesIStarts();
-                _currentData.Update_TfCandles(dataObj.NewCandles);
-            }
-            catch (Exception ex)
-            {
-                Log.addLog(GUIServer.LogType.Warn, "Ошибка обновления данных");
-                TerminateConnection();
-            }
-            // - Indicators
-            try
-            {
+                TradeState result = new TradeState();
+
+                // -- Synchronizing of current via received
+                // - Time
+                _currentData.TerminalTime = dataObj.TerminalTime.DateTime;
+                _currentData.LastEnterTime = dataObj.LastEnterTime.DateTime;
+                _currentData.LastExitTime = dataObj.LastExitTime.DateTime;
+                // - Data
+                try
+                {
+                    _currentData.Update_AllTrades(dataObj.NewTrades);
+                    _currentData.Update_TradesIStarts();
+                    _currentData.Update_TfCandles(dataObj.NewCandles);
+                }
+                catch (Exception ex)
+                {
+                    Log.addLog(GUIServer.LogType.Error, "Ошибка обновления данных");
+                    TerminateConnection();
+                }
+                // - Indicators
                 if (_currentData.GetTradeIStart(dataObj.NewCandles.Max(x => x.Max(y => y.Time))) != -1)
                 {
-                    _currentData.Process_UpdateIndicators();
+                    try
+                    {
+                        _currentData.Process_UpdateIndicators();
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.addLog(GUIServer.LogType.Warn, "Ошибка обновления индикаторов");
+                        TerminateConnection();
+                    }
+
+                    // -- Processing
+                    try
+                    {
+                        result = getTradeState(_currentData.timeFrameList, needAction, partnerDataObject);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.addLog(GUIServer.LogType.Warn, "Ошибка обновления состояния торговли" + ex.ToString());
+                        TerminateConnection();
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                Log.addLog(GUIServer.LogType.Warn, "Ошибка обновления индикаторов");
-                TerminateConnection();
-            }
 
-            // -- Processing
-            try
-            {
-                result = getTradeState(_currentData.timeFrameList, needAction, partnerDataObject);
-            }
-            catch (Exception ex)
-            {
-                Log.addLog(GUIServer.LogType.Warn, "Ошибка обновления состояния торговли" + ex.ToString());
-                TerminateConnection();
-            }
-
-            try
-            {
-                var tf = _currentData.timeFrameList;
-                result.AdditionalData = new AdditionalDataStruct
+                try
                 {
-                    message = "",
-                    //message = string.Format("val={0} | val_p={1}", ProcessingData.timeFrameList[0].kama[0].val, ProcessingData.timeFrameList[0].kama[0].val_p),
-                    
-                    adx_val = tf[0].adx[0].val,
-                    adx_dip = tf[0].adx[0].dip,
-                    adx_dim = tf[0].adx[0].dim,
-                    adx_val_p = tf[0].adx[0].val_p,
-                    adx_dip_p = tf[0].adx[0].dip_p,
-                    adx_dim_p = tf[0].adx[0].dim_p,
+                    var tf = _currentData.timeFrameList;
+                    result.AdditionalData = new AdditionalDataStruct
+                    {
+                        message = "",
+                        //message = string.Format("val={0} | val_p={1}", ProcessingData.timeFrameList[0].kama[0].val, ProcessingData.timeFrameList[0].kama[0].val_p),
 
-                    total = tf[0].Volume[0].total,
-                    total_p = tf[0].Volume[0].total_p,
-                    buy = tf[0].Volume[0].buy,
-                    buy_p = tf[0].Volume[0].buy_p,
-                    sell = tf[0].Volume[0].sell,
-                    sell_p = tf[0].Volume[0].sell_p,
+                        adx_val = tf[0].adx[0].val,
+                        adx_dip = tf[0].adx[0].dip,
+                        adx_dim = tf[0].adx[0].dim,
+                        adx_val_p = tf[0].adx[0].val_p,
+                        adx_dip_p = tf[0].adx[0].dip_p,
+                        adx_dim_p = tf[0].adx[0].dim_p,
 
-                    Candles_N = tf.Sum(x => x.Buffer.Count),
-                    AllTrades_N = _currentData.AllTrades.Count,
+                        total = tf[0].Volume[0].total,
+                        total_p = tf[0].Volume[0].total_p,
+                        buy = tf[0].Volume[0].buy,
+                        buy_p = tf[0].Volume[0].buy_p,
+                        sell = tf[0].Volume[0].sell,
+                        sell_p = tf[0].Volume[0].sell_p,
 
-                    Open_Trades_Time = _currentData.AllTrades[0].Time,
-                    Close_Trades_Time = _currentData.AllTrades.Last().Time,
+                        Candles_N = tf.Sum(x => x.Buffer.Count),
+                        AllTrades_N = _currentData.AllTrades.Count,
 
-                    Open_Time = tf[0].Buffer[0].Time,
-                    Close_Time = tf[0].Buffer.Last().Time,
-                };
+                        Open_Trades_Time = _currentData.AllTrades[0].Time,
+                        Close_Trades_Time = _currentData.AllTrades.Last().Time,
+
+                        Open_Time = tf[0].Buffer[0].Time,
+                        Close_Time = tf[0].Buffer.Last().Time,
+                    };
+                }
+                catch (Exception ex)
+                {
+                    Log.addLog(GUIServer.LogType.Warn, "Ошибка обновления данных мониторинга" + ex);
+                    TerminateConnection();
+                }
+
+                _tradeState = result;
             }
-            catch (Exception ex)
-            {
-                Log.addLog(GUIServer.LogType.Warn, "Ошибка обновления данных мониторинга");
-                TerminateConnection();
-            }
-
-            return result;
         }
+        public TradeState GetTradeState(PartnerDataObject partnerDataObject, ServerDataObject dataObj, NeedAction needAction)
+        {
+            ++c;
+            lock (_queue_locker)
+            {
+                _queue[_currentUser].Enqueue(() => updateTradeState(partnerDataObject, dataObj, needAction));
+            }
+            _queue[_currentUser].Dequeue()();
+            
+            return _tradeState;
+        }
+
         public List<int> GetTimeFramePeriods()
         {
             return _currentData.tf_Periods;

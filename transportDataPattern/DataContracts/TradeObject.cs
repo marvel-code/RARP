@@ -26,7 +26,7 @@ namespace transportDataParrern
     
     public struct AdditionalDataStruct
     {
-        public string  message;
+        public string  message { get; set; }
 
         public decimal adx_val;
         public decimal adx_dip;
