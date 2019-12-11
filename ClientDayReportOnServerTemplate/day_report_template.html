@@ -40,7 +40,7 @@
             const data = google.visualization.arrayToDataTable([
                 ['DayTime', 'Balance'],
                 {% for point in balanceChartPoints %}
-                    [point.time, point.balance]
+                    [{{ point.time }}, {{ point.balance }}]
                 {% endfor -%}
             ]);
             const options = {

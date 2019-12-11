@@ -62,6 +62,11 @@ namespace GUIServer
             public TimeSpan? ExitTime;
             public string Direction;
         }
+        class BalanceChartPoint : Drop
+        {
+            public string Time { get; set; }
+            public int Balance { get; set; }
+        }
         public static void RenderHtmlReport(string filename, PartnerDataObject pd)
         {
             // Data
@@ -78,8 +83,10 @@ namespace GUIServer
             decimal day_pnl = 0;
             for (int i = 0; i < pd.ordersEnter.Count || i < pd.ordersExit.Count; ++i)
             {
-
             }
+            List<BalanceChartPoint> balanceChartPoints = new List<BalanceChartPoint>();
+            balanceChartPoints.Add(new BalanceChartPoint { Time = TimeSpan.FromHours(10).ToString(), Balance = (int)pd.derivativePortfolioData[0].beginAmount });
+            balanceChartPoints.Add(new BalanceChartPoint { Time = TimeSpan.FromHours(11).ToString(), Balance = (int)pd.derivativePortfolioData[0].beginAmount + 200 });
 
             // Log
             string template_path = Path.Combine(Environment.CurrentDirectory, "ClientDayReportOnServerTemplate/day_report_template.html");
@@ -87,6 +94,7 @@ namespace GUIServer
             Template tempate = Template.Parse(template_string);
             string render = tempate.Render(Hash.FromAnonymousObject(new {
                 date = CURRENT_DATE_STRING,
+                balanceChartPoints = balanceChartPoints,
                 positions_data = PositionsData,
                 orders_data = pd.ordersData,
                 stoporders_data = pd.stopOrdersData,
