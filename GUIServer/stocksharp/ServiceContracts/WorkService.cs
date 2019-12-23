@@ -27,27 +27,31 @@ namespace stocksharp.ServiceContracts
             if (!_queue.ContainsKey(username))
             {
                 _queue.Add(username, new Queue<Action>());
-                _qThreads.Add(username, new Thread(() =>
-                {
-                    while (true)
-                    {
-                        Action act = null;
-                        lock (_queue_locker)
-                        {
-                            if (_queue[username].Count != 0)
-                            {
-                                act = _queue[username].Dequeue();
-                            }
-                        }
-                        if (act != null)
-                        {
-                            act();
-                        }
-                        Thread.Sleep(50);
-                    }
-                }));
-                //_qThreads[username].Start();
             }
+            if (_qThreads.ContainsKey(username))
+            {
+                _qThreads.Remove(username);
+            }
+            _qThreads.Add(username, new Thread(() =>
+            {
+                while (true)
+                {
+                    Action act = null;
+                    lock (_queue_locker)
+                    {
+                        if (_queue[username].Count != 0)
+                        {
+                            act = _queue[username].Dequeue();
+                        }
+                    }
+                    if (act != null)
+                    {
+                        act();
+                    }
+                    Thread.Sleep(50);
+                }
+            }));
+            //_qThreads[username].Start();
 
             bool result = UserManager.Process_UserConnect(username);
 
@@ -63,8 +67,6 @@ namespace stocksharp.ServiceContracts
         public void TerminateConnection()
         {
             UserManager.Process_UserDisconnect(_currentUser);
-            _queue.Remove(_currentUser);
-            _qThreads.Remove(_currentUser);
         }
 
         // >> Server data processing
@@ -119,7 +121,7 @@ namespace stocksharp.ServiceContracts
                     }
                     catch (Exception ex)
                     {
-                        Log.addLog(GUIServer.LogType.Warn, "Ошибка обновления индикаторов");
+                        Log.addLog(GUIServer.LogType.Error, "Ошибка обновления индикаторов");
                         TerminateConnection();
                     }
 
@@ -130,8 +132,8 @@ namespace stocksharp.ServiceContracts
                     }
                     catch (Exception ex)
                     {
-                        Log.addLog(GUIServer.LogType.Warn, "Ошибка обновления состояния торговли" + ex.ToString());
-                        TerminateConnection();
+                        Log.addLog(GUIServer.LogType.Error, "Ошибка обновления состояния торговли" + ex.ToString());
+                        result = new TradeState();
                     }
                 }
 

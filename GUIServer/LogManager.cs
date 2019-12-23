@@ -51,16 +51,126 @@ namespace GUIServer
         }
 
         // HTML report
-        
-        class PositionData
+
+        public class TradeData : Drop
         {
-            public decimal? PositionPNL;
-            public decimal DayPNL;
-            public int EntryId;
-            public int? ExitId;
-            public TimeSpan EntryTime;
-            public TimeSpan? ExitTime;
+            public long id { get; set; }
+            public string dateTime { get; set; }
+            public string direction { get; set; }
+            public decimal price { get; set; }
+            public int volume { get; set; }
+            public long orderNumber { get; set; }
+
+            public TradeData(transportDataParrern.TradeData tradeData)
+            {
+                id = tradeData.id;
+                dateTime = tradeData.dateTime;
+                direction = tradeData.direction;
+                price = tradeData.price;
+                volume = tradeData.volume;
+                orderNumber = tradeData.orderNumber;
+            }
+        }
+        public class OrderData : Drop
+        {
+            public long id { get; set; }
+            public long derivedOrderId { get; set; }
+            public string dateTime { get; set; }
+            public string secCode { get; set; }
+            public decimal price { get; set; }
+            public int volume { get; set; }
+            public int balance { get; set; }
+            public string side { get; set; }
+            public string state { get; set; }
+            public string comment { get; set; }
+
+            public OrderData(transportDataParrern.OrderData orderData)
+            {
+                id = orderData.id;
+                derivedOrderId = orderData.derivedOrderId;
+                dateTime = orderData.dateTime;
+                secCode = orderData.secCode;
+                price = orderData.price;
+                volume = orderData.volume;
+                balance = orderData.balance;
+                side = orderData.side;
+                state = orderData.state;
+                comment = orderData.comment;
+            }
+        }
+        public class StopOrderData : Drop
+        {
+            public long id { get; set; }
+            public string dateTime { get; set; }
+            public string secCode { get; set; }
+            public decimal price { get; set; }
+            public decimal stopPrice { get; set; }
+            public int volume { get; set; }
+            public int balance { get; set; }
+            public string side { get; set; }
+            public string type { get; set; }
+            public string state { get; set; }
+            public string comment { get; set; }
+
+            public StopOrderData(transportDataParrern.StopOrderData stopOrderData)
+            {
+                id = stopOrderData.id;
+                dateTime = stopOrderData.dateTime;
+                secCode = stopOrderData.secCode;
+                price = stopOrderData.price;
+                stopPrice = stopOrderData.stopPrice;
+                volume = stopOrderData.volume;
+                balance = stopOrderData.balance;
+                side = stopOrderData.side;
+                type = stopOrderData.type;
+                state = stopOrderData.state;
+                comment = stopOrderData.comment;
+            }
+        }
+        class PositionData : Drop
+        {
+            public bool isClosed { get; set; }
+            public decimal PositionPNL { get; set; }
+            public decimal DayPNL { get; set; }
+            public int EntryId { get; set; }
+            public int ExitId { get; set; }
+            public string EntryTime { get; set; }
+            public string ExitTime { get; set; }
+            public string Direction { get; set; }
+        }
+        class CommentInfo
+        {
+            public bool is_valid;
+            public string RobotName;
             public string Direction;
+            public int PosNumber;
+            public int rule_id;
+
+            public CommentInfo(string comment)
+            {
+                processComment(comment);
+            }
+
+            public void processComment(string comment)
+            {
+                string[] parts = comment.Split(' ', '#');
+                if (parts.Length == 4)
+                {
+                    try
+                    {
+                        RobotName = parts[0];
+                        Direction = parts[1];
+                        PosNumber = int.Parse(parts[2]);
+                        rule_id = int.Parse(parts[3]);
+                        is_valid = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        is_valid = false;
+                        Log(LogType.Warn, "Comment {0} parse expcetion: {1}", comment, ex);
+                    }
+                }
+            }
         }
         class BalanceChartPoint : Drop
         {
@@ -72,21 +182,60 @@ namespace GUIServer
             // Data
             decimal? GetOrderTradesAvrPrice(long order_id)
             {
-                IEnumerable<TradeData> trades = pd.tradesData.Where(t => t.orderNumber == order_id);
+                IEnumerable<transportDataParrern.TradeData> trades = pd.tradesData.Where(t => t.orderNumber == order_id);
                 if (trades.Count() == 0)
                     return null;
                 return trades.Sum(t => t.price * t.volume) / trades.Sum(t => t.volume);
             };
-            int GetOrderRuleId(OrderData order) => int.Parse(order.comment.Split('|').Last());
             List<PositionData> PositionsData = new List<PositionData>();
             OrderData last_order = null;
             decimal day_pnl = 0;
-            for (int i = 0; i < pd.ordersEnter.Count || i < pd.ordersExit.Count; ++i)
+            for (int i = 0; i < pd.ordersEnter.Count; ++i)
             {
+                OrderData enter_order = new OrderData(pd.ordersEnter[i]);
+                OrderData exit_order = i < pd.ordersExit.Count ? new OrderData(pd.ordersExit[i]) : null;
+                CommentInfo enterCI = new CommentInfo(enter_order.comment);
+
+                PositionData pos_data = new PositionData();
+                pos_data.Direction = enter_order.side;
+                pos_data.EntryId = enterCI.rule_id;
+                pos_data.EntryTime = enter_order.dateTime.Split(' ')[1];
+                if (exit_order != null)
+                {
+                    pos_data.isClosed = true;
+                    CommentInfo exitCI = new CommentInfo(exit_order.comment);
+                    pos_data.ExitId = exitCI.rule_id;
+                    pos_data.ExitTime = exit_order.dateTime.Split(' ')[1];
+                    decimal? enter_trades_price = GetOrderTradesAvrPrice(enter_order.id);
+                    decimal? exit_trades_price = GetOrderTradesAvrPrice(exit_order.id);
+                    decimal exit_avr_price = exit_trades_price != null ? exit_trades_price.Value : pd.Current_Price;
+                    decimal enter_avr_price = enter_trades_price != null ? enter_trades_price.Value : pd.Current_Price;
+                    decimal position_pnl = exit_avr_price - enter_avr_price;
+                    pos_data.PositionPNL = position_pnl;
+                    day_pnl += position_pnl;
+                    pos_data.DayPNL = day_pnl;
+                }
+                else
+                {
+                    decimal? enter_trades_price = GetOrderTradesAvrPrice(enter_order.id);
+                    decimal enter_avr_price = enter_trades_price != null ? enter_trades_price.Value : pd.Current_Price;
+                    decimal position_pnl = pd.Current_Price - enter_avr_price;
+                    pos_data.PositionPNL = position_pnl;
+                    day_pnl += position_pnl;
+                    pos_data.DayPNL = day_pnl;
+                }
+
+                PositionsData.Add(pos_data);
             }
             List<BalanceChartPoint> balanceChartPoints = new List<BalanceChartPoint>();
-            balanceChartPoints.Add(new BalanceChartPoint { Time = TimeSpan.FromHours(10).ToString(), Balance = (int)pd.derivativePortfolioData[0].beginAmount });
-            balanceChartPoints.Add(new BalanceChartPoint { Time = TimeSpan.FromHours(11).ToString(), Balance = (int)pd.derivativePortfolioData[0].beginAmount + 200 });
+            balanceChartPoints.Add(new BalanceChartPoint { Time = "10:00:00", Balance = 0 });
+            foreach (var p in PositionsData)
+            {
+                if (p.isClosed)
+                {
+                    balanceChartPoints.Add(new BalanceChartPoint { Time = p.EntryTime, Balance = (int)p.DayPNL });
+                }
+            }
 
             // Log
             string template_path = Path.Combine(Environment.CurrentDirectory, "ClientDayReportOnServerTemplate/day_report_template.html");
@@ -94,11 +243,11 @@ namespace GUIServer
             Template tempate = Template.Parse(template_string);
             string render = tempate.Render(Hash.FromAnonymousObject(new {
                 date = CURRENT_DATE_STRING,
-                balanceChartPoints = balanceChartPoints,
+                balanceChartPoints,
                 positions_data = PositionsData,
-                orders_data = pd.ordersData,
-                stoporders_data = pd.stopOrdersData,
-                trades_data = pd.tradesData
+                orders_data = pd.ordersData.Select(x => new OrderData(x)),
+                stoporders_data = pd.stopOrdersData.Select(x => new StopOrderData(x)),
+                trades_data = pd.tradesData.Select(x => new TradeData(x))
             }));
             string logfile_directory_path = Path.Combine(Environment.CurrentDirectory, "Отчёты", CURRENT_DATE_STRING);
             Directory.CreateDirectory(logfile_directory_path);

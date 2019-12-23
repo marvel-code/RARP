@@ -119,13 +119,19 @@ namespace stocksharp
                 }
             return _lastProcessedProectionTradeIndex;
         }
-        private int getNearestTradeIndexEarlierDateTime(DateTime dt)
+        private int getNearestTradeIndexEarlierDateTime(DateTime DT)
         {
-            dt = GetDateTimeWithoutMillis(dt);
+            var dt = GetDateTimeWithoutMillis(DT);
             DateTime minTradeDateTime = AllTrades[0].Time;
             for (; dt >= minTradeDateTime; dt = dt.AddSeconds(-1))
+            {
+                if (dt.Hour < 10)
+                    dt = dt.Add(-dt.TimeOfDay - TimeSpan.FromSeconds(1));
+                while (dt.DayOfWeek == DayOfWeek.Sunday || dt.DayOfWeek == DayOfWeek.Saturday)
+                    dt = dt.AddDays(-1);
                 if (_proectionDateTime2AllTrades.ContainsKey(dt))
                     return _proectionDateTime2AllTrades[dt];
+            }
             return 0;
         }
         // Массивы значений
@@ -560,6 +566,62 @@ namespace stocksharp
         public Decimal GetAvrSv(int _Velocity_Period_Seconds, int shift = 0)
         {
             return getAvrSvVal(_Velocity_Period_Seconds, shift);
+        }
+        public Decimal GetAvrTactsTvMax(int periodSeconds, int tacts_count, int shift = 0)
+        {
+            decimal result = getAvrTvVal(periodSeconds, shift);
+            for (int i = shift + 1; i < shift + tacts_count; i++)
+            {
+                decimal tmp = getAvrTvVal(periodSeconds, i);
+                if (result < tmp)
+                {
+                    result = tmp;
+                }
+            }
+
+            return result;
+        }
+        public Decimal GetAvrTactsTvMin(int periodSeconds, int tacts_count, int shift = 0)
+        {
+            decimal result = getAvrTvVal(periodSeconds, shift);
+            for (int i = shift + 1; i < shift + tacts_count; i++)
+            {
+                decimal tmp = getAvrTvVal(periodSeconds, i);
+                if (result > tmp)
+                {
+                    result = tmp;
+                }
+            }
+
+            return result;
+        }
+        public decimal GetAvrTactsVvMax(int periodSeconds, int tacts_count, int shift = 0)
+        {
+            decimal result = getAvrVvVal(periodSeconds, shift);
+            for (int i = shift + 1; i < shift + tacts_count; i++)
+            {
+                decimal tmp = getAvrVvVal(periodSeconds, i);
+                if (result < tmp)
+                {
+                    result = tmp;
+                }
+            }
+
+            return result;
+        }
+        public decimal GetAvrTactsVvMin(int periodSeconds, int tacts_count, int shift = 0)
+        {
+            decimal result = getAvrVvVal(periodSeconds, shift);
+            for (int i = shift + 1; i < shift + tacts_count; i++)
+            {
+                decimal tmp = getAvrVvVal(periodSeconds, i);
+                if (result > tmp)
+                {
+                    result = tmp;
+                }
+            }
+
+            return result;
         }
         public Decimal GetAvrPeriodVvMax(int _Period_Seconds, int _Offset, int shift = 0)
         {
@@ -1150,6 +1212,34 @@ namespace stocksharp
             }
 
             return GetTactRealPrice(shift);
+        }
+        public decimal GetTactRealPriceTactsMax(int tacts_count, int shift = 0)
+        {
+            decimal result = GetTactRealPrice(shift);
+            for (int i = shift + 1; i < shift + tacts_count; i++)
+            {
+                decimal tmp = GetTactRealPrice(i);
+                if (result < tmp)
+                {
+                    result = tmp;
+                }
+            }
+
+            return result;
+        }
+        public decimal GetTactRealPriceTactsMin(int tacts_count, int shift = 0)
+        {
+            decimal result = GetTactRealPrice(shift);
+            for (int i = shift + 1; i < shift + tacts_count; i++)
+            {
+                decimal tmp = GetTactRealPrice(i);
+                if (result > tmp)
+                {
+                    result = tmp;
+                }
+            }
+
+            return result;
         }
 
         public decimal GetTactExpPrice(int n, int shift = 0)

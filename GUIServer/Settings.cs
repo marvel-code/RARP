@@ -17,9 +17,9 @@ namespace stocksharp
             // 1
             new KeyValuePair<int, int>(900,     50),
             // 2
-            new KeyValuePair<int, int>(300,     24),
+            new KeyValuePair<int, int>(300,     21),
             // 3
-            new KeyValuePair<int, int>(180,     24),
+            new KeyValuePair<int, int>(180,     8),
 };
         public static int[] PRICE_SETTINGS = new int[]
         {
@@ -29,9 +29,9 @@ namespace stocksharp
             // 1
            100,
             // 2
-            24,
+            75,
             // 3
-            10,
+            50,
         };
     }
 }

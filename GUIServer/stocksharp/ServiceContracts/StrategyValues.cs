@@ -8,311 +8,154 @@ namespace stocksharp.ServiceContracts
 {
     public partial class WorkService
     {
-        enum AvrType
+        private class Extremums
         {
-            TV, VV
-        };
-        enum ExtremumType
+            public enum ExtremumType { Max, Min }
+            public class Extremum
+            {
+                private ExtremumType _extremumType;
+
+                public decimal Value { get; private set; }
+                public DateTimeOffset StartDateTime { get; private set; }
+                public int TactsDuration { get; private set; }
+
+                public Extremum Init(decimal value, DateTimeOffset startDateTime)
+                {
+                    Value = value;
+                    StartDateTime = startDateTime;
+                    TactsDuration = 0;
+                    return this;
+                }
+                public Extremum Update(decimal value, DateTimeOffset currentTime)
+                {
+                    if (_extremumType == ExtremumType.Max && value > Value ||
+                        _extremumType == ExtremumType.Min && value < Value)
+                    {
+                        Value = value;
+                        StartDateTime = currentTime;
+                    }
+                    TactsDuration = (int)(currentTime - StartDateTime).TotalSeconds / MySettings.VV_TACT;
+                    return this;
+                }
+
+                public Extremum(ExtremumType extremumType)
+                {
+                    _extremumType = extremumType;
+                }
+            }
+
+            public Extremum Max = new Extremum(ExtremumType.Max);
+            public Extremum Min = new Extremum(ExtremumType.Min);
+        }
+        private class PositionVelocitiesValues
         {
-            MAX, MIN
-        };
+            public class Velocity
+            {
+                public Extremums Tv = new Extremums();
+                public Extremums Vv = new Extremums();
+            }
+
+            public int PeriodSeconds { get; private set; }
+            public int ExpN { get; private set; }
+
+            public Velocity Avr = new Velocity();
+            public Velocity Exp = new Velocity();
+
+            public PositionVelocitiesValues(int periodSeconds, int expN)
+            {
+                PeriodSeconds = periodSeconds;
+                ExpN = expN;
+            }
+        }
+        private class PositionPricesValues
+        {
+            public Dictionary<int, Extremums> ExpReal = new Dictionary<int, Extremums>();
+            public Extremums Real = new Extremums();
+            // TODO
+            //public Extremums ByTrades = new Extremums();
+            //public Extremums ByPeriod = new Extremums();
+
+            public PositionPricesValues(int[] expNs)
+            {
+                foreach (var n in expNs)
+                    ExpReal.Add(n, new Extremums());
+            }
+        }
 
         private decimal Current_Price;
         private decimal Current_Day_PNL;
         private decimal Position_PNL;
         private DateTimeOffset Current_Time;
         // Position
-        private DateTimeOffset StartPositionTime;
-        private TimeSpan Position_Duration;
-        private DateTimeOffset Position_AvrTV1MaxStartDateTime;
-        private DateTimeOffset Position_AvrTV1MinStartDateTime;
-        private DateTimeOffset Position_AvrTV2MaxStartDateTime;
-        private DateTimeOffset Position_AvrTV2MinStartDateTime;
-        private DateTimeOffset Position_AvrTV3MaxStartDateTime;
-        private DateTimeOffset Position_AvrTV3MinStartDateTime;
-        private DateTimeOffset Position_AvrVV1MaxStartDateTime;
-        private DateTimeOffset Position_AvrVV1MinStartDateTime;
-        private DateTimeOffset Position_AvrVV2MaxStartDateTime;
-        private DateTimeOffset Position_AvrVV2MinStartDateTime;
-        private DateTimeOffset Position_AvrVV3MaxStartDateTime;
-        private DateTimeOffset Position_AvrVV3MinStartDateTime;
-        private int Position_AvrTv1Max_TactsDuration;
-        private int Position_AvrTv1Min_TactsDuration;
-        private int Position_AvrTv2Max_TactsDuration;
-        private int Position_AvrTv2Min_TactsDuration;
-        private int Position_AvrTv3Max_TactsDuration;
-        private int Position_AvrTv3Min_TactsDuration;
-        private int Position_AvrVv1Max_TactsDuration;
-        private int Position_AvrVv1Min_TactsDuration;
-        private int Position_AvrVv2Max_TactsDuration;
-        private int Position_AvrVv2Min_TactsDuration;
-        private int Position_AvrVv3Max_TactsDuration;
-        private int Position_AvrVv3Min_TactsDuration;
         private bool Is_Position = false;
         private decimal Position_PNL_MAX = 0;
         private decimal Position_PNL_MIN = 0;
         private decimal Position_Price_MAX = 0;
         private decimal Position_Price_MIN = 0;
-        private decimal Position_AvrTv1_MAX = 0;
-        private decimal Position_AvrTv1_MIN = 0;
-        private decimal Position_AvrTv2_MAX = 0;
-        private decimal Position_AvrTv2_MIN = 0;
-        private decimal Position_AvrTv3_MAX = 0;
-        private decimal Position_AvrTv3_MIN = 0;
-        private decimal Position_AvrVv1_MAX = 0;
-        private decimal Position_AvrVv1_MIN = 0;
-        private decimal Position_AvrVv2_MAX = 0;
-        private decimal Position_AvrVv2_MIN = 0;
-        private decimal Position_AvrVv3_MAX = 0;
-        private decimal Position_AvrVv3_MIN = 0;
-        // Crocodiles
-        private bool CrocodileTvVv_PriceExtremums_IsInited = false;
-        private decimal CrocodileOfTvOrVv_Price_MAX = 0;
-        private decimal CrocodileOfTvOrVv_Price_MIN = 0;
-        private bool CrocodileTv_PriceExtremums_IsInited = false;
-        private decimal CrocodileOfTv_Price_MAX = 0;
-        private decimal CrocodileOfTv_Price_MIN = 0;
-        private bool Crocodile_Tv_IsInited = false;
-        private bool Is_Tv_Crocodile(int shift = 0) =>
-                tf[0].volume.GetAvrTv(avrTvPeriod_3, shift) > tf[0].volume.GetAvrTv(avrTvPeriod_2, shift)
-                ||
-                tf[0].volume.GetAvrTv(avrTvPeriod_2, shift) > tf[0].volume.GetAvrTv(avrTvPeriod_1, shift);
-        private decimal Crocodile_2Tv1_MAX = 0;
-        private decimal Crocodile_2Tv2_MAX = 0;
-        private decimal Crocodile_2Tv3_MAX = 0;
-        private decimal Crocodile_2Tv1_MIN = 0;
-        private decimal Crocodile_2Tv2_MIN = 0;
-        private decimal Crocodile_2Tv3_MIN = 0;
-        private bool Crocodile_AvrVv_IsInited = false;
-        private bool Is_Vv_Crocodile(int shift = 0) =>
-                tf[0].volume.GetAvrVv(avrVvPeriod_1, shift) > 0
-                &&
-                tf[0].volume.GetAvrVv(avrVvPeriod_2, shift) > tf[0].volume.GetAvrVv(avrVvPeriod_1, shift)
-                ||
-                tf[0].volume.GetAvrVv(avrVvPeriod_1, shift) < 0
-                &&
-                tf[0].volume.GetAvrVv(avrVvPeriod_2, shift) < tf[0].volume.GetAvrVv(avrVvPeriod_1, shift);
-        private decimal Crocodile_AvrVv1_MAX = 0;
-        private decimal Crocodile_AvrVv2_MAX = 0;
-        private decimal Crocodile_AvrVv3_MAX = 0;
-        private decimal Crocodile_AvrVv1_MIN = 0;
-        private decimal Crocodile_AvrVv2_MIN = 0;
-        private decimal Crocodile_AvrVv3_MIN = 0;
+        private DateTimeOffset StartPositionTime;
+        private TimeSpan Position_Duration;
+        private List<PositionVelocitiesValues> PositionVelocities;
+        private PositionPricesValues PositionPrices;
 
-        /* Gists */
-
-        private void refreshPositionAvrStartDateTime(AvrType avrType, ExtremumType extremumType, int num)
-        {
-            switch (avrType)
-            {
-                case AvrType.TV:
-                    switch (extremumType)
-                    {
-                        case ExtremumType.MAX:
-                            switch (num)
-                            {
-                                case 1:
-                                    Position_AvrTV1MaxStartDateTime = Current_Time;
-                                    break;
-                                case 2:
-                                    Position_AvrTV2MaxStartDateTime = Current_Time;
-                                    break;
-                                case 3:
-                                    Position_AvrTV3MaxStartDateTime = Current_Time;
-                                    break;
-                            }
-                            break;
-                        case ExtremumType.MIN:
-                            switch (num)
-                            {
-                                case 1:
-                                    Position_AvrTV1MinStartDateTime = Current_Time;
-                                    break;
-                                case 2:
-                                    Position_AvrTV2MinStartDateTime = Current_Time;
-                                    break;
-                                case 3:
-                                    Position_AvrTV3MinStartDateTime = Current_Time;
-                                    break;
-                            }
-                            break;
-                    }
-                    break;
-                case AvrType.VV:
-                    switch (extremumType)
-                    {
-                        case ExtremumType.MAX:
-                            switch (num)
-                            {
-                                case 1:
-                                    Position_AvrVV1MaxStartDateTime = Current_Time;
-                                    break;
-                                case 2:
-                                    Position_AvrVV2MaxStartDateTime = Current_Time;
-                                    break;
-                                case 3:
-                                    Position_AvrVV3MaxStartDateTime = Current_Time;
-                                    break;
-                            }
-                            break;
-                        case ExtremumType.MIN:
-                            switch (num)
-                            {
-                                case 1:
-                                    Position_AvrVV1MinStartDateTime = Current_Time;
-                                    break;
-                                case 2:
-                                    Position_AvrVV2MinStartDateTime = Current_Time;
-                                    break;
-                                case 3:
-                                    Position_AvrVV3MinStartDateTime = Current_Time;
-                                    break;
-                            }
-                            break;
-                    }
-                    break;
-            }
-        }
-        private void updatePositionAvrExtremumsTactsDuration()
-        {
-            Position_AvrTv1Max_TactsDuration = (int)((Current_Time - Position_AvrTV1MaxStartDateTime).TotalSeconds / MySettings.VV_TACT);
-            Position_AvrTv1Min_TactsDuration = (int)((Current_Time - Position_AvrTV1MinStartDateTime).TotalSeconds / MySettings.VV_TACT);
-            Position_AvrTv2Max_TactsDuration = (int)((Current_Time - Position_AvrTV2MaxStartDateTime).TotalSeconds / MySettings.VV_TACT);
-            Position_AvrTv2Min_TactsDuration = (int)((Current_Time - Position_AvrTV2MinStartDateTime).TotalSeconds / MySettings.VV_TACT);
-            Position_AvrTv3Max_TactsDuration = (int)((Current_Time - Position_AvrTV3MaxStartDateTime).TotalSeconds / MySettings.VV_TACT);
-            Position_AvrTv3Min_TactsDuration = (int)((Current_Time - Position_AvrTV3MinStartDateTime).TotalSeconds / MySettings.VV_TACT);
-            Position_AvrVv1Max_TactsDuration = (int)((Current_Time - Position_AvrVV1MaxStartDateTime).TotalSeconds / MySettings.VV_TACT);
-            Position_AvrVv1Min_TactsDuration = (int)((Current_Time - Position_AvrVV1MinStartDateTime).TotalSeconds / MySettings.VV_TACT);
-            Position_AvrVv2Max_TactsDuration = (int)((Current_Time - Position_AvrVV2MaxStartDateTime).TotalSeconds / MySettings.VV_TACT);
-            Position_AvrVv2Min_TactsDuration = (int)((Current_Time - Position_AvrVV2MinStartDateTime).TotalSeconds / MySettings.VV_TACT);
-            Position_AvrVv3Max_TactsDuration = (int)((Current_Time - Position_AvrVV3MaxStartDateTime).TotalSeconds / MySettings.VV_TACT);
-            Position_AvrVv3Min_TactsDuration = (int)((Current_Time - Position_AvrVV3MinStartDateTime).TotalSeconds / MySettings.VV_TACT);
-        }
         private void updateMaxMin(decimal currentValue, ref decimal minValue, ref decimal maxValue, bool isInited = true)
         {
             if (!isInited)
-            {
                 minValue = maxValue = currentValue;
-            }
             else
-            {
                 if (currentValue > maxValue)
-                    maxValue = currentValue;
-                else if (currentValue < minValue)
-                    minValue = currentValue;
+                maxValue = currentValue;
+            else if (currentValue < minValue)
+                minValue = currentValue;
+        }
+        private void initPositionValues()
+        {
+            // Velocities
+            PositionVelocities = new List<PositionVelocitiesValues>();
+            foreach (var vs in MySettings.VELOCITIES_SETTINGS)
+                PositionVelocities.Add(new PositionVelocitiesValues(vs.Key, vs.Value));
+            foreach (PositionVelocitiesValues pv in PositionVelocities)
+            {
+                pv.Avr.Tv.Max.Init(tf[0].volume.GetAvrTv(pv.PeriodSeconds), Current_Time);
+                pv.Avr.Tv.Min.Init(tf[0].volume.GetAvrTv(pv.PeriodSeconds), Current_Time);
+                pv.Avr.Vv.Max.Init(tf[0].volume.GetAvrVv(pv.PeriodSeconds), Current_Time);
+                pv.Avr.Vv.Min.Init(tf[0].volume.GetAvrVv(pv.PeriodSeconds), Current_Time);
+                pv.Exp.Tv.Max.Init(tf[0].volume.GetExpTv(pv.PeriodSeconds, pv.ExpN), Current_Time);
+                pv.Exp.Tv.Min.Init(tf[0].volume.GetExpTv(pv.PeriodSeconds, pv.ExpN), Current_Time);
+                pv.Exp.Vv.Max.Init(tf[0].volume.GetExpVv(pv.PeriodSeconds, pv.ExpN), Current_Time);
+                pv.Exp.Vv.Min.Init(tf[0].volume.GetExpVv(pv.PeriodSeconds, pv.ExpN), Current_Time);
+            }
+            // Prices
+            PositionPrices = new PositionPricesValues(MySettings.PRICE_SETTINGS);
+            PositionPrices.Real.Max.Init(tf[0].volume.GetTactRealPrice(), Current_Time);
+            PositionPrices.Real.Min.Init(tf[0].volume.GetTactRealPrice(), Current_Time);
+            foreach (var pv in PositionPrices.ExpReal)
+            {
+                pv.Value.Max.Init(tf[0].volume.GetTactExpPrice(pv.Key), Current_Time);
+                pv.Value.Min.Init(tf[0].volume.GetTactExpPrice(pv.Key), Current_Time);
             }
         }
-        private void updateAvrMaxMin(int num, AvrType avrType, decimal currentValue, ref decimal minValue, ref decimal maxValue, bool isInited = true)
+        private void updatePositionValues()
         {
-            if (!isInited)
+            // Velocities
+            foreach (PositionVelocitiesValues pv in PositionVelocities)
             {
-
-                minValue = maxValue = currentValue;
-                refreshPositionAvrStartDateTime(avrType, ExtremumType.MAX, num);
-                refreshPositionAvrStartDateTime(avrType, ExtremumType.MIN, num);
+                pv.Avr.Tv.Max.Update(tf[0].volume.GetAvrTv(pv.PeriodSeconds), Current_Time);
+                pv.Avr.Tv.Min.Update(tf[0].volume.GetAvrTv(pv.PeriodSeconds), Current_Time);
+                pv.Avr.Vv.Max.Update(tf[0].volume.GetAvrVv(pv.PeriodSeconds), Current_Time);
+                pv.Avr.Vv.Min.Update(tf[0].volume.GetAvrVv(pv.PeriodSeconds), Current_Time);
+                pv.Exp.Tv.Max.Update(tf[0].volume.GetExpTv(pv.PeriodSeconds, pv.ExpN), Current_Time);
+                pv.Exp.Tv.Min.Update(tf[0].volume.GetExpTv(pv.PeriodSeconds, pv.ExpN), Current_Time);
+                pv.Exp.Vv.Max.Update(tf[0].volume.GetExpVv(pv.PeriodSeconds, pv.ExpN), Current_Time);
+                pv.Exp.Vv.Min.Update(tf[0].volume.GetExpVv(pv.PeriodSeconds, pv.ExpN), Current_Time);
             }
-            else
+
+            // Prices
+            PositionPrices.Real.Max.Update(tf[0].volume.GetTactRealPrice(), Current_Time);
+            PositionPrices.Real.Min.Update(tf[0].volume.GetTactRealPrice(), Current_Time);
+            foreach (var pv in PositionPrices.ExpReal)
             {
-                if (currentValue > maxValue)
-                {
-                    maxValue = currentValue;
-                    refreshPositionAvrStartDateTime(avrType, ExtremumType.MAX, num);
-                }
-                else if (currentValue < minValue)
-                {
-                    minValue = currentValue;
-                    refreshPositionAvrStartDateTime(avrType, ExtremumType.MIN, num);
-                }
-            }
-        }
-
-        /* Crocodiles */
-
-        // Updaters
-        private void updateCrocodileTvsExtremums()
-        {
-            if (Is_Tv_Crocodile())
-            {
-                int k = 0;
-                do
-                {
-                    decimal
-                        avrTv1 = tf[0].volume.GetAvrTv(avrTvPeriod_1, k),
-                        avrTv2 = tf[0].volume.GetAvrTv(avrTvPeriod_2, k),
-                        avrTv3 = tf[0].volume.GetAvrTv(avrTvPeriod_3, k);
-
-                    updateMaxMin(avrTv1, ref Crocodile_2Tv1_MIN, ref Crocodile_2Tv1_MAX, Crocodile_Tv_IsInited);
-                    updateMaxMin(avrTv2, ref Crocodile_2Tv2_MIN, ref Crocodile_2Tv2_MAX, Crocodile_Tv_IsInited);
-                    updateMaxMin(avrTv3, ref Crocodile_2Tv3_MIN, ref Crocodile_2Tv3_MAX, Crocodile_Tv_IsInited);
-                } while (Is_Tv_Crocodile(++k));
-
-                Crocodile_Tv_IsInited = true;
-            }
-            else
-            {
-                Crocodile_2Tv1_MAX = Crocodile_2Tv1_MIN = 0;
-                Crocodile_2Tv2_MAX = Crocodile_2Tv2_MIN = 0;
-                Crocodile_2Tv3_MAX = Crocodile_2Tv3_MIN = 0;
-
-                Crocodile_Tv_IsInited = false;
-            }
-        }
-        private void updateCrocodileAvrVvsExtremums()
-        {
-            if (Is_Vv_Crocodile())
-            {
-                int k = 0;
-                do
-                {
-                    decimal
-                        avrVv1 = tf[0].volume.GetAvrVv(avrVvPeriod_1, k),
-                        avrVv2 = tf[0].volume.GetAvrVv(avrVvPeriod_2, k),
-                        avrVv3 = tf[0].volume.GetAvrVv(avrVvPeriod_3, k);
-
-                    updateMaxMin(avrVv1, ref Crocodile_AvrVv1_MIN, ref Crocodile_AvrVv1_MAX, Crocodile_AvrVv_IsInited);
-                    updateMaxMin(avrVv2, ref Crocodile_AvrVv2_MIN, ref Crocodile_AvrVv2_MAX, Crocodile_AvrVv_IsInited);
-                    updateMaxMin(avrVv3, ref Crocodile_AvrVv3_MIN, ref Crocodile_AvrVv3_MAX, Crocodile_AvrVv_IsInited);
-                } while (Is_Vv_Crocodile(++k));
-
-                Crocodile_AvrVv_IsInited = true;
-            }
-            else
-            {
-                Crocodile_AvrVv1_MAX = Crocodile_AvrVv1_MIN = 0;
-                Crocodile_AvrVv2_MAX = Crocodile_AvrVv2_MIN = 0;
-                Crocodile_AvrVv3_MAX = Crocodile_AvrVv3_MIN = 0;
-
-                Crocodile_AvrVv_IsInited = false;
-            }
-        }
-        private void updateCrocodileTvVvPriceExtremums()
-        {
-            if (Is_Tv_Crocodile() || Is_Vv_Crocodile())
-            {
-                updateMaxMin(Current_Price, ref CrocodileOfTvOrVv_Price_MIN, ref CrocodileOfTvOrVv_Price_MAX, CrocodileTvVv_PriceExtremums_IsInited);
-
-                CrocodileTvVv_PriceExtremums_IsInited = true;
-            }
-            else
-            {
-                CrocodileOfTvOrVv_Price_MAX = CrocodileOfTvOrVv_Price_MIN = 0;
-
-                CrocodileTvVv_PriceExtremums_IsInited = false;
-            }
-        }
-        private void updateCrocodileTvPriceExtremums()
-        {
-            if (Is_Tv_Crocodile())
-            {
-                updateMaxMin(Current_Price, ref CrocodileOfTv_Price_MIN, ref CrocodileOfTv_Price_MAX, CrocodileTv_PriceExtremums_IsInited);
-
-                CrocodileTv_PriceExtremums_IsInited = true;
-            }
-            else
-            {
-                CrocodileOfTvOrVv_Price_MAX = CrocodileOfTvOrVv_Price_MIN = 0;
-
-                CrocodileTv_PriceExtremums_IsInited = false;
+                pv.Value.Max.Update(tf[0].volume.GetTactExpPrice(pv.Key), Current_Time);
+                pv.Value.Min.Update(tf[0].volume.GetTactExpPrice(pv.Key), Current_Time);
             }
         }
 
@@ -327,11 +170,6 @@ namespace stocksharp.ServiceContracts
         }
         private void updatePostRulesBlock()
         {
-            // Crocodiles
-            updateCrocodileTvVvPriceExtremums();
-            updateCrocodileTvPriceExtremums();
-            updateCrocodileTvsExtremums();
-            updateCrocodileAvrVvsExtremums();
         }
         // Open rules
         private void updatePreOpenRulesBlock()
@@ -345,52 +183,21 @@ namespace stocksharp.ServiceContracts
         {
             Position_PNL = TM.Position_PNL;
             Position_Duration = Current_Time - StartPositionTime;
-
         }
         private void updatePostExitRulesBlock()
         {
             updateMaxMin(Current_Price, ref Position_Price_MIN, ref Position_Price_MAX);
             updateMaxMin(Position_PNL, ref Position_PNL_MIN, ref Position_PNL_MAX);
-            // Position avrs
-            updateAvrMaxMin(1, AvrType.TV, avrTv_4PositionMaxMin_1, ref Position_AvrTv1_MIN, ref Position_AvrTv1_MAX);
-            updateAvrMaxMin(2, AvrType.TV, avrTv_4PositionMaxMin_2, ref Position_AvrTv2_MIN, ref Position_AvrTv2_MAX);
-            updateAvrMaxMin(3, AvrType.TV, avrTv_4PositionMaxMin_3, ref Position_AvrTv3_MIN, ref Position_AvrTv3_MAX);
-            updateAvrMaxMin(1, AvrType.VV, avrVv_4PositionMaxMin_1, ref Position_AvrVv1_MIN, ref Position_AvrVv1_MAX);
-            updateAvrMaxMin(2, AvrType.VV, avrVv_4PositionMaxMin_2, ref Position_AvrVv2_MIN, ref Position_AvrVv2_MAX);
-            updateAvrMaxMin(3, AvrType.VV, avrVv_4PositionMaxMin_3, ref Position_AvrVv3_MIN, ref Position_AvrVv3_MAX);
-            updatePositionAvrExtremumsTactsDuration();
-            // Crocodile
-            updateCrocodileTvVvPriceExtremums();
-            updateCrocodileTvPriceExtremums();
-            updateCrocodileTvsExtremums();
-            updateCrocodileAvrVvsExtremums();
+            updatePositionValues();
         }
         // Position
         private void updatePrePositionBlock()
         {
             Is_Position = true;
             StartPositionTime = Current_Time;
-            // Position avrs
             Position_PNL_MAX = Position_PNL_MIN = 0;
             Position_Price_MAX = Position_Price_MIN = Current_Price;
-            Position_AvrTv1_MAX = Position_AvrTv1_MIN = avrTv_4PositionMaxMin_1;
-            Position_AvrTv2_MAX = Position_AvrTv2_MIN = avrTv_4PositionMaxMin_2;
-            Position_AvrTv3_MAX = Position_AvrTv3_MIN = avrTv_4PositionMaxMin_3;
-            Position_AvrVv1_MAX = Position_AvrVv1_MIN = avrVv_4PositionMaxMin_1;
-            Position_AvrVv2_MAX = Position_AvrVv2_MIN = avrVv_4PositionMaxMin_2;
-            Position_AvrVv3_MAX = Position_AvrVv3_MIN = avrVv_4PositionMaxMin_3;
-            refreshPositionAvrStartDateTime(AvrType.TV, ExtremumType.MAX, 1);
-            refreshPositionAvrStartDateTime(AvrType.TV, ExtremumType.MIN, 1);
-            refreshPositionAvrStartDateTime(AvrType.TV, ExtremumType.MAX, 2);
-            refreshPositionAvrStartDateTime(AvrType.TV, ExtremumType.MIN, 2);
-            refreshPositionAvrStartDateTime(AvrType.TV, ExtremumType.MAX, 3);
-            refreshPositionAvrStartDateTime(AvrType.TV, ExtremumType.MIN, 3);
-            refreshPositionAvrStartDateTime(AvrType.VV, ExtremumType.MAX, 1);
-            refreshPositionAvrStartDateTime(AvrType.VV, ExtremumType.MIN, 1);
-            refreshPositionAvrStartDateTime(AvrType.VV, ExtremumType.MAX, 2);
-            refreshPositionAvrStartDateTime(AvrType.VV, ExtremumType.MIN, 2);
-            refreshPositionAvrStartDateTime(AvrType.VV, ExtremumType.MAX, 3);
-            refreshPositionAvrStartDateTime(AvrType.VV, ExtremumType.MIN, 3);
+            initPositionValues();
         }
         private void updatePostPositionBlock()
         {

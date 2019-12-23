@@ -40,7 +40,7 @@
             const data = google.visualization.arrayToDataTable([
                 ['DayTime', 'Balance'],
                 {% for point in balanceChartPoints %}
-                    [{{ point.time }}, {{ point.balance }}]
+                    ["{{ point.Time }}", {{ point.Balance }}],
                 {% endfor -%}
             ]);
             const options = {
@@ -77,54 +77,32 @@
             <details>
                 <table class="table table-bordered text-center">
 
-                <!-- Header -->
-                <tr class="font-weight-bold">
-                    <td>#</td>
-                    <td class="border-right-0">PnL сделки</td>
-                    <td class="border-left-0">PnL дня</td>
-                    <td class="border-right-0">ID входа</td>
-                    <td class="border-left-0">ID выхода</td>
-                    <td class="border-right-0">Время входа</td>
-                    <td class="border-left-0">Время выхода</td>
-                    <td>Направление</td>
-                </tr>
+					<!-- Header -->
+					<tr class="font-weight-bold">
+						<td>#</td>
+						<td class="border-right-0">PnL сделки</td>
+						<td class="border-left-0">PnL дня</td>
+						<td class="border-right-0">ID входа</td>
+						<td class="border-left-0">ID выхода</td>
+						<td class="border-right-0">Время входа</td>
+						<td class="border-left-0">Время выхода</td>
+						<td>Направление</td>
+					</tr>
 
-                <!-- Profit -->
-                <tr>
-                    <td>1</td>
-                    <td class="table-success">+100</td>
-                    <td class="table-success">100</td>
-                    <td>1</td>
-                    <td>1</td>
-                    <td>10:05:35</td>
-                    <td>10:05:35</td>
-                    <td>Long</td>
-                </tr>
-
-                <!-- Loss -->
-                <tr>
-                    <td>2</td>
-                    <td class="table-danger">-10</td>
-                    <td class="table-success">90</td>
-                    <td>2</td>
-                    <td>2</td>
-                    <td>11:15:35</td>
-                    <td>11:15:35</td>
-                    <td>Short</td>
-                </tr>
-
-                <!-- In position -->
-                <tr class="table-warning">
-                    <td>3</td>
-                    <td>#</td>
-                    <td class="table-success">90</td>
-                    <td>2</td>
-                    <td>#</td>
-                    <td>14:15:35</td>
-                    <td>#</td>
-                    <td>Short</td>
-                </tr>
-            </table>
+					<!-- Positions -->
+					{% for pd in positions_data %}
+					<tr class="{% if pd.is_closed == false %}table-warning{% endif %}">
+						<td>1</td>
+						<td class="{% if pd.position_pnl > 0 %}table-success{% elsif pd.position_pnl < 0 %}table-danger{% endif %}">{% if pd.is_closed == false %}~ {% endif %}{{ pd.position_pnl }}</td>
+						<td class="{% if pd.day_pnl > 0 %}table-success{% elsif pd.day_pnl < 0 %}table-danger{% endif %}">{{ pd.day_pnl }}</td>
+						<td>{{ pd.entry_id }}</td>
+						<td>{% if pd.is_closed %}{{ pd.exit_id }}{% else %}#{% endif %}</td>
+						<td>{{ pd.entry_time }}</td>
+						<td>{% if pd.is_closed %}{{ pd.exit_time }}{% else %}#{% endif %}</td>
+						<td>{{ pd.Direction }}</td>
+					</tr>
+					{% endfor -%}
+				</table>
             </details>
         </section>
         <section class="container">
@@ -146,19 +124,21 @@
                         <td>ID заявки родителя</td>
                     </tr>
 
-                    <!-- Trade -->
+                    <!-- Orders -->
+					{% for ord in orders_data %}
                     <tr>
-                        <td>2132121441</td>
-                        <td>10:05:35</td>
-                        <td class="table-danger">Sell</td>
-                        <td>119000</td>
-                        <td>43</td>
-                        <td>OK</td>
-                        <td>7</td>
-                        <td>RIU9</td>
-                        <td>AR</td>
-                        <td>0</td>
+                        <td>{{ ord.id }}</td>
+                        <td>{{ ord.date_time }}</td>
+                        <td class="{% if ord.side == 'Buy' %}table-success{% else %}table-danger{% endif %}">{{ ord.side }}</td>
+                        <td>{{ ord.price }}</td>
+                        <td>{{ ord.volume }}</td>
+                        <td>{{ ord.state }}</td>
+                        <td>{{ ord.balance }}</td>
+                        <td>{{ ord.sec_code }}</td>
+                        <td>{{ ord.comment }}</td>
+                        <td>{{ ord.derived_order_id }}</td>
                     </tr>
+					{% endfor -%}
                 </table>
             </details>
         </section>
@@ -180,24 +160,24 @@
                         <td>Баланс</td>
                         <td>Инструмент</td>
                         <td>Комментарий</td>
-                        <td>ID заявки родителя</td>
                     </tr>
 
-                    <!-- Trade -->
+                    <!-- Stop-orders -->
+					{% for sor in stoporders_data %}
                     <tr>
-                        <td>2132121441</td>
-                        <td>10:05:35</td>
-                        <td class="table-danger">Sell</td>
-                        <td>TakeProfit</td>
-                        <td>119100</td>
-                        <td>119000</td>
-                        <td>43</td>
-                        <td>OK</td>
-                        <td>7</td>
-                        <td>RIU9</td>
-                        <td>AR</td>
-                        <td>0</td>
+                        <td>{{ sor.id }}</td>
+                        <td>{{ sor.date_time }}</td>
+                        <td class="{% if sor.side == 'Buy' %}table-success{% else %}table-danger{% endif %}">{{ sor.side }}</td>
+                        <td>{{ sor.price }}</td>
+                        <td>{{ sor.volume }}</td>
+                        <td>{{ sor.state }}</td>
+                        <td>{{ sor.balance }}</td>
+                        <td>{{ sor.sec_code }}</td>
+                        <td>{{ sor.comment }}</td>
+                        <td>{{ sor.type }}</td>
+                        <td>{{ sor.stop_price }}</td>
                     </tr>
+					{% endfor -%}
                 </table>
             </details>
         </section>
@@ -216,15 +196,17 @@
                         <td>ID заявки</td>
                     </tr>
 
-                    <!-- Trade -->
+                    <!-- Trades -->
+					{% for t in trades_data %}
                     <tr>
-                        <td>21321342131</td>
-                        <td>10:05:35</td>
-                        <td class="table-success">Buy</td>
-                        <td>119000</td>
-                        <td>43</td>
-                        <td>1239213</td>
+                        <td>{{ t.id }}</td>
+                        <td>{{ t.date_time }}</td>
+                        <td class="{% if t.direction == 'Buy' %}table-success{% else %}table-danger{% endif %}">{{ t.direction }}</td>
+                        <td>{{ t.price }}</td>
+                        <td>{{ t.volume }}</td>
+                        <td>{{ t.order_number }}</td>
                     </tr>
+					{% endfor -%}
                 </table>
             </details>
         </section>

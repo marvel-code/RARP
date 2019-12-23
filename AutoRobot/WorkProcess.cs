@@ -38,7 +38,7 @@ namespace AutoRobot
         /// Settings
 
         const string USERNAME = "vz#1999";
-        //const string IP = "185.158.153.217"; // Раскоментировать для клиента
+        //const string IP = "185.158.155.246"; // Раскоментировать для клиента
         const string IP = "127.0.0.1";  // Закомментировать
         const int PORT = 8020;
         const int maxServerExceptionCount = 5;
@@ -64,7 +64,8 @@ namespace AutoRobot
         {
             // -- init proxy
             binding = new WSHttpBinding(SecurityMode.None, true);
-            binding.SendTimeout = TimeSpan.FromMinutes(5);
+            binding.SendTimeout = TimeSpan.FromMinutes(10);
+            binding.ReceiveTimeout = TimeSpan.FromMinutes(10);
             address = new EndpointAddress(string.Format("http://{0}:{1}/WorkService", IP, PORT));
             //address = new EndpointAddress(string.Format("http://127.0.0.1:{0}/WorkService", PORT));
             threadConnectionReaffirmation = new Thread(() =>

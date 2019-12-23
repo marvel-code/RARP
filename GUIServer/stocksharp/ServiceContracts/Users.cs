@@ -62,7 +62,8 @@ namespace stocksharp.ServiceContracts
                 return false;
             }
 
-            connectedUsers.Add(username, DateTime.Now);
+            if (!connectedUsers.ContainsKey(username))
+                connectedUsers.Add(username, DateTime.Now);
             PartnersManager.UpdatePartnerState(username, true);
 
             Log.addLog(LogType.Info, "{0}: connected {1}", username, comment);
@@ -82,7 +83,7 @@ namespace stocksharp.ServiceContracts
             for (int i = 0; i < connectedUsers.Count; i++)
             {
                 var userInfo = connectedUsers.ElementAt(connectedUsers.Count - 1 - i);
-                if (DateTime.Now.Subtract(userInfo.Value) > TimeSpan.FromMinutes(0.5))
+                if (DateTime.Now.Subtract(userInfo.Value) > TimeSpan.FromMinutes(5))
                 {
                     Process_UserDisconnect(userInfo.Key, "TIMEOUT");
                 }
