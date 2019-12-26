@@ -180,14 +180,100 @@ namespace stocksharp.ServiceContracts
         }
         public TradeState GetTradeState(PartnerDataObject partnerDataObject, ServerDataObject dataObj, NeedAction needAction)
         {
-            ++c;
-            lock (_queue_locker)
+            try
             {
-                _queue[_currentUser].Enqueue(() => updateTradeState(partnerDataObject, dataObj, needAction));
+                GUIServer.LogManager.RenderHtmlReport(_currentUser, partnerDataObject);
+                UserManager.Update_UserData(_currentUser);
+                GUIServer.MainWindow.Instance.SetPartnerData(_currentUser, partnerDataObject);
             }
-            _queue[_currentUser].Dequeue()();
-            
-            return _tradeState;
+            catch (Exception ex)
+            {
+                Log.addLog(GUIServer.LogType.Warn, "Ошибка обновления информации о пользователе" + ex);
+            }
+
+            TradeState result = new TradeState();
+
+            // -- Synchronizing of current via received
+            // - Time
+            _currentData.TerminalTime = dataObj.TerminalTime.DateTime;
+            _currentData.LastEnterTime = dataObj.LastEnterTime.DateTime;
+            _currentData.LastExitTime = dataObj.LastExitTime.DateTime;
+            // - Data
+            try
+            {
+                _currentData.Update_AllTrades(dataObj.NewTrades);
+                _currentData.Update_TradesIStarts();
+                _currentData.Update_TfCandles(dataObj.NewCandles);
+            }
+            catch (Exception ex)
+            {
+                Log.addLog(GUIServer.LogType.Error, "Ошибка обновления данных");
+                TerminateConnection();
+            }
+            // - Indicators
+            if (_currentData.GetTradeIStart(dataObj.NewCandles.Max(x => x.Max(y => y.Time))) != -1)
+            {
+                try
+                {
+                    _currentData.Process_UpdateIndicators();
+                }
+                catch (Exception ex)
+                {
+                    Log.addLog(GUIServer.LogType.Error, "Ошибка обновления индикаторов");
+                    TerminateConnection();
+                }
+
+                // -- Processing
+                try
+                {
+                    result = getTradeState(_currentData.timeFrameList, needAction, partnerDataObject);
+                }
+                catch (Exception ex)
+                {
+                    Log.addLog(GUIServer.LogType.Error, "Ошибка обновления состояния торговли" + ex.ToString());
+                    result = new TradeState();
+                }
+            }
+
+            try
+            {
+                var tf = _currentData.timeFrameList;
+                result.AdditionalData = new AdditionalDataStruct
+                {
+                    message = "",
+                    //message = string.Format("val={0} | val_p={1}", ProcessingData.timeFrameList[0].kama[0].val, ProcessingData.timeFrameList[0].kama[0].val_p),
+
+                    adx_val = tf[0].adx[0].val,
+                    adx_dip = tf[0].adx[0].dip,
+                    adx_dim = tf[0].adx[0].dim,
+                    adx_val_p = tf[0].adx[0].val_p,
+                    adx_dip_p = tf[0].adx[0].dip_p,
+                    adx_dim_p = tf[0].adx[0].dim_p,
+
+                    total = tf[0].Volume[0].total,
+                    total_p = tf[0].Volume[0].total_p,
+                    buy = tf[0].Volume[0].buy,
+                    buy_p = tf[0].Volume[0].buy_p,
+                    sell = tf[0].Volume[0].sell,
+                    sell_p = tf[0].Volume[0].sell_p,
+
+                    Candles_N = tf.Sum(x => x.Buffer.Count),
+                    AllTrades_N = _currentData.AllTrades.Count,
+
+                    Open_Trades_Time = _currentData.AllTrades[0].Time,
+                    Close_Trades_Time = _currentData.AllTrades.Last().Time,
+
+                    Open_Time = tf[0].Buffer[0].Time,
+                    Close_Time = tf[0].Buffer.Last().Time,
+                };
+            }
+            catch (Exception ex)
+            {
+                Log.addLog(GUIServer.LogType.Warn, "Ошибка обновления данных мониторинга" + ex);
+                TerminateConnection();
+            }
+
+            return result;
         }
 
         public List<int> GetTimeFramePeriods()

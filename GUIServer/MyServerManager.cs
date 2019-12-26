@@ -54,8 +54,6 @@ namespace GUIServer
 
                 int sizeMB = 500;
                 binding.MaxReceivedMessageSize = sizeMB * 1024 * 1024;
-                binding.SendTimeout = TimeSpan.FromMinutes(10);
-                binding.ReceiveTimeout = TimeSpan.FromMinutes(10);
 
                 host = new ServiceHost(typeof(WorkService), address);
                 host.AddServiceEndpoint(typeof(IWorkService), binding, "");

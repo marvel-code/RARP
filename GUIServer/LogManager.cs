@@ -210,7 +210,7 @@ namespace GUIServer
                     decimal? exit_trades_price = GetOrderTradesAvrPrice(exit_order.id);
                     decimal exit_avr_price = exit_trades_price != null ? exit_trades_price.Value : pd.Current_Price;
                     decimal enter_avr_price = enter_trades_price != null ? enter_trades_price.Value : pd.Current_Price;
-                    decimal position_pnl = exit_avr_price - enter_avr_price;
+                    decimal position_pnl = pos_data.Direction == "Buy" ? exit_avr_price - enter_avr_price : enter_avr_price - exit_avr_price;
                     pos_data.PositionPNL = position_pnl;
                     day_pnl += position_pnl;
                     pos_data.DayPNL = day_pnl;
@@ -219,7 +219,7 @@ namespace GUIServer
                 {
                     decimal? enter_trades_price = GetOrderTradesAvrPrice(enter_order.id);
                     decimal enter_avr_price = enter_trades_price != null ? enter_trades_price.Value : pd.Current_Price;
-                    decimal position_pnl = pd.Current_Price - enter_avr_price;
+                    decimal position_pnl = pos_data.Direction == "Buy" ? pd.Current_Price - enter_avr_price : enter_avr_price - pd.Current_Price;
                     pos_data.PositionPNL = position_pnl;
                     day_pnl += position_pnl;
                     pos_data.DayPNL = day_pnl;
