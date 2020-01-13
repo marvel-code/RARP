@@ -92,7 +92,7 @@
 					<!-- Positions -->
 					{% for pd in positions_data %}
 					<tr class="{% if pd.is_closed == false %}table-warning{% endif %}">
-						<td>1</td>
+						<td>{{ forloop.index }}</td>
 						<td class="{% if pd.position_pnl > 0 %}table-success{% elsif pd.position_pnl < 0 %}table-danger{% endif %}">{% if pd.is_closed == false %}~ {% endif %}{{ pd.position_pnl }}</td>
 						<td class="{% if pd.day_pnl > 0 %}table-success{% elsif pd.day_pnl < 0 %}table-danger{% endif %}">{{ pd.day_pnl }}</td>
 						<td>{{ pd.entry_id }}</td>

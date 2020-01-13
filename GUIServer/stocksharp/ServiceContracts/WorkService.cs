@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.ServiceModel;
 using System.Threading;
+using System.IO;
 
 using StockSharp.Algo.Candles;
 using StockSharp.BusinessEntities;
@@ -72,6 +73,7 @@ namespace stocksharp.ServiceContracts
         // >> Server data processing
         private ProcessingData _currentData;
 
+        // ~ ignore
         private int c = 0;
         private static Dictionary<string, Thread> _qThreads = new Dictionary<string, Thread>();
         private volatile TradeState _tradeState = new TradeState();
@@ -178,6 +180,7 @@ namespace stocksharp.ServiceContracts
                 _tradeState = result;
             }
         }
+        // ~
         public TradeState GetTradeState(PartnerDataObject partnerDataObject, ServerDataObject dataObj, NeedAction needAction)
         {
             try
@@ -276,6 +279,42 @@ namespace stocksharp.ServiceContracts
             return result;
         }
 
+        private void updateBillingData(PartnerDataObject pd)
+        {
+            string date_string = DateTime.Now.ToString(@"yyyy.MM.dd");
+            string file_directory_path = Path.Combine(Environment.CurrentDirectory, "Billing", date_string);
+            Directory.CreateDirectory(file_directory_path);
+            string filename = $"daycandles_{_currentUser}";
+            string file_path = Path.Combine(file_directory_path, $"{filename}.csv");
+            decimal current_amount = pd.derivativePortfolioData[0].beginAmount;
+            if (File.Exists(file_path))
+            {
+                IEnumerable<string> old_file_lines = File.ReadLines(file_path);
+                string last_record = old_file_lines.Last();
+                string[] parts = last_record.Split(','); // date, body_open, body_close
+                if (parts[0] == Current_Time.Date.ToString())
+                {
+                    // Overwrite record
+                    parts[2] = current_amount.ToString();
+                    string[] new_file_lines = old_file_lines.ToArray();
+                    new_file_lines[new_file_lines.Length - 1] = parts.Aggregate((p, x) => p += $",{x}");
+                    File.WriteAllLines(file_path, new_file_lines);
+                }
+                else
+                {
+                    // Add record
+                    string[] file_lines = new string[] { $"{Current_Time.Date},{current_amount},{current_amount}" };
+                    File.AppendAllLines(file_path, file_lines);
+                }
+            }
+            else
+            {
+                // Create file
+                string[] file_lines = new string[] { $"{Current_Time.Date},{current_amount},{current_amount}" };
+                File.Create(file_path);
+                File.WriteAllLines(file_path, file_lines);
+            }
+        }
         public List<int> GetTimeFramePeriods()
         {
             return _currentData.tf_Periods;
