@@ -36,13 +36,12 @@ namespace stocksharp.ServiceContracts
         };
         public List<ROC_Configuration> roc_cfgList = new List<ROC_Configuration>
         {
-            new ROC_Configuration(1, 1, CalculationType.Median),
-            new ROC_Configuration(1, 2, CalculationType.Median),
+            new ROC_Configuration(0, 1, CalculationType.Median),
+            new ROC_Configuration(0, 2, CalculationType.Median),
         };
         public List<Volume_Configuration> volume_cfgList = new List<Volume_Configuration>
         {
             new Volume_Configuration(0, 2, 1, 1),
-            new Volume_Configuration(1, 2, 1, 1),
         };
     }
 
@@ -84,6 +83,11 @@ namespace stocksharp.ServiceContracts
 
                     &&
                     tf[0].volume.GetTactRealPrice(0) > tf[0].volume.GetTactExpPrice(500, 0)
+                    &&
+                    tf[0].volume.GetTactRealPrice(0) > tf[0].volume.GetTactRealPrice(1)
+
+                    &&
+                    tf[0].volume.GetExpVv(900, 50, 0) > new decimal(0.0)
 
                     &&
                     tf[0].volume.vector > new decimal(100.0)
@@ -108,6 +112,7 @@ namespace stocksharp.ServiceContracts
                     tf[0].volume.GetTactExpPrice(125, 0) > tf[0].volume.GetTactExpPrice(250, 0)
                     &&
                     tf[0].volume.GetTactExpPrice(50, 0) > tf[0].volume.GetTactExpPrice(125, 0)
+
 
                     ,
                     tf[0].volume.GetAvrTv(180, 0) > new decimal(20.0)                            //..2
@@ -140,6 +145,14 @@ namespace stocksharp.ServiceContracts
 
                     ,
                     tf[0].volume.vector > new decimal(900.0)                                  //..4 
+                    &&
+                    tf[0].volume.GetExpVv(1800, 50, 0) > new decimal(0.0)
+                    &&
+                    tf[0].volume.GetExpVv(1800, 50, 0) > tf[0].volume.GetExpVv(1800, 50, 24)
+                    &&
+                    tf[0].volume.GetExpVv(900, 50, 0) > tf[0].volume.GetExpVv(900, 50, 24)
+                    &&
+                    tf[0].volume.GetExpVv(900, 50, 0) > tf[0].volume.GetExpVv(1800, 50, 0)
 
                     },
 
@@ -169,6 +182,8 @@ namespace stocksharp.ServiceContracts
                     &&
                     tf[0].volume.GetExpVv(180, 8, 12) > tf[0].volume.GetExpVv(180, 8, 24)
                     &&
+                    tf[0].volume.GetExpVv(180, 8, 0) > tf[0].volume.GetExpVv(180, 8, 1)
+                    &&
                     tf[0].volume.GetAvrVv(180, 0) > new decimal(0.0)
 
 
@@ -188,6 +203,8 @@ namespace stocksharp.ServiceContracts
                     &&
                     tf[0].volume.GetExpVv(180, 8, 0) > tf[0].volume.GetExpVv(300, 21, 0)
                     &&
+                    tf[0].volume.GetExpVv(180, 8, 0) > tf[0].volume.GetExpVv(180, 8, 1)
+                    &&
                     tf[0].volume.GetAvrVv(180, 0) > new decimal(0.0)
 
                     },
@@ -202,12 +219,26 @@ namespace stocksharp.ServiceContracts
 
                     ,
                     tf[0].volume.vector > new decimal(900.0)                                 //..2
+                    &&
+                    tf[0].volume.GetExpVv(1800, 50, 0) > new decimal(0.0)
+                    &&
+                    tf[0].volume.GetExpVv(1800, 50, 0) > tf[0].volume.GetExpVv(1800, 50, 24)
+                    &&
+                    tf[0].volume.GetExpVv(900, 50, 0) > tf[0].volume.GetExpVv(900, 50, 24)
+                    &&
+                    tf[0].volume.GetExpVv(900, 50, 0) > tf[0].volume.GetExpVv(1800, 50, 0)
 
 
                     ,
                     tf[0].volume.GetAvrTv(180, 0) > new decimal(10.0)                        //..3
                     &&
-                    tf[0].volume.GetAvrVv(180, 0) > new decimal(5.0)
+                    tf[0].volume.GetExpVv(1800, 50, 0) > new decimal(0.0)
+                    &&
+                    tf[0].volume.GetExpVv(1800, 50, 0) > tf[0].volume.GetExpVv(1800, 50, 24)
+                    &&
+                    tf[0].volume.GetExpVv(900, 50, 0) > tf[0].volume.GetExpVv(900, 50, 24)
+                    &&
+                    tf[0].volume.GetExpVv(900, 50, 0) > tf[0].volume.GetExpVv(1800, 50, 0)
 
                     },
 
@@ -227,6 +258,11 @@ namespace stocksharp.ServiceContracts
 
                     &&
                     tf[0].volume.GetTactRealPrice(0) < tf[0].volume.GetTactExpPrice(500, 0)
+                    &&
+                    tf[0].volume.GetTactRealPrice(0) < tf[0].volume.GetTactRealPrice(1)
+
+                    &&
+                    tf[0].volume.GetExpVv(900, 50, 0) < new decimal(0.0)
 
                     &&
                     tf[0].volume.vector < -new decimal(100.0)
@@ -284,7 +320,15 @@ namespace stocksharp.ServiceContracts
 
 
                     ,
-                    tf[0].volume.vector < - new decimal(900.0)                                 //..4  
+                    tf[0].volume.vector < - new decimal(900.0)                                 //..4 
+                    &&
+                    tf[0].volume.GetExpVv(1800, 50, 0) < new decimal(0.0)
+                    &&
+                    tf[0].volume.GetExpVv(1800, 50, 0) < tf[0].volume.GetExpVv(1800, 50, 24)
+                    &&
+                    tf[0].volume.GetExpVv(900, 50, 0) < tf[0].volume.GetExpVv(900, 50, 24)
+                    &&
+                    tf[0].volume.GetExpVv(900, 50, 0) < tf[0].volume.GetExpVv(1800, 50, 0)
 
                     },
 //-// SHORT добавочные условия.......................................................................3
@@ -313,6 +357,8 @@ namespace stocksharp.ServiceContracts
                     &&
                     tf[0].volume.GetExpVv(180, 8, 12) < tf[0].volume.GetExpVv(180, 8, 24)
                     &&
+                    tf[0].volume.GetExpVv(180, 8, 0) < tf[0].volume.GetExpVv(180, 8, 1)
+                    &&
                     tf[0].volume.GetAvrVv(180, 0) < new decimal(0.0)
 
 
@@ -332,6 +378,8 @@ namespace stocksharp.ServiceContracts
                     &&
                     tf[0].volume.GetExpVv(180, 8, 0) < tf[0].volume.GetExpVv(300, 21, 0)
                     &&
+                    tf[0].volume.GetExpVv(180, 8, 0) < tf[0].volume.GetExpVv(180, 8, 1)
+                    &&
                     tf[0].volume.GetAvrVv(180, 0) < new decimal(0.0)
 
                     },
@@ -346,12 +394,28 @@ namespace stocksharp.ServiceContracts
 
                     ,
                     tf[0].volume.vector < - new decimal(900.0)                               //..2
+                    &&
+                    tf[0].volume.GetExpVv(1800, 50, 0) < new decimal(0.0)
+                    &&
+                    tf[0].volume.GetExpVv(1800, 50, 0) < tf[0].volume.GetExpVv(1800, 50, 24)
+                    &&
+                    tf[0].volume.GetExpVv(900, 50, 0) < tf[0].volume.GetExpVv(900, 50, 24)
+                    &&
+                    tf[0].volume.GetExpVv(900, 50, 0) < tf[0].volume.GetExpVv(1800, 50, 0)
 
 
                     ,
                     tf[0].volume.GetAvrTv(180, 0) > new decimal(10.0)                        //..3
                     &&
                     tf[0].volume.GetAvrVv(180, 0) < - new decimal(5.0)
+                    &&
+                    tf[0].volume.GetExpVv(1800, 50, 0) < new decimal(0.0)
+                    &&
+                    tf[0].volume.GetExpVv(1800, 50, 0) < tf[0].volume.GetExpVv(1800, 50, 24)
+                    &&
+                    tf[0].volume.GetExpVv(900, 50, 0) < tf[0].volume.GetExpVv(900, 50, 24)
+                    &&
+                    tf[0].volume.GetExpVv(900, 50, 0) < tf[0].volume.GetExpVv(1800, 50, 0)
 
                     },
 
@@ -374,13 +438,11 @@ namespace stocksharp.ServiceContracts
 
                   //-// Разрешение на LONG.............................................
 
-                  !tf[0].IsExitCandle(0)
+                  Current_Day_PNL < new decimal(1500)    //  Current_Day_PNL < new decimal(400,500,600,700)
                   &&
-                  Current_Day_PNL < new decimal(450)    //  Current_Day_PNL < new decimal(400,500,600,700)
+                  Current_Time.TimeOfDay > new TimeSpan(11, 10, 0)
                   &&
-                  Current_Time.TimeOfDay > new TimeSpan(10, 05, 0)
-                  &&
-                  Current_Time.TimeOfDay < new TimeSpan(18, 30, 0)
+                  Current_Time.TimeOfDay < new TimeSpan(18, 44, 0)
             // true
 
             //-//
@@ -390,13 +452,11 @@ namespace stocksharp.ServiceContracts
 
                   //-// Разрешение на SHORT...........................................
 
-                  !tf[0].IsExitCandle(0)
+                  Current_Day_PNL < new decimal(1500)  //  Current_Day_PNL < new decimal(500)
                   &&
-                  Current_Day_PNL < new decimal(450)  //  Current_Day_PNL < new decimal(500)
+                  Current_Time.TimeOfDay > new TimeSpan(11, 10, 0)
                   &&
-                  Current_Time.TimeOfDay > new TimeSpan(10, 05, 0)
-                  &&
-                  Current_Time.TimeOfDay < new TimeSpan(18, 30, 0)
+                  Current_Time.TimeOfDay < new TimeSpan(18, 44, 0)
 
             // true
 
@@ -411,11 +471,7 @@ namespace stocksharp.ServiceContracts
         private bool SellCommonRule =>
 
                 //-// SELL общее условие.........................................
-                /*
-                                    tf[0].volume.GetExpTv(180, 8, 0) > tf[0].volume.GetExpTv(180, 8, 1)
-                                    &&
-                                    tf[0].volume.GetExpVv(180, 8, 0) < tf[0].volume.GetExpVv(180, 8, 1)
-                */
+
                 true
             //-//
             && true;
@@ -427,184 +483,15 @@ namespace stocksharp.ServiceContracts
 //-// SELL дополнительные условия..............................
 
 
-
-                    tf[0].volume.GetExpTv(300, 21, 0) > tf[0].volume.GetExpTv(300, 21, 6)        //..1
+                    tf[0].volume.GetExpVv(1800, 50, 0) < new decimal(0.0)                            //..1 
                     &&
-                    tf[0].volume.GetExpTv(300, 21, 6) > tf[0].volume.GetExpTv(300, 21, 12)
+                    tf[0].volume.GetExpVv(1800, 50, 0) < tf[0].volume.GetExpVv(1800, 50, 12)
                     &&
-                    tf[0].volume.GetAvrTv(180, 0) > tf[0].volume.GetAvrTv(180, 6)
-                    &&
-                    tf[0].volume.GetAvrTv(180, 6) > tf[0].volume.GetAvrTv(180, 12)
-                    &&
-                    tf[0].volume.GetExpTv(180, 8, 12) > tf[0].volume.GetExpTv(300, 21, 12)
-                    &&
-                    tf[0].volume.GetExpTv(180, 8, 0) > tf[0].volume.GetExpTv(180, 8, 6)
-                    &&
-                    tf[0].volume.GetExpTv(180, 8, 6) > tf[0].volume.GetExpTv(180, 8, 12)
-
-                    &&
-                    tf[0].volume.GetExpVv(900, 50, 0) < tf[0].volume.GetExpVv(900, 50, 12)
-                    &&
-                    tf[0].volume.GetExpVv(900, 50, 12) < tf[0].volume.GetExpVv(900, 50, 24)
-                    &&
-                    tf[0].volume.GetExpVv(300, 21, 0) < tf[0].volume.GetExpVv(300, 21, 6)
-                    &&
-                    tf[0].volume.GetExpVv(300, 21, 6) < tf[0].volume.GetExpVv(300, 21, 12)
-                    &&
-                    tf[0].volume.GetExpVv(300, 21, 12) < new decimal(0.0)
-                    &&
-                    tf[0].volume.GetExpVv(180, 8, 12) < tf[0].volume.GetExpVv(300, 21, 12)
-                    &&
-                    tf[0].volume.GetExpVv(180, 8, 0) < tf[0].volume.GetExpVv(180, 8, 12)
-                    &&
-                    tf[0].volume.GetExpVv(180, 8, 0) < tf[0].volume.GetExpVv(180, 8, 24)
-                    &&
-                    tf[0].volume.GetExpVv(180, 8, 12) < new decimal(0.0)
-                    &&
-                    tf[0].GetCandleLow(0) < tf[0].GetCandleLow(1) - new decimal(0.0)
-                    &&
-                    tf[0].GetCandleHLRange(0) > new decimal(100)
+                    tf[0].volume.GetExpVv(1800, 50, 12) < tf[0].volume.GetExpVv(1800, 50, 24)
 
 
                     ,
-                    tf[0].volume.GetExpVv(900, 50, 0) < tf[0].volume.GetExpVv(900, 50, 12)            //..2
-                    &&
-                    tf[0].volume.GetExpVv(900, 50, 12) < tf[0].volume.GetExpVv(900, 50, 24)
-                    &&
-                    tf[0].volume.GetExpVv(900, 50, 0) < new decimal(0.0)
-                    &&
-                    tf[0].volume.GetExpVv(300, 21, 0) < tf[0].volume.GetExpVv(300, 21, 6)
-                    &&
-                    tf[0].volume.GetExpVv(300, 21, 6) < tf[0].volume.GetExpVv(300, 21, 12)
-                    &&
-                    tf[0].volume.GetExpVv(180, 8, 0) < tf[0].volume.GetExpVv(180, 8, 6)
-                    &&
-                    tf[0].volume.GetExpVv(180, 8, 6) < tf[0].volume.GetExpVv(180, 8, 12)
-                    &&
-                    tf[0].volume.GetExpVv(300, 21, 0) < tf[0].volume.GetExpVv(900, 50, 0)
-                    &&
-                    tf[0].volume.GetExpVv(180, 8, 0) < tf[0].volume.GetExpVv(300, 21, 0)
-                    &&
-                    tf[0].GetCandleLow(0) < tf[0].GetCandleLow(1) - new decimal(0.0)
-                    &&
-                    tf[0].IsRedCandle(0)
-                    &&
-                    tf[0].GetCandleHLRange(0) > new decimal(100)
-
-
-                    ,
-                    tf[0].volume.GetExpVv(900, 50, 0) < tf[0].volume.GetExpVv(900, 50, 12)            //..3 
-                    &&
-                    tf[0].volume.GetExpVv(900, 50, 12) < tf[0].volume.GetExpVv(900, 50, 24)
-                    &&
-                    tf[0].volume.GetExpVv(900, 50, 0) < new decimal(0.0)
-                    &&
-                    tf[0].volume.GetExpVv(300, 21, 12) < new decimal(0.0)
-                    &&
-                    tf[0].volume.GetExpVv(180, 8, 12) < - new decimal(5.0)
-
-
-                    ,
-                    tf[0].volume.GetAvrTv(180, 0) > new decimal(15.0)                                //..4
-                    &&
-                    tf[0].volume.GetAvrVv(180, 0) < - new decimal(5.0)
-
-                    &&
-                    tf[0].volume.GetExpVv(300, 21, 0) < new decimal(0.0)
-                    &&
-                    tf[0].GetCandleLow(0) < tf[0].GetCandleLow(1) - new decimal(0.0)
-
-
-                    ,
-                    tf[0].GetCandleHLRange(1) > new decimal(200)                                     //..5
-                    &&
-                    tf[0].IsGreenCandle(1)
-                    &&
-                    tf[0].GetCandleBodyRange(0) > tf[0].GetCandleHLRange(1) * new decimal(0.6)
-                    &&
-                    tf[0].IsRedCandle(0)
-                    &&
-                    (
-                    tf[0].volume.GetAvrTv(180, 0) > new decimal(10.0)
-                    ||
-                    tf[0].volume.GetAvrTv(300, 0) > new decimal(10.0)
-                    )
-
-
-                    ,
-                    tf[0].GetCandleHLRange(2) > new decimal(200)                                     //..6
-                    &&
-                    tf[0].IsGreenCandle(2)
-                    &&
-                    tf[0].GetCandleBodyRange(1) + tf[0].GetCandleBodyRange(0) >
-                    tf[0].GetCandleHLRange(2) * new decimal(0.6)
-                    &&
-                    tf[0].IsRedCandle(1)
-                    &&
-                    tf[0].IsRedCandle(0)
-                    &&
-                    (
-                    tf[0].volume.GetAvrTv(180, 0) > new decimal(10.0)
-                    ||
-                    tf[0].volume.GetAvrTv(300, 0) > new decimal(10.0)
-                    )
-
-
-                    ,
-                    Position_PNL <= Position_PNL_MAX - new decimal(300)                              //..7
-
-
-                    ,
-                    Position_PNL_MAX >= new decimal(500)                                             //..8
-                    &&
-                    tf[0].volume.GetExpTv(180, 8, 0) < tf[0].volume.GetExpTv(180, 8, 1)
-
-
-                    ,
-                    Current_Day_PNL >= new decimal(500)                                              //..9
-                    &&
-                    tf[0].volume.GetTactRealPrice(0) < tf[0].volume.GetTactRealPrice(1) 
-
-
-/*
-
-                    tf[0].volume.GetTactRealPrice(0) < tf[0].volume.GetTactExpPrice(500, 0)           //..1
-                    &&
-                    tf[0].volume.GetExpVv(1800, 50, 0) < new decimal(0.0)
-
-
-                    ,
-                    tf[0].volume.GetTactRealPrice(0) < tf[0].volume.GetTactExpPrice(500, 0)           //..2
-                    &&
-                    tf[0].volume.GetExpTv(300, 21, 0) > tf[0].volume.GetExpTv(300, 21, 6)
-                    &&
-                    tf[0].volume.GetAvrTv(180, 0) > new decimal(15.0)
-
-
-                    ,
-                    tf[0].volume.GetTactExpPrice(50, 0) < tf[0].volume.GetTactExpPrice(500, 0)        //..3
-	        	    &&
-                    tf[0].volume.GetTactExpPrice(50, 0) < tf[0].volume.GetTactExpPrice(50, 1)
-                    &&
-                    tf[0].volume.GetTactExpPrice(50, 0) < tf[0].volume.GetTactExpPrice(50, 2)
-
-
-                    ,
-                    tf[0].volume.GetTactRealPrice(0) < tf[0].volume.GetTactExpPrice(50, 0)            //..4
-                    &&
-                    tf[0].volume.GetTactRealPrice(0) < tf[0].volume.GetTactRealPriceTactsMin(24, 1) -
-                    new decimal(0.0)
-
-                    &&
-                    tf[0].volume.GetAvrTv(180, 0) > new decimal(15.0)
-                    &&
-                    tf[0].volume.GetAvrTv(180, 0) > tf[0].volume.GetAvrTv(180, 6)
-
-                    &&
-                    tf[0].volume.GetExpVv(300, 21, 0) < new decimal(0.0)
- */              
-//                    ,
-  //                  Current_Day_PNL > new decimal(800)                                             //..11
+                    Current_Day_PNL > new decimal(2000)                                              //..2
 
         };
 
@@ -616,11 +503,7 @@ namespace stocksharp.ServiceContracts
         private bool CoverCommonRule =>
 
                  //-// COVER общее условие......................................
-                 /*
-                                    tf[0].volume.GetExpTv(180, 8, 0) > tf[0].volume.GetExpTv(180, 8, 1)
-                                    &&
-                                    tf[0].volume.GetExpVv(180, 8, 0) > tf[0].volume.GetExpVv(180, 8, 1)
-                */
+
                  true
 
             //-//
@@ -633,188 +516,16 @@ namespace stocksharp.ServiceContracts
 //-// COVER дополнительные условия..............................
 
 
-
-                    tf[0].volume.GetExpTv(300, 21, 0) > tf[0].volume.GetExpTv(300, 21, 6)        //..1
+                    tf[0].volume.GetExpVv(1800, 50, 0) > new decimal(0.0)                            //..1                   
                     &&
-                    tf[0].volume.GetExpTv(300, 21, 6) > tf[0].volume.GetExpTv(300, 21, 12)
+                    tf[0].volume.GetExpVv(1800, 50, 0) > tf[0].volume.GetExpVv(1800, 50, 12)
                     &&
-                    tf[0].volume.GetAvrTv(180, 0) > tf[0].volume.GetAvrTv(180, 6)
-                    &&
-                    tf[0].volume.GetAvrTv(180, 6) > tf[0].volume.GetAvrTv(180, 12)
-                    &&
-                    tf[0].volume.GetExpTv(180, 8, 12) > tf[0].volume.GetExpTv(300, 21, 12)
-                    &&
-                    tf[0].volume.GetExpTv(180, 8, 0) > tf[0].volume.GetExpTv(180, 8, 6)
-                    &&
-                    tf[0].volume.GetExpTv(180, 8, 6) > tf[0].volume.GetExpTv(180, 8, 12)
-
-                    &&
-                    tf[0].volume.GetExpVv(900, 50, 0) > tf[0].volume.GetExpVv(900, 50, 12)
-                    &&
-                    tf[0].volume.GetExpVv(900, 50, 12) > tf[0].volume.GetExpVv(900, 50, 24)
-                    &&
-                    tf[0].volume.GetExpVv(300, 21, 0) > tf[0].volume.GetExpVv(300, 21, 6)
-                    &&
-                    tf[0].volume.GetExpVv(300, 21, 6) > tf[0].volume.GetExpVv(300, 21, 12)
-                    &&
-                    tf[0].volume.GetExpVv(300, 21, 12) > new decimal(0.0)
-                    &&
-                    tf[0].volume.GetExpVv(180, 8, 12) > tf[0].volume.GetExpVv(300, 21, 12)
-                    &&
-                    tf[0].volume.GetExpVv(180, 8, 0) > tf[0].volume.GetExpVv(180, 8, 12)
-                    &&
-                    tf[0].volume.GetExpVv(180, 8, 0) > tf[0].volume.GetExpVv(180, 8, 24)
-                    &&
-                    tf[0].volume.GetExpVv(180, 8, 12) > new decimal(0.0)
-                    &&
-                    tf[0].GetCandleHigh(0) > tf[0].GetCandleHigh(1) + new decimal(0.0)
-                    &&
-                    tf[0].GetCandleHLRange(0) > new decimal(100)
+                    tf[0].volume.GetExpVv(1800, 50, 12) > tf[0].volume.GetExpVv(1800, 50, 24)
 
 
                     ,
-                    tf[0].volume.GetExpVv(900, 50, 0) > tf[0].volume.GetExpVv(900, 50, 12)            //..2
-                    &&
-                    tf[0].volume.GetExpVv(900, 50, 12) > tf[0].volume.GetExpVv(900, 50, 24)
-                    &&
-                    tf[0].volume.GetExpVv(900, 50, 0) > new decimal(0.0)
-                    &&
-                    tf[0].volume.GetExpVv(300, 21, 0) > tf[0].volume.GetExpVv(300, 21, 6)
-                    &&
-                    tf[0].volume.GetExpVv(300, 21, 6) > tf[0].volume.GetExpVv(300, 21, 12)
-                    &&
-                    tf[0].volume.GetExpVv(180, 8, 0) > tf[0].volume.GetExpVv(180, 8, 6)
-                    &&
-                    tf[0].volume.GetExpVv(180, 8, 6) > tf[0].volume.GetExpVv(180, 8, 12)
-                    &&
-                    tf[0].volume.GetExpVv(300, 21, 0) > tf[0].volume.GetExpVv(900, 50, 0)
-                    &&
-                    tf[0].volume.GetExpVv(180, 8, 0) > tf[0].volume.GetExpVv(300, 21, 0)
-                    &&
-                    tf[0].GetCandleHigh(0) > tf[0].GetCandleHigh(1) + new decimal(0.0)
-                    &&
-                    tf[0].IsGreenCandle(0)
-                    &&
-                    tf[0].GetCandleHLRange(0) > new decimal(100)
+                    Current_Day_PNL > new decimal(2000)                                             //..2
 
-
-                    ,
-                    tf[0].volume.GetExpVv(900, 50, 0) > tf[0].volume.GetExpVv(900, 50, 12)            //..3
-                    &&
-                    tf[0].volume.GetExpVv(900, 50, 12) > tf[0].volume.GetExpVv(900, 50, 24)
-                    &&
-                    tf[0].volume.GetExpVv(900, 50, 0) > new decimal(0.0)
-                    &&
-                    tf[0].volume.GetExpVv(300, 21, 12) > new decimal(0.0)
-                    &&
-                    tf[0].volume.GetExpVv(180, 8, 12) > new decimal(5.0)
-
-
-                    ,
-                    tf[0].volume.GetAvrTv(180, 0) > new decimal(15.0)                                //..4
-                    &&
-                    tf[0].volume.GetAvrVv(180, 0) > new decimal(5.0)
-
-                    &&
-                    tf[0].volume.GetExpVv(300, 21, 0) > new decimal(0.0)
-                    &&
-                    tf[0].GetCandleHigh(0) > tf[0].GetCandleHigh(1) + new decimal(0.0)
-
-
-                    ,
-                    tf[0].GetCandleHLRange(1) > new decimal(200)                                     //..5
-                    &&
-                    tf[0].IsRedCandle(1)
-                    &&
-                    tf[0].GetCandleBodyRange(0) > tf[0].GetCandleHLRange(1) * new decimal(0.6)
-                    &&
-                    tf[0].IsGreenCandle(0)
-                    &&
-                    (
-                    tf[0].volume.GetAvrTv(180, 0) > new decimal(10.0)
-                    ||
-                    tf[0].volume.GetAvrTv(300, 0) > new decimal(10.0)
-                    )
-
-
-                    ,
-                    tf[0].GetCandleHLRange(2) > new decimal(200)                                     //..6
-                    &&
-                    tf[0].IsRedCandle(2)
-                    &&
-                    tf[0].GetCandleBodyRange(1) + tf[0].GetCandleBodyRange(0) >
-                    tf[0].GetCandleHLRange(1) * new decimal(0.6)
-                    &&
-                    tf[0].IsGreenCandle(1)
-                    &&
-                    tf[0].IsGreenCandle(0)
-                    &&
-                    (
-                    tf[0].volume.GetAvrTv(180, 0) > new decimal(10.0)
-                    ||
-                    tf[0].volume.GetAvrTv(300, 0) > new decimal(10.0)
-                    )
-
-
-                    ,
-                    Position_PNL <= Position_PNL_MAX - new decimal(300)                              //..7
-
-
-                    ,
-                    Position_PNL_MAX >= new decimal(500)                                             //..8
-                    &&
-                    tf[0].volume.GetExpTv(180, 8, 0) < tf[0].volume.GetExpTv(180, 8, 1)
-
-
-                    ,
-                    Current_Day_PNL >= new decimal(500)                                              //..9
-                    &&
-                    tf[0].volume.GetTactRealPrice(0) > tf[0].volume.GetTactRealPrice(1) 
-
-/*
-                    ,
-                    Position_PNL_MAX >= new decimal(500)                                             //..4
-                    &&
-                    tf[0].volume.GetAvrVv(180, 0) > new decimal(0.0)
-/*
-                    tf[0].volume.GetTactRealPrice(0) > tf[0].volume.GetTactExpPrice(500, 0)           //..1
-                    &&
-                    tf[0].volume.GetExpVv(1800, 50, 0) > new decimal(0.0)
-
-
-                    ,
-                    tf[0].volume.GetTactRealPrice(0) > tf[0].volume.GetTactExpPrice(500, 0)           //..2
-                    &&
-                    tf[0].volume.GetExpTv(300, 21, 0) > tf[0].volume.GetExpTv(300, 21, 6)
-                    &&
-                    tf[0].volume.GetAvrTv(180, 0) > new decimal(15.0)
-
-
-                    ,
-                    tf[0].volume.GetTactExpPrice(50, 0) > tf[0].volume.GetTactExpPrice(500, 0)        //..3
-		            &&
-                    tf[0].volume.GetTactExpPrice(50, 0) > tf[0].volume.GetTactExpPrice(50, 1)
-                    &&
-                    tf[0].volume.GetTactExpPrice(50, 0) > tf[0].volume.GetTactExpPrice(50, 2)
-
-
-                    ,
-                    tf[0].volume.GetTactRealPrice(0) > tf[0].volume.GetTactExpPrice(50, 0)            //..4
-                    &&
-                    tf[0].volume.GetTactRealPrice(0) > tf[0].volume.GetTactRealPriceTactsMax(24, 1) +
-                    new decimal(0.0)
-
-                    &&
-                    tf[0].volume.GetAvrTv(180, 0) > new decimal(15.0)
-                    &&
-                    tf[0].volume.GetAvrTv(180, 0) > tf[0].volume.GetAvrTv(180, 6)
-
-                    &&
-                    tf[0].volume.GetExpVv(300, 21, 0) > new decimal(0.0)
-*/
-
-//                    ,
-  //                  Current_Day_PNL > new decimal(800)                                             //..11
 
             //-//
         };

@@ -133,7 +133,8 @@ namespace AutoRobot
                 Decimal Result = 0;
                 Decimal Trade_Position = 0;
                 // Массивы
-                var _MyOrders_Array = MyDayOrders.Where(or => or.Time.Day == terminalDateTime.Day); // Мои заявки текущей стратегии
+                //var _MyOrders_Array = MyDayOrders.Where(or => or.Time.Day == terminalDateTime.Day); // Мои заявки текущей стратегии
+                var _MyOrders_Array = Orders_Enter.Concat(Orders_Exit); // Мои заявки текущей стратегии
                 // Перебираем заявки
                 foreach (var or in _MyOrders_Array)
                 {
@@ -173,7 +174,7 @@ namespace AutoRobot
                 Decimal Result = 0;
                 Decimal Trade_Position = 0;
                 // Массивы
-                var _MyOrders_Array = Orders_Enter.Concat(Orders_Exit).ToList(); // Мои заявки текущей стратегии
+                var _MyOrders_Array = Orders_Enter.Concat(Orders_Exit); // Мои заявки текущей стратегии
                 // Перебираем заявки
                 foreach (var or in _MyOrders_Array)
                 {

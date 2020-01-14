@@ -127,7 +127,7 @@ namespace GUIServer
                 comment = stopOrderData.comment;
             }
         }
-        class PositionData : Drop
+        private class PositionData : Drop
         {
             public bool isClosed { get; set; }
             public decimal PositionPNL { get; set; }
@@ -138,7 +138,7 @@ namespace GUIServer
             public string ExitTime { get; set; }
             public string Direction { get; set; }
         }
-        class CommentInfo
+        private class CommentInfo
         {
             public bool is_valid;
             public string RobotName;
@@ -172,14 +172,23 @@ namespace GUIServer
                 }
             }
         }
-        class BalanceChartPoint : Drop
+        private class BalanceChartPoint : Drop
         {
             public string Time { get; set; }
             public int Balance { get; set; }
         }
-        public static void RenderHtmlReport(string filename, PartnerDataObject pd)
+        private class AmountChartCandle : Drop
         {
-            // Data
+            public string Date { get; set; }
+            public int Open { get; set; }
+            public int Close { get; set; }
+            public int High { get; set; }
+            public int Low { get; set; }
+            public int OpenTail { get; set; }
+            public int CloseTail { get; set; }
+        }
+        public static void RenderHtmlReport(string filename, PartnerDataObject pd, string username)
+        {
             decimal? GetOrderTradesAvrPrice(long order_id)
             {
                 IEnumerable<transportDataParrern.TradeData> trades = pd.tradesData.Where(t => t.orderNumber == order_id);
@@ -187,6 +196,31 @@ namespace GUIServer
                     return null;
                 return trades.Sum(t => t.price * t.volume) / trades.Sum(t => t.volume);
             };
+            AmountChartCandle GetAmountCandle()
+            {
+                string file_directory_path = Path.Combine(Environment.CurrentDirectory, "Billing", username);
+                string csv_filename = "daycandles";
+                string file_path = Path.Combine(file_directory_path, $"{csv_filename}.csv");
+                string[] parts = File.ReadAllLines(file_path, Encoding.Default).Last().Split(',');
+
+                string date = parts[1];
+                int amount_open = (int)double.Parse(parts[2]);
+                int amount_close = (int)double.Parse(parts[3]);
+                int amount_high = Math.Max(amount_open, amount_close);
+                int amount_low = Math.Min(amount_open, amount_close);
+                return new AmountChartCandle
+                {
+                    Date = date,
+                    Open = amount_open,
+                    Close = amount_close,
+                    High = amount_high,
+                    Low = amount_low,
+                    OpenTail = amount_close > amount_open ? amount_low : amount_high,
+                    CloseTail = amount_close > amount_open ? amount_high : amount_low,
+                };
+            }
+
+            // Data
             List<PositionData> PositionsData = new List<PositionData>();
             OrderData last_order = null;
             decimal day_pnl = 0;
@@ -243,11 +277,13 @@ namespace GUIServer
             Template tempate = Template.Parse(template_string);
             string render = tempate.Render(Hash.FromAnonymousObject(new {
                 date = CURRENT_DATE_STRING,
+                dayOfWeek_title = Globals.RU_dayOfWeek[(int)DateTime.Now.DayOfWeek],
                 balanceChartPoints,
                 positions_data = PositionsData,
                 orders_data = pd.ordersData.Select(x => new OrderData(x)),
                 stoporders_data = pd.stopOrdersData.Select(x => new StopOrderData(x)),
-                trades_data = pd.tradesData.Select(x => new TradeData(x))
+                trades_data = pd.tradesData.Select(x => new TradeData(x)),
+                amount_data = GetAmountCandle()
             }));
             string logfile_directory_path = Path.Combine(Environment.CurrentDirectory, "Отчёты", CURRENT_DATE_STRING);
             Directory.CreateDirectory(logfile_directory_path);
