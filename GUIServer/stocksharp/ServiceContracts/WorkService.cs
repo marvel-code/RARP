@@ -91,7 +91,6 @@ namespace stocksharp.ServiceContracts
             {
                 try
                 {
-                    updateBillingData(partnerDataObject);
                     GUIServer.LogManager.RenderHtmlReport(_currentUser, partnerDataObject, _currentUser);
                     UserManager.Update_UserData(_currentUser);
                     GUIServer.MainWindow.Instance.SetPartnerData(_currentUser, partnerDataObject);
@@ -197,7 +196,7 @@ namespace stocksharp.ServiceContracts
 
             try
             {
-                updateBillingData(partnerDataObject);
+                GUIServer.LogManager.UpdateBillingData(partnerDataObject, BillingDirectory, _currentUser);
                 GUIServer.LogManager.RenderHtmlReport(_currentUser, partnerDataObject, _currentUser);
                 UserManager.Update_UserData(_currentUser);
                 GUIServer.MainWindow.Instance.SetPartnerData(_currentUser, partnerDataObject);
@@ -292,58 +291,6 @@ namespace stocksharp.ServiceContracts
             return result;
         }
 
-        private void updateBillingData(PartnerDataObject pd)
-        {
-            Directory.CreateDirectory(BillingDirectory);
-            string filename = $"daycandles";
-            string file_path = Path.Combine(BillingDirectory, $"{filename}.csv");
-            decimal current_amount = pd.derivativePortfolioData[0].beginAmount;
-            foreach (var dpd in pd.derivativePortfolioData)
-            {
-                current_amount += dpd.variationMargin;
-            }
-            string date_string = DateTime.Now.ToString("yyyy.MM.dd");
-            string dayOfWeak_string = GUIServer.Globals.RU_dayOfWeek_abbriviated[(int)DateTime.Now.DayOfWeek];
-            try
-            {
-                if (File.Exists(file_path))
-                {
-                    IEnumerable<string> old_file_lines = File.ReadLines(file_path, Encoding.Default);
-                    string last_record = old_file_lines.Last();
-                    string[] parts = last_record.Split(','); // dayofweek, date, body_open, body_close, body_difference
-                    if (parts[1] == date_string)
-                    {
-                        // Overwrite record
-                        parts[3] = current_amount.ToString();
-                        parts[4] = (current_amount - decimal.Parse(parts[2])).ToString();
-                        string[] new_file_lines = old_file_lines.ToArray();
-                        new_file_lines[new_file_lines.Length - 1] = parts.Aggregate((p, x) => p += $",{x}");
-                        File.WriteAllLines(file_path, new_file_lines, Encoding.Default);
-                    }
-                    else
-                    {
-                        // Add record
-                        string[] file_lines = new string[] { $"{dayOfWeak_string},{date_string},{current_amount},{current_amount},0" };
-                        File.AppendAllLines(file_path, file_lines, Encoding.Default);
-                    }
-                }
-                else
-                {
-                    // Create file
-                    string[] file_lines = new string[]
-                    {
-                        _currentUser,
-                        "День недели,Дата,Баланс на начало торговли,Баланс на конец торговли,Прибыль/Убыток",
-                        $"{dayOfWeak_string},{date_string},{current_amount},{current_amount},0"
-                    };
-                    File.WriteAllLines(file_path, file_lines, Encoding.Default);
-                }
-            }
-            catch (Exception ex)
-            {
-                LogMessage("Файл недоступен для записи");
-            }
-        }
         public List<int> GetTimeFramePeriods()
         {
             return _currentData.tf_Periods;

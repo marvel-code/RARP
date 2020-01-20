@@ -130,12 +130,14 @@ namespace GUIServer
         private class PositionData : Drop
         {
             public bool isClosed { get; set; }
-            public decimal PositionPNL { get; set; }
-            public decimal DayPNL { get; set; }
+            public int PositionPNL { get; set; }
+            public int DayPNL { get; set; }
             public int EntryId { get; set; }
             public int ExitId { get; set; }
             public string EntryTime { get; set; }
             public string ExitTime { get; set; }
+            public int EntryPrice { get; set; }
+            public int ExitPrice { get; set; }
             public string Direction { get; set; }
         }
         private class CommentInfo
@@ -182,10 +184,46 @@ namespace GUIServer
             public string Date { get; set; }
             public int Open { get; set; }
             public int Close { get; set; }
+            public int Diff { get; set; }
             public int High { get; set; }
             public int Low { get; set; }
             public int OpenTail { get; set; }
             public int CloseTail { get; set; }
+        }
+        private class BillingRecord
+        {
+            public bool isValid;
+
+            public string DayOfWeek;
+            public string Date;
+            public string BeginTime;
+            public string EndTime;
+            public int BeginAmount;
+            public int EndAmount;
+            public int DiffAmount;
+
+            public BillingRecord(string record)
+            {
+                string[] parts = record.Split(',');
+                if (parts.Length != 7)
+                {
+                    throw new Exception("Некорректная запись: " + record);
+                }
+                DayOfWeek = parts[0];
+                Date = parts[1];
+                BeginTime = parts[2];
+                EndTime = parts[3];
+                isValid = int.TryParse(parts[4], out BeginAmount)
+                            && int.TryParse(parts[5], out EndAmount)
+                            && int.TryParse(parts[6], out DiffAmount);
+            }
+
+            public string GetRecordString => $"{DayOfWeek},{Date},{BeginTime},{EndTime},{BeginAmount},{EndAmount},{DiffAmount}";
+
+            public void UpdateDiffAmount()
+            {
+                DiffAmount = EndAmount - BeginAmount;
+            }
         }
         public static void RenderHtmlReport(string filename, PartnerDataObject pd, string username)
         {
@@ -201,23 +239,31 @@ namespace GUIServer
                 string file_directory_path = Path.Combine(Environment.CurrentDirectory, "Billing", username);
                 string csv_filename = "daycandles";
                 string file_path = Path.Combine(file_directory_path, $"{csv_filename}.csv");
-                string[] parts = File.ReadAllLines(file_path, Encoding.Default).Last().Split(',');
-
-                string date = parts[1];
-                int amount_open = (int)double.Parse(parts[2]);
-                int amount_close = (int)double.Parse(parts[3]);
-                int amount_high = Math.Max(amount_open, amount_close);
-                int amount_low = Math.Min(amount_open, amount_close);
-                return new AmountChartCandle
+                string last_record = File.ReadAllLines(file_path, Encoding.Default).Last();
+                BillingRecord br = new BillingRecord(last_record);
+                if (br.isValid)
                 {
-                    Date = date,
-                    Open = amount_open,
-                    Close = amount_close,
-                    High = amount_high,
-                    Low = amount_low,
-                    OpenTail = amount_close > amount_open ? amount_low : amount_high,
-                    CloseTail = amount_close > amount_open ? amount_high : amount_low,
-                };
+                    string date = br.Date;
+                    int amount_open = br.BeginAmount;
+                    int amount_close = br.EndAmount;
+                    int amount_high = Math.Max(amount_open, amount_close);
+                    int amount_low = Math.Min(amount_open, amount_close);
+                    return new AmountChartCandle
+                    {
+                        Date = date,
+                        Open = amount_open,
+                        Close = amount_close,
+                        Diff = amount_close - amount_open,
+                        High = amount_high,
+                        Low = amount_low,
+                        OpenTail = amount_close > amount_open ? amount_low : amount_high,
+                        CloseTail = amount_close > amount_open ? amount_high : amount_low,
+                    };
+                }
+                else
+                {
+                    return new AmountChartCandle(); // empty
+                }
             }
 
             // Data
@@ -234,30 +280,29 @@ namespace GUIServer
                 pos_data.Direction = enter_order.side;
                 pos_data.EntryId = enterCI.rule_id;
                 pos_data.EntryTime = enter_order.dateTime.Split(' ')[1];
+                decimal? enter_trades_price = GetOrderTradesAvrPrice(enter_order.id);
+                decimal enter_avr_price = enter_trades_price != null ? enter_trades_price.Value : pd.Current_Price;
+                pos_data.EntryPrice = (int)enter_avr_price;
+                decimal position_pnl;
                 if (exit_order != null)
                 {
                     pos_data.isClosed = true;
                     CommentInfo exitCI = new CommentInfo(exit_order.comment);
                     pos_data.ExitId = exitCI.rule_id;
                     pos_data.ExitTime = exit_order.dateTime.Split(' ')[1];
-                    decimal? enter_trades_price = GetOrderTradesAvrPrice(enter_order.id);
                     decimal? exit_trades_price = GetOrderTradesAvrPrice(exit_order.id);
                     decimal exit_avr_price = exit_trades_price != null ? exit_trades_price.Value : pd.Current_Price;
-                    decimal enter_avr_price = enter_trades_price != null ? enter_trades_price.Value : pd.Current_Price;
-                    decimal position_pnl = pos_data.Direction == "Buy" ? exit_avr_price - enter_avr_price : enter_avr_price - exit_avr_price;
-                    pos_data.PositionPNL = position_pnl;
+                    pos_data.ExitPrice = (int)exit_avr_price;
+                    position_pnl = pos_data.Direction == "Buy" ? exit_avr_price - enter_avr_price : enter_avr_price - exit_avr_price;
                     day_pnl += position_pnl;
-                    pos_data.DayPNL = day_pnl;
                 }
                 else
                 {
-                    decimal? enter_trades_price = GetOrderTradesAvrPrice(enter_order.id);
-                    decimal enter_avr_price = enter_trades_price != null ? enter_trades_price.Value : pd.Current_Price;
-                    decimal position_pnl = pos_data.Direction == "Buy" ? pd.Current_Price - enter_avr_price : enter_avr_price - pd.Current_Price;
-                    pos_data.PositionPNL = position_pnl;
+                    position_pnl = pos_data.Direction == "Buy" ? pd.Current_Price - enter_avr_price : enter_avr_price - pd.Current_Price;
                     day_pnl += position_pnl;
-                    pos_data.DayPNL = day_pnl;
                 }
+                pos_data.PositionPNL = (int)position_pnl;
+                pos_data.DayPNL = (int)day_pnl;
 
                 PositionsData.Add(pos_data);
             }
@@ -289,6 +334,57 @@ namespace GUIServer
             Directory.CreateDirectory(logfile_directory_path);
             string logfile_path = Path.Combine(logfile_directory_path, $"{filename}.html");
             File.WriteAllText(logfile_path, render);
+        }
+        public static void UpdateBillingData(PartnerDataObject pd, string BillingDirectory, string _currentUser)
+        {
+            Directory.CreateDirectory(BillingDirectory);
+            string filename = $"daycandles";
+            string file_path = Path.Combine(BillingDirectory, $"{filename}.csv");
+            int begin_amount = (int)pd.derivativePortfolioData[0].beginAmount;
+            int diff_amount = (int)pd.derivativePortfolioData.Sum(x => x.variationMargin);
+            int current_amount = begin_amount + diff_amount;
+            string date_string = DateTime.Now.ToString("yyyy.MM.dd");
+            string time_string = DateTime.Now.ToString("HH:mm:ss");
+            string dayOfWeak_string = Globals.RU_dayOfWeek_abbriviated[(int)DateTime.Now.DayOfWeek];
+            try
+            {
+                if (File.Exists(file_path))
+                {
+                    IEnumerable<string> old_file_lines = File.ReadLines(file_path, Encoding.Default);
+                    string last_record = old_file_lines.Last();
+                    BillingRecord br = new BillingRecord(last_record);
+                    if (br.isValid && br.Date == date_string)
+                    {
+                        // Overwrite record
+                        br.EndAmount = current_amount;
+                        br.EndTime = time_string;
+                        br.UpdateDiffAmount();
+                        string[] new_file_lines = old_file_lines.ToArray();
+                        new_file_lines[new_file_lines.Length - 1] = br.GetRecordString;
+                        File.WriteAllLines(file_path, new_file_lines, Encoding.Default);
+                    }
+                    else
+                    {
+                        // Add record
+                        string[] file_lines = new string[] { $"{dayOfWeak_string},{date_string},{time_string},{time_string},{begin_amount},{current_amount},{diff_amount}" };
+                        File.AppendAllLines(file_path, file_lines, Encoding.Default);
+                    }
+                }
+                else
+                {
+                    // Create file
+                    string[] file_lines = new string[]
+                    {
+                        _currentUser,
+                        "День недели,Дата,Время начала торговли,Время конца торговли,Входящий остаток торговли,Исходящий остаток торговли,Изменение остатка",
+                    };
+                    File.WriteAllLines(file_path, file_lines, Encoding.Default);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log(LogType.Error, "Файл недоступен для записи: " + ex);
+            }
         }
     }
 }

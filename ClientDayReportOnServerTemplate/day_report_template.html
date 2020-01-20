@@ -74,15 +74,15 @@
 					<td>{{ amount_data.Close }} руб</td>
 				</tr>
 				<tr>
-					<td>Прибыль/Убыток</td>
-					<td class="{% if amount_data.Close > amount_data.Open %}table-success{% elsif amount_data.Close < amount_data.Open %}table-danger{% endif %}">{{ amount_data.Close - amount_data.Open }} руб</td>
+					<td>Изменение остатка</td>
+					<td class="{% if amount_data.Diff > 0 %}table-success{% elsif amount_data.Diff < 0 %}table-danger{% endif %}">{{ amount_data.Diff }} руб</td>
 				</tr>
 			</table>
 		</div>
     </header>
     <main class="modal-body">
         <section class="container">
-            <h1>График баланса</h1>
+            <h1>График дневного P&L</h1>
             <div class="chart-loading-status spinner-border text-primary" role="status">
                 <div class="sr-only">Loading...</div>
             </div>
@@ -98,11 +98,13 @@
 						<td>#</td>
 						<td class="border-right-0">PnL сделки</td>
 						<td class="border-left-0">PnL дня</td>
+						<td>Направление</td>
 						<td class="border-right-0">ID входа</td>
 						<td class="border-left-0">ID выхода</td>
 						<td class="border-right-0">Время входа</td>
 						<td class="border-left-0">Время выхода</td>
-						<td>Направление</td>
+						<td class="border-right-0">Цена входа</td>
+						<td class="border-left-0">Цена выхода</td>
 					</tr>
 
 					<!-- Positions -->
@@ -111,16 +113,19 @@
 						<td>{{ forloop.index }}</td>
 						<td class="{% if pd.position_pnl > 0 %}table-success{% elsif pd.position_pnl < 0 %}table-danger{% endif %}">{% if pd.is_closed == false %}~ {% endif %}{{ pd.position_pnl }}</td>
 						<td class="{% if pd.day_pnl > 0 %}table-success{% elsif pd.day_pnl < 0 %}table-danger{% endif %}">{{ pd.day_pnl }}</td>
+						<td>{{ pd.Direction }}</td>
 						<td>{{ pd.entry_id }}</td>
 						<td>{% if pd.is_closed %}{{ pd.exit_id }}{% else %}#{% endif %}</td>
 						<td>{{ pd.entry_time }}</td>
 						<td>{% if pd.is_closed %}{{ pd.exit_time }}{% else %}#{% endif %}</td>
-						<td>{{ pd.Direction }}</td>
+						<td>{{ pd.entry_price }}</td>
+						<td>{% if pd.is_closed %}{{ pd.exit_price }}{% else %}#{% endif %}</td>
 					</tr>
 					{% endfor -%}
 				</table>
             </details>
         </section>
+	<hr>
         <section class="container">
             <h1>Таблица заявок</h1>
             <details>
@@ -226,7 +231,7 @@
                 </table>
             </details>
         </section>
-        <section class="container">
+        <section class="container invisible">
             <h1>Лог</h1>
             <details>
                 <div class="container border" id="log_wrapper">
