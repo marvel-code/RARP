@@ -335,6 +335,12 @@ namespace AutoRobot
         // Stop trading
         public void stopTrading()
         {
+            TM.Cancel.AllOrders("Стоп торговли");
+            if (TM.is_Position)
+            {
+                TM.Register.ExitOrder(0, "Стоп торговли");
+            }
+
             btn_start_strategy.Dispatcher.Invoke(new Action(() => btn_start_strategy.IsEnabled = true));
             btn_stop_strategy.Dispatcher.Invoke(new Action(() => btn_stop_strategy.IsEnabled = false));
             btn_exit_from_position.Dispatcher.Invoke(new Action(() => btn_exit_from_position.IsEnabled = true));
@@ -343,7 +349,12 @@ namespace AutoRobot
 
 
             workProcess.isTrade = false;
-            TM.Register.ExitOrder(999, "Stop trading exit");
+
+            TM.Cancel.AllOrders("Стоп торговли");
+            if (TM.is_Position)
+            {
+                TM.Register.ExitOrder(0, "Стоп торговли");
+            }
 
             updateRobotStatus();
 

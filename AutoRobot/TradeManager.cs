@@ -284,26 +284,48 @@ namespace AutoRobot
         {
             public static Order FailedOrder(Order _FailedOrder, OrderType _OrderType)
             {
-                Order New_Order;
-                // Снова регистрируем заявку на бирже
-                if (_OrderType != OrderType.Stop)
-                    New_Order = Order(0, _FailedOrder.Balance, _FailedOrder.Direction, _OrderType, "[REREG]");
-                else
-                    New_Order = StopOrder(_FailedOrder.Volume, _FailedOrder.Direction, (QuikStopConditionTypes)_FailedOrder.StopCondition.Parameters["Type"], "Стоп-заявка [REREG]");
                 // Переносим неудачную заявку в массив неудачников
                 List<Order> Orders_Array = null;
                 if (_OrderType == OrderType.Enter)
+                {
                     Orders_Array = Orders_Enter;
+                }
                 else if (_OrderType == OrderType.Exit)
+                {
                     Orders_Array = Orders_Exit;
+                }
                 else if (_OrderType == OrderType.Stop)
+                {
                     Orders_Array = Orders_Stop;
+                }
+                Orders_Failed.Add(_FailedOrder);
+                ++Exceptions_Count;
 
-                Orders_Failed.Add(Orders_Array[Orders_Array.Count - 1]);
-                Orders_Array[Orders_Array.Count - 1] = New_Order;
-                Exceptions_Count++;
-
-                return New_Order;
+                if (Exceptions_Count < Max_Exceptions_Count)
+                {
+                    // Снова регистрируем заявку на бирже
+                    Order New_Order;
+                    if (_OrderType != OrderType.Stop)
+                    {
+                        New_Order = Order(0, _FailedOrder.Balance, _FailedOrder.Direction, _OrderType, "[REREG]");
+                    }
+                    else
+                    {
+                        New_Order = StopOrder(_FailedOrder.Volume, _FailedOrder.Direction, (QuikStopConditionTypes)_FailedOrder.StopCondition.Parameters["Type"], "Стоп-заявка [REREG]");
+                    }
+                    Orders_Array[Orders_Array.Count - 1] = New_Order;
+                    return New_Order;
+                }
+                else
+                {
+                    // Не ререгаем заявку
+                    if (Exceptions_Count == Max_Exceptions_Count)
+                    {
+                        Add_Log_Message("Количество исключений достигло максимума");
+                    }
+                    Orders_Array.Remove(_FailedOrder);
+                    return null;
+                }
             }
 
             public static Order Order(Decimal _Rule_ID, Decimal _Order_Volume, OrderDirections _Order_Direction, OrderType _OrderType, String _Comment = "")
@@ -422,7 +444,7 @@ namespace AutoRobot
                 }
             }
 
-            public static void Orders(String _Comment = "", Boolean _NoticeIfNoActive = false)
+            public static void AllOrders(String _Comment = "", Boolean _NoticeIfNoActive = false)
             {
                 int CanceledOrders_Count = 0;
                 List<long> CanceledOrders_Array = new List<long>();

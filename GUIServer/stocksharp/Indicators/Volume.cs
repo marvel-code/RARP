@@ -774,14 +774,11 @@ namespace stocksharp
             return getRealBvVal(period, shift, vCalcType, dateTime) - getRealSvVal(period, shift, vCalcType, dateTime);
         }
         object locker_sideCache = new object();
-        private decimal getRealBvVal(int period, int shift = 0, VCalcType vCalcType = VCalcType.Shift, DateTime? dateTime = null)
+        private decimal getRealSideVelocity(Sides side, int period, int shift = 0, VCalcType vCalcType = VCalcType.Shift, DateTime? dateTime = null)
         {
-            // Settings
-            var orderDireciton = OrderDirections.Buy;
-            var side = Sides.Buy;
-            var sideCache = _bvCache;
-
             // Prepare
+            var sideCache = side == Sides.Buy ? _bvCache : _svCache;
+            var orderDireciton = side == Sides.Buy ? OrderDirections.Buy : OrderDirections.Sell;
             lock (locker_sideCache)
                 if (!sideCache.ContainsKey(period))
                     sideCache.Add(period, new Dictionary<DateTime, decimal>());
@@ -801,14 +798,14 @@ namespace stocksharp
             }
             calcTime = GetDateTimeWithoutMillis(calcTime);
             DateTime beginCalcTime = calcTime;
-            DateTime endCalcTime = beginCalcTime.AddSeconds(-period + 1);
+            DateTime endCalcTime = beginCalcTime.AddSeconds(-period);
             DateTime lastCalcTime = GetDateTimeDivSeconds(endCalcTime, 60);
 
             // Calculate
             decimal result = 0;
             for (calcTime = GetDateTimeDivSeconds(calcTime, 60); calcTime >= lastCalcTime; calcTime = calcTime.AddMinutes(-1))
                 result += getDirectionMinuteSumAtDateTime(side, calcTime);
-            var delBeforeDT = GetDateTimeDivSeconds(endCalcTime, 60);
+            var delBeforeDT = lastCalcTime;
             for (int k = getNearestTradeIndexEarlierDateTime(endCalcTime); k >= 0 && AllTrades[k].Time >= delBeforeDT; --k)
                 if (AllTrades[k].OrderDirection == orderDireciton)
                     result -= AllTrades[k].Volume;
@@ -830,67 +827,17 @@ namespace stocksharp
                 }
 
             return result;
+        }
+        private decimal getRealBvVal(int period, int shift = 0, VCalcType vCalcType = VCalcType.Shift, DateTime? dateTime = null)
+        {
+            return getRealSideVelocity(Sides.Buy, period, shift, vCalcType, dateTime);
         }
         private decimal getRealSvVal(int period, int shift = 0, VCalcType vCalcType = VCalcType.Shift, DateTime? dateTime = null)
         {
-            // Settings
-            var orderDireciton = OrderDirections.Sell;
-            var side = Sides.Sell;
-            var sideCache = _bvCache;
-
-            // Prepare
-            lock (locker_sideCache)
-                if (!sideCache.ContainsKey(period))
-                    sideCache.Add(period, new Dictionary<DateTime, decimal>());
-            DateTime currentTime = TM.TerminalTime;
-            DateTime calcTime;
-            switch (vCalcType)
-            {
-                case VCalcType.DateTime:
-                    if (dateTime == null)
-                        throw new Exception("dateTime=null with VCalcType.DateTime");
-                    calcTime = dateTime.Value;
-                    break;
-                default:
-                case VCalcType.Shift:
-                    calcTime = currentTime.AddSeconds(-shift);
-                    break;
-            }
-            calcTime = GetDateTimeWithoutMillis(calcTime);
-            DateTime beginCalcTime = calcTime;
-            DateTime endCalcTime = beginCalcTime.AddSeconds(-period + 1);
-            DateTime lastCalcTime = GetDateTimeDivSeconds(endCalcTime, 60);
-
-            // Calculate
-            decimal result = 0;
-            for (calcTime = GetDateTimeDivSeconds(calcTime, 60); calcTime >= lastCalcTime; calcTime = calcTime.AddMinutes(-1))
-                result += getDirectionMinuteSumAtDateTime(side, calcTime);
-            var delBeforeDT = GetDateTimeDivSeconds(endCalcTime, 60);
-            for (int k = getNearestTradeIndexEarlierDateTime(endCalcTime); k >= 0 && AllTrades[k].Time >= delBeforeDT; --k)
-                if (AllTrades[k].OrderDirection == orderDireciton)
-                    result -= AllTrades[k].Volume;
-            var delAfterDT = GetDateTimeDivSeconds(beginCalcTime, 60).AddMinutes(1);
-            for (int k = getNearestTradeIndexLaterDateTime(beginCalcTime); k < AllTrades.Length && AllTrades[k].Time < delAfterDT; ++k)
-                if (AllTrades[k].OrderDirection == orderDireciton)
-                    result -= AllTrades[k].Volume;
-            result /= period;
-
-            // Cache
-            lock (locker_sideCache)
-                if (sideCache[period].ContainsKey(calcTime))
-                    sideCache[period][calcTime] = result;
-                else
-                {
-                    sideCache[period].Add(calcTime, result);
-                    if (sideCache[period].Count > maxCacheTimeDelta.TotalSeconds)
-                        sideCache[period].RemoveWhere(x => x.Key < currentTime.Add(-maxCacheTimeDelta));
-                }
-
-            return result;
+            return getRealSideVelocity(Sides.Sell, period, shift, vCalcType, dateTime);
         }
         private decimal getAvrTvVal(int period, int shift = 0, VCalcType vCalcType = VCalcType.Shift, DateTime? dateTime = null)
         {
-
             return getAvrBvVal(period, shift, vCalcType, dateTime) + getAvrSvVal(period, shift, vCalcType, dateTime);
         }
         private decimal getAvrVvVal(int period, int shift = 0, VCalcType vCalcType = VCalcType.Shift, DateTime? dateTime = null)
@@ -910,7 +857,7 @@ namespace stocksharp
                 default:
                 case VCalcType.Shift:
                     DateTime currentTime = TM.TerminalTime;
-                    calcDayTime = currentTime.AddSeconds(-currentTime.TimeOfDay.TotalSeconds % VV_TACT - shift);
+                    calcDayTime = currentTime.AddSeconds(-currentTime.TimeOfDay.TotalSeconds % VV_TACT - shift * VV_TACT);
                     break;
             }
 
@@ -936,7 +883,7 @@ namespace stocksharp
                 default:
                 case VCalcType.Shift:
                     DateTime currentTime = TM.TerminalTime;
-                    calcDayTime = currentTime.AddSeconds(-currentTime.TimeOfDay.TotalSeconds % VV_TACT - shift);
+                    calcDayTime = currentTime.AddSeconds(-currentTime.TimeOfDay.TotalSeconds % VV_TACT - shift * VV_TACT);
                     break;
             }
 
