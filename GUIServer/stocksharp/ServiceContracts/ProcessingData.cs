@@ -39,8 +39,6 @@ namespace stocksharp.ServiceContracts
 
         public void Init()
         {
-            Log.addLog(LogType.Info, " >> INIT");
-
             AllTrades = new List<Trade>();
             _lastTradeIStartDatetime = DateTime.Now.Date.AddDays(-2);
             TradesIStarts = new Dictionary<DateTime, int>();
