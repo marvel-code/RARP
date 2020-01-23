@@ -38,8 +38,8 @@ namespace AutoRobot
         /// Settings
 
         const string USERNAME = "ro#1234";
-        const string IP = "185.158.155.246"; // Раскоментировать для клиента
-        //const string IP = "127.0.0.1";  // Закомментировать
+        //const string IP = "185.158.155.246"; // Раскоментировать для клиента
+        const string IP = "127.0.0.1";  // Закомментировать
         const int PORT = 8020;
         const int maxServerExceptionCount = 5;
         const int DELAY_AFTER_EXCEPTION = 2000;
@@ -306,7 +306,6 @@ namespace AutoRobot
 
                         if (!TM.is_Position && wasEnterFalse)
                         {
-
                             // Check for loop existence 
                             if (tradeData.LongOpen && tradeData.LongClose || tradeData.ShortOpen && tradeData.ShortClose)
                             {

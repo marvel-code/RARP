@@ -471,9 +471,9 @@ namespace stocksharp.ServiceContracts
 
                     tf[0].volume.GetExpVv(1800, 50, 0) < new decimal(0.0)                           //..1 
                     &&
-                    tf[0].volume.GetExpVv(300, 21, 0) < new decimal(0.0)
+                    tf[0].volume.GetAvrVv(300, 0) < new decimal(0.0)
                     &&
-                    tf[0].volume.GetExpVv(180, 8, 0) < new decimal(0.0)
+                    tf[0].volume.GetAvrVv(180, 0) < new decimal(0.0)
                     &&
                     tf[0].volume.GetExpVv(1800, 50, 0) < tf[0].volume.GetExpVv(1800, 50, 12)
                     &&
@@ -486,10 +486,21 @@ namespace stocksharp.ServiceContracts
                     tf[0].volume.GetExpVv(300, 21, 0) < tf[0].volume.GetExpVv(300, 21, 12)
                     &&
                     tf[0].volume.GetExpVv(300, 21, 12) < tf[0].volume.GetExpVv(300, 21, 24)
+
+                    &&
+                    tf[0].volume.GetAvrVv(300, 0) < tf[0].volume.GetAvrVv(300, 1)
+                    &&
+                    tf[0].volume.GetAvrVv(300, 0) < tf[0].volume.GetAvrVv(300, 2)
+
                     &&
                     tf[0].volume.GetExpVv(180, 8, 0) < tf[0].volume.GetExpVv(180, 8, 12)
                     &&
                     tf[0].volume.GetExpVv(180, 8, 12) < tf[0].volume.GetExpVv(180, 8, 24)
+
+                    &&
+                    tf[0].volume.GetAvrVv(180, 0) < tf[0].volume.GetAvrVv(180, 1)
+                    &&
+                    tf[0].volume.GetAvrVv(180, 0) < tf[0].volume.GetAvrVv(180, 2)
 
 
                     ,
@@ -524,10 +535,21 @@ namespace stocksharp.ServiceContracts
                     tf[0].volume.GetExpVv(300, 21, 0) < tf[0].volume.GetExpVv(300, 21, 12)
                     &&
                     tf[0].volume.GetExpVv(300, 21, 12) < tf[0].volume.GetExpVv(300, 21, 24)
+
+                    &&
+                    tf[0].volume.GetAvrVv(300, 0) < tf[0].volume.GetAvrVv(300, 1)
+                    &&
+                    tf[0].volume.GetAvrVv(300, 0) < tf[0].volume.GetAvrVv(300, 2)
+
                     &&
                     tf[0].volume.GetExpVv(180, 8, 0) < tf[0].volume.GetExpVv(180, 8, 12)
                     &&
-                    tf[0].volume.GetExpVv(300, 21, 12) < tf[0].volume.GetExpVv(300, 21, 24)
+                    tf[0].volume.GetExpVv(180, 21, 12) < tf[0].volume.GetExpVv(180, 21, 24)
+
+                    &&
+                    tf[0].volume.GetAvrVv(180, 0) < tf[0].volume.GetAvrVv(180, 1)
+                    &&
+                    tf[0].volume.GetAvrVv(180, 0) < tf[0].volume.GetAvrVv(180, 2)
 
 
                     ,
@@ -547,7 +569,13 @@ namespace stocksharp.ServiceContracts
                     tf[0].volume.GetAvrTv(180, 0) > tf[0].volume.GetAvrTactsTvMax(180, 12, 1)
 
                     &&
+                    tf[0].volume.GetExpVv(900, 50, 0) < tf[0].volume.GetExpVv(900, 50, 12)
+                    &&
+                    tf[0].volume.GetExpVv(900, 50, 12) < tf[0].volume.GetExpVv(900, 50, 24)
+                    &&
                     tf[0].volume.GetAvrVv(180, 0) < - new decimal(0.0)
+                    &&
+                    tf[0].volume.GetAvrVv(180, 0) < tf[0].volume.GetAvrTactsVvMin(180, 12, 1)
 
 
                     ,
@@ -569,6 +597,15 @@ namespace stocksharp.ServiceContracts
                     tf[0].volume.GetTactRealPrice(0) < tf[0].volume.GetTactRealPrice(1)
 
                     &&
+                    tf[0].volume.GetExpTv(300, 21, 0) > tf[0].volume.GetExpTv(300, 21, 12)
+                    &&
+                    tf[0].volume.GetExpTv(300, 21, 12) > tf[0].volume.GetExpTv(300, 21, 24)
+                    &&
+                    tf[0].volume.GetExpTv(180, 8, 0) > tf[0].volume.GetExpTv(180, 8, 12)
+                    &&
+                    tf[0].volume.GetExpTv(300, 21, 12) > tf[0].volume.GetExpTv(300, 21, 24)
+
+                    &&
                     tf[0].volume.GetExpVv(1800, 50, 0) < tf[0].volume.GetExpVv(1800, 50, 12)
                     &&
                     tf[0].volume.GetExpVv(1800, 50, 12) < tf[0].volume.GetExpVv(1800, 50, 24)
@@ -588,6 +625,15 @@ namespace stocksharp.ServiceContracts
                     tf[0].volume.GetTactRealPrice(0) < tf[0].volume.GetTactRealPrice(1)
 
                     &&
+                    tf[0].volume.GetExpTv(300, 21, 0) > tf[0].volume.GetExpTv(300, 21, 12)
+                    &&
+                    tf[0].volume.GetExpTv(300, 21, 12) > tf[0].volume.GetExpTv(300, 21, 24)
+                    &&
+                    tf[0].volume.GetExpTv(180, 8, 0) > tf[0].volume.GetExpTv(180, 8, 12)
+                    &&
+                    tf[0].volume.GetExpTv(300, 21, 12) > tf[0].volume.GetExpTv(300, 21, 24)
+
+                    &&
                     tf[0].volume.GetExpVv(900, 50, 0) < tf[0].volume.GetExpVv(900, 50, 12)
                     &&
                     tf[0].volume.GetExpVv(900, 50, 12) < tf[0].volume.GetExpVv(900, 50, 24)
@@ -602,13 +648,13 @@ namespace stocksharp.ServiceContracts
 
 
                     ,
-                    Position_PNL_MAX >= new decimal(2000)                                           //..9
+                    Position_PNL_MAX >= new decimal(1500)                                           //..9
                     &&
                     tf[0].volume.GetAvrTv(180, 0) < tf[0].volume.GetAvrTv(180, 1)
 
 
                     ,
-                    Current_Day_PNL > new decimal(3500)                                            //..10
+                    Current_Day_PNL > new decimal(2000)                                            //..10
                     &&
                     tf[0].volume.GetAvrTv(180, 0) < tf[0].volume.GetAvrTv(180, 1)
 
@@ -641,9 +687,9 @@ namespace stocksharp.ServiceContracts
 
                     tf[0].volume.GetExpVv(1800, 50, 0) > new decimal(0.0)                           //..1                   
                     &&
-                    tf[0].volume.GetExpVv(300, 21, 0) > new decimal(0.0)
+                    tf[0].volume.GetAvrVv(300, 0) > new decimal(0.0)
                     &&
-                    tf[0].volume.GetExpVv(180, 8, 0) > new decimal(0.0)
+                    tf[0].volume.GetAvrVv(180, 0) > new decimal(0.0)
                     &&
                     tf[0].volume.GetExpVv(1800, 50, 0) > tf[0].volume.GetExpVv(1800, 50, 12)
                     &&
@@ -656,10 +702,21 @@ namespace stocksharp.ServiceContracts
                     tf[0].volume.GetExpVv(300, 21, 0) > tf[0].volume.GetExpVv(300, 21, 12)
                     &&
                     tf[0].volume.GetExpVv(300, 21, 12) > tf[0].volume.GetExpVv(300, 21, 24)
+
+                    &&
+                    tf[0].volume.GetAvrVv(300, 0) > tf[0].volume.GetAvrVv(300, 1)
+                    &&
+                    tf[0].volume.GetAvrVv(300, 0) > tf[0].volume.GetAvrVv(300, 2)
+
                     &&
                     tf[0].volume.GetExpVv(180, 8, 0) > tf[0].volume.GetExpVv(180, 8, 12)
                     &&
                     tf[0].volume.GetExpVv(180, 8, 12) > tf[0].volume.GetExpVv(180, 8, 24)
+
+                    &&
+                    tf[0].volume.GetAvrVv(180, 0) > tf[0].volume.GetAvrVv(180, 1)
+                    &&
+                    tf[0].volume.GetAvrVv(180, 0) > tf[0].volume.GetAvrVv(180, 2)
 
 
                     ,
@@ -694,10 +751,21 @@ namespace stocksharp.ServiceContracts
                     tf[0].volume.GetExpVv(300, 21, 0) > tf[0].volume.GetExpVv(300, 21, 12)
                     &&
                     tf[0].volume.GetExpVv(300, 21, 12) > tf[0].volume.GetExpVv(300, 21, 24)
+
+                    &&
+                    tf[0].volume.GetAvrVv(300, 0) > tf[0].volume.GetAvrVv(300, 1)
+                    &&
+                    tf[0].volume.GetAvrVv(300, 0) > tf[0].volume.GetAvrVv(300, 2)
+
                     &&
                     tf[0].volume.GetExpVv(180, 8, 0) > tf[0].volume.GetExpVv(180, 8, 12)
                     &&
-                    tf[0].volume.GetExpVv(300, 21, 12) > tf[0].volume.GetExpVv(300, 21, 24)
+                    tf[0].volume.GetExpVv(180, 21, 12) > tf[0].volume.GetExpVv(180, 21, 24)
+
+                    &&
+                    tf[0].volume.GetAvrVv(180, 0) > tf[0].volume.GetAvrVv(180, 1)
+                    &&
+                    tf[0].volume.GetAvrVv(180, 0) > tf[0].volume.GetAvrVv(180, 2)
 
 
                     ,
@@ -717,7 +785,13 @@ namespace stocksharp.ServiceContracts
                     tf[0].volume.GetAvrTv(180, 0) > tf[0].volume.GetAvrTactsTvMax(180, 12, 1)
 
                     &&
+                    tf[0].volume.GetExpVv(900, 50, 0) > tf[0].volume.GetExpVv(900, 50, 12)
+                    &&
+                    tf[0].volume.GetExpVv(900, 50, 12) > tf[0].volume.GetExpVv(900, 50, 24)
+                    &&
                     tf[0].volume.GetAvrVv(180, 0) > new decimal(0.0)
+                    &&
+                    tf[0].volume.GetAvrVv(180, 0) > tf[0].volume.GetAvrTactsVvMax(180, 12, 1)
 
 
                     ,
@@ -739,6 +813,15 @@ namespace stocksharp.ServiceContracts
                     tf[0].volume.GetTactRealPrice(0) > tf[0].volume.GetTactRealPrice(1)
 
                     &&
+                    tf[0].volume.GetExpTv(300, 21, 0) > tf[0].volume.GetExpTv(300, 21, 12)
+                    &&
+                    tf[0].volume.GetExpTv(300, 21, 12) > tf[0].volume.GetExpTv(300, 21, 24)
+                    &&
+                    tf[0].volume.GetExpTv(180, 8, 0) > tf[0].volume.GetExpTv(180, 8, 12)
+                    &&
+                    tf[0].volume.GetExpTv(300, 21, 12) > tf[0].volume.GetExpTv(300, 21, 24)
+
+                    &&
                     tf[0].volume.GetExpVv(1800, 50, 0) > tf[0].volume.GetExpVv(1800, 50, 12)
                     &&
                     tf[0].volume.GetExpVv(1800, 50, 12) > tf[0].volume.GetExpVv(1800, 50, 24)
@@ -758,6 +841,15 @@ namespace stocksharp.ServiceContracts
                     tf[0].volume.GetTactRealPrice(0) > tf[0].volume.GetTactRealPrice(1)
 
                     &&
+                    tf[0].volume.GetExpTv(300, 21, 0) > tf[0].volume.GetExpTv(300, 21, 12)
+                    &&
+                    tf[0].volume.GetExpTv(300, 21, 12) > tf[0].volume.GetExpTv(300, 21, 24)
+                    &&
+                    tf[0].volume.GetExpTv(180, 8, 0) > tf[0].volume.GetExpTv(180, 8, 12)
+                    &&
+                    tf[0].volume.GetExpTv(300, 21, 12) > tf[0].volume.GetExpTv(300, 21, 24)
+
+                    &&
                     tf[0].volume.GetExpVv(900, 50, 0) > tf[0].volume.GetExpVv(900, 50, 12)
                     &&
                     tf[0].volume.GetExpVv(900, 50, 12) > tf[0].volume.GetExpVv(900, 50, 24)
@@ -772,13 +864,13 @@ namespace stocksharp.ServiceContracts
 
 
                     ,
-                    Position_PNL_MAX >= new decimal(2000)                                           //..9
+                    Position_PNL_MAX >= new decimal(1500)                                           //..9
                     &&
                     tf[0].volume.GetAvrTv(180, 0) < tf[0].volume.GetAvrTv(180, 1)
 
 
                     ,
-                    Current_Day_PNL > new decimal(3500)                                            //..10
+                    Current_Day_PNL > new decimal(2000)                                            //..10
                     &&
                     tf[0].volume.GetAvrTv(180, 0) < tf[0].volume.GetAvrTv(180, 1)
 
