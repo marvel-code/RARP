@@ -236,7 +236,7 @@ namespace GUIServer
             };
             AmountChartCandle GetAmountCandle()
             {
-                string file_path = getBillingFilePath(username);
+                string file_path = Globals.billing_file_path(username);
                 string last_record = File.ReadAllLines(file_path, Encoding.Default).Last();
                 BillingRecord br = new BillingRecord(last_record);
                 if (br.isValid)
@@ -338,15 +338,11 @@ namespace GUIServer
             string logfile_path = Path.Combine(logfile_directory_path, $"{filename}.html");
             File.WriteAllText(logfile_path, render);
         }
-        private static string getBillingFilePath(string username)
-        {
-            return Path.Combine(Globals.billing_folder, $"Сводка {username}.csv");
-        }
 
         public static void UpdateBillingData(PartnerDataObject pd, string _currentUser)
         {
             Directory.CreateDirectory(Globals.billing_folder);
-            string file_path = getBillingFilePath(_currentUser);
+            string file_path = Globals.billing_file_path(_currentUser);
             int begin_amount = (int)pd.derivativePortfolioData[0].beginAmount;
             int diff_amount = (int)pd.derivativePortfolioData[0].variationMargin;
             int current_amount = begin_amount + diff_amount;
