@@ -18,7 +18,7 @@ namespace GUIServer
 
     public static class LogManager
     {
-        static string CURRENT_DATE_STRING => DateTime.Now.ToString(@"yyyy.MM.dd");
+        static string CURRENT_DATE_STRING => Globals.CURRENT_DATE_STRING;
 
         public static string WrapMessageToLog(LogType logType, string message, params object[] args)
         {
@@ -315,7 +315,7 @@ namespace GUIServer
             }
 
             // Log
-            string template_path = Path.Combine(Environment.CurrentDirectory, "ClientDayReportOnServerTemplate/day_report_template.html");
+            string template_path = Globals.template_path;
             string template_string = File.ReadAllText(template_path);
             Template tempate = Template.Parse(template_string);
             string render = tempate.Render(Hash.FromAnonymousObject(new {
@@ -328,7 +328,7 @@ namespace GUIServer
                 trades_data = pd.tradesData.Select(x => new TradeData(x)),
                 amount_data = GetAmountCandle()
             }));
-            string logfile_directory_path = Path.Combine(Globals.analytics_folder, "Отчёты", CURRENT_DATE_STRING);
+            string logfile_directory_path = Globals.datereport_folder;
             Directory.CreateDirectory(logfile_directory_path);
             string logfile_path = Path.Combine(logfile_directory_path, $"{filename}.html");
             File.WriteAllText(logfile_path, render);

@@ -315,11 +315,12 @@ namespace stocksharp.ServiceContracts
                 {"Min PNL позиции", action == "LONG" || action == "SHORT" ? "—" : minPositionPnl.ToString()},
                 {"Max PNL позиции", action == "LONG" || action == "SHORT" ? "—" : maxPositionPnl.ToString()},
             };
-            
+
             // Init trade log file if it doesnt exist
-            if (!System.IO.File.Exists(GUIServer.Globals.tradesLog_fullFileName))
+            string tradesLog_path = GUIServer.Globals.datereport_tradesLog_path(_currentUser);
+            if (!File.Exists(tradesLog_path))
             {
-                System.IO.File.Create(GUIServer.Globals.tradesLog_fullFileName).Close();
+                File.Create(tradesLog_path).Close();
                 htmlLog += "<table width=100% cellpadding=5 border=1 style=\"border-collapse:collapse\">\r\n";
                 htmlLog += "<tr>";
                 foreach (var i in tradeInfo)
@@ -353,7 +354,7 @@ namespace stocksharp.ServiceContracts
 
                 int ind_k;
 
-                // ADX
+                /*// ADX
                 ind_k = -1;
                 foreach (var ind in tfi.adx)
                 {
@@ -415,7 +416,7 @@ namespace stocksharp.ServiceContracts
                     htmlLog += string.Format("val:\t\t{0:N2}<br>", ind.val);
                     htmlLog += string.Format("val_p:\t\t\t{0:N2}<br>", ind.val_p);
                 }
-                htmlLog += "<br>";
+                htmlLog += "<br>";*/
 
                 // VOLUME
                 ind_k = -1;
@@ -439,13 +440,60 @@ namespace stocksharp.ServiceContracts
                 }
                 htmlLog += "<br>";
             }
+            // Others
+            {
+                var TF = _currentData.timeFrameList;
+                htmlLog += "<table>";
+                htmlLog += "<tr><td>" + "Индикатор" + "</td><td>" + "shift = 1" + "</td><td>" + "shift = 0" + "</td></tr>";
+                foreach (var n in MySettings.PRICE_SETTINGS)
+                {
+                    htmlLog += "<tr><td>" + $"GetTactExpPrice({n})" + "</td><td>"
+                        + TF[0].volume.GetTactExpPrice(n, 1) + "</td><td>"
+                        + TF[0].volume.GetTactExpPrice(n, 0) + "</td></tr>";
+                }
+                htmlLog += "<tr><td>" + $"GetTactRealPrice" + "</td><td>"
+                    + TF[0].volume.GetTactRealPrice(1) + "</td><td>"
+                    + TF[0].volume.GetTactRealPrice(0) + "</td></tr>";
+                foreach (var kvp in MySettings.VELOCITIES_SETTINGS)
+                {
+                    htmlLog += "<tr><td>" + $"GetExpTv({kvp.Key}, {kvp.Value})" + "</td><td>"
+                        + TF[0].volume.GetExpTv(kvp.Key, kvp.Value, 1) + "</td><td>"
+                        + TF[0].volume.GetExpTv(kvp.Key, kvp.Value, 0) + "</td></tr>";
+                }
+                foreach (var kvp in MySettings.VELOCITIES_SETTINGS)
+                {
+                    htmlLog += "<tr><td>" + $"GetExpVv({kvp.Key}, {kvp.Value})" + "</td><td>"
+                        + TF[0].volume.GetExpVv(kvp.Key, kvp.Value, 1) + "</td><td>"
+                        + TF[0].volume.GetExpVv(kvp.Key, kvp.Value, 0) + "</td></tr>";
+                }
+                htmlLog += "<tr><td>" + $"GetAvrTv(180)" + "</td><td>"
+                    + TF[0].volume.GetAvrTv(180, 1) + "</td><td>"
+                    + TF[0].volume.GetAvrTv(180, 0) + "</td></tr>";
+                htmlLog += "<tr><td>" + $"GetAvrVv(180)" + "</td><td>"
+                    + TF[0].volume.GetAvrVv(180, 1) + "</td><td>"
+                    + TF[0].volume.GetAvrVv(180, 0) + "</td></tr>";
+                htmlLog += "<tr><td>" + $"GetAvrTactsTvMax(180, 18)" + "</td><td>"
+                    + TF[0].volume.GetAvrTactsTvMax(180, 18, 1) + "</td><td>"
+                    + TF[0].volume.GetAvrTactsTvMax(180, 18, 0) + "</td></tr>";
+                htmlLog += "<tr><td>" + $"GetAvrTvMin(180, 18)" + "</td><td>"
+                    + TF[0].volume.GetAvrTactsTvMin(180, 18, 1) + "</td><td>"
+                    + TF[0].volume.GetAvrTactsTvMin(180, 18, 0) + "</td></tr>";
+                htmlLog += "<tr><td>" + $"GetAvrVvMax(180, 18)" + "</td><td>"
+                    + TF[0].volume.GetAvrTactsVvMax(180, 18, 1) + "</td><td>"
+                    + TF[0].volume.GetAvrTactsVvMax(180, 18, 0) + "</td></tr>";
+                htmlLog += "<tr><td>" + $"GetAvrVvMin(180, 18)" + "</td><td>"
+                    + TF[0].volume.GetAvrTactsVvMin(180, 18, 1) + "</td><td>"
+                    + TF[0].volume.GetAvrTactsVvMin(180, 18, 0) + "</td></tr>";
+                htmlLog += "</table>";
+            }
+            htmlLog += $"";
             htmlLog += "</pre>";
             htmlLog += "</details><br>\r\n";
 
             // Append trade log
             try
             {
-                System.IO.File.AppendAllText(GUIServer.Globals.tradesLog_fullFileName, htmlLog);
+                File.AppendAllText(tradesLog_path, htmlLog);
             }
             catch (Exception ex)
             {
