@@ -236,9 +236,7 @@ namespace GUIServer
             };
             AmountChartCandle GetAmountCandle()
             {
-                string file_directory_path = Path.Combine(Environment.CurrentDirectory, "Billing", username);
-                string csv_filename = "daycandles";
-                string file_path = Path.Combine(file_directory_path, $"{csv_filename}.csv");
+                string file_path = getBillingFilePath(username);
                 string last_record = File.ReadAllLines(file_path, Encoding.Default).Last();
                 BillingRecord br = new BillingRecord(last_record);
                 if (br.isValid)
@@ -330,18 +328,18 @@ namespace GUIServer
                 trades_data = pd.tradesData.Select(x => new TradeData(x)),
                 amount_data = GetAmountCandle()
             }));
-            string logfile_directory_path = Path.Combine(Environment.CurrentDirectory, "Отчёты", CURRENT_DATE_STRING);
+            string logfile_directory_path = Path.Combine(Globals.analytics_folder, "Отчёты", CURRENT_DATE_STRING);
             Directory.CreateDirectory(logfile_directory_path);
             string logfile_path = Path.Combine(logfile_directory_path, $"{filename}.html");
             File.WriteAllText(logfile_path, render);
         }
-        public static void UpdateBillingData(PartnerDataObject pd, string BillingDirectory, string _currentUser)
+        private static string getBillingFilePath(string username) => Path.Combine(Globals.billing_folder, $"Сводка {username}.csv");
+        public static void UpdateBillingData(PartnerDataObject pd, string _currentUser)
         {
-            Directory.CreateDirectory(BillingDirectory);
-            string filename = $"daycandles";
-            string file_path = Path.Combine(BillingDirectory, $"{filename}.csv");
+            Directory.CreateDirectory(Globals.billing_folder);
+            string file_path = getBillingFilePath(_currentUser);
             int begin_amount = (int)pd.derivativePortfolioData[0].beginAmount;
-            int diff_amount = (int)pd.derivativePortfolioData.Sum(x => x.variationMargin);
+            int diff_amount = (int)pd.derivativePortfolioData[0].variationMargin;
             int current_amount = begin_amount + diff_amount;
             string date_string = DateTime.Now.ToString("yyyy.MM.dd");
             string time_string = DateTime.Now.ToString("HH:mm:ss");

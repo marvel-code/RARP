@@ -16,17 +16,12 @@ namespace stocksharp.ServiceContracts
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.PerSession)]
     public partial class WorkService : IWorkService
     {
-        // Settings
-        public string BillingDirectory { get; private set; }
-
         // >> Connection
         private string _currentUser;
 
         public string InitConnection(string username)
         {
             _currentUser = username;
-            BillingDirectory = Path.Combine(Environment.CurrentDirectory, "Billing", _currentUser);
-            Directory.CreateDirectory(BillingDirectory);
             _currentData = new ProcessingData();
             _currentData.Init();
 
@@ -196,7 +191,7 @@ namespace stocksharp.ServiceContracts
 
             try
             {
-                GUIServer.LogManager.UpdateBillingData(partnerDataObject, BillingDirectory, _currentUser);
+                GUIServer.LogManager.UpdateBillingData(partnerDataObject, _currentUser);
                 GUIServer.LogManager.RenderHtmlReport(_currentUser, partnerDataObject, _currentUser);
                 UserManager.Update_UserData(_currentUser);
                 GUIServer.MainWindow.Instance.SetPartnerData(_currentUser, partnerDataObject);
