@@ -1,14 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
 using System.ServiceModel;
 using System.Threading;
-using System.IO;
-
-using StockSharp.Algo.Candles;
-using StockSharp.BusinessEntities;
-
 using transportDataParrern;
 
 namespace stocksharp.ServiceContracts
@@ -57,7 +52,9 @@ namespace stocksharp.ServiceContracts
             bool result = UserManager.Process_UserConnect(username);
 
             if (!result)
+            {
                 return "Required user doesn`t exist or connected at the moment.";
+            }
 
             return null;
         }
@@ -141,7 +138,7 @@ namespace stocksharp.ServiceContracts
 
                 try
                 {
-                    var tf = _currentData.timeFrameList;
+                    List<TimeFrame> tf = _currentData.timeFrameList;
                     result.AdditionalData = new AdditionalDataStruct
                     {
                         message = "",
@@ -247,7 +244,7 @@ namespace stocksharp.ServiceContracts
 
             try
             {
-                var tf = _currentData.timeFrameList;
+                List<TimeFrame> tf = _currentData.timeFrameList;
                 result.AdditionalData = new AdditionalDataStruct
                 {
                     message = "",
@@ -323,7 +320,7 @@ namespace stocksharp.ServiceContracts
                 File.Create(tradesLog_path).Close();
                 htmlLog += "<table width=100% cellpadding=5 border=1 style=\"border-collapse:collapse\">\r\n";
                 htmlLog += "<tr>";
-                foreach (var i in tradeInfo)
+                foreach (KeyValuePair<string, string> i in tradeInfo)
                 {
                     htmlLog += "<td>";
                     htmlLog += i.Key;
@@ -333,7 +330,7 @@ namespace stocksharp.ServiceContracts
 
             // Log trade info
             htmlLog += "<tr>";
-            foreach (var i in tradeInfo)
+            foreach (KeyValuePair<string, string> i in tradeInfo)
             {
                 htmlLog += "<td>";
                 htmlLog += i.Value;
@@ -347,7 +344,7 @@ namespace stocksharp.ServiceContracts
             htmlLog += "<summary>Значения индикаторов</summary>";
             htmlLog += "<pre>";
             int tf_k = -1;
-            foreach (var tfi in _currentData.timeFrameList)
+            foreach (TimeFrame tfi in _currentData.timeFrameList)
             {
                 tf_k++;
                 htmlLog += string.Format("<br><h1>{0}[{1}]</h1>", "TF", tf_k);
@@ -420,7 +417,7 @@ namespace stocksharp.ServiceContracts
 
                 // VOLUME
                 ind_k = -1;
-                foreach (var ind in tfi.Volume)
+                foreach (Vol ind in tfi.Volume)
                 {
                     ind_k++;
                     htmlLog += string.Format("<h4>{0}[{1}]</h4>", "VOLUME", ind_k);
@@ -442,10 +439,10 @@ namespace stocksharp.ServiceContracts
             }
             // Others
             {
-                var TF = _currentData.timeFrameList;
+                List<TimeFrame> TF = _currentData.timeFrameList;
                 htmlLog += "<table>";
                 htmlLog += "<tr><td>" + "Индикатор" + "</td><td>" + "shift = 1" + "</td><td>" + "shift = 0" + "</td></tr>";
-                foreach (var n in MySettings.PRICE_SETTINGS)
+                foreach (int n in MySettings.PRICE_SETTINGS)
                 {
                     htmlLog += "<tr><td>" + $"GetTactExpPrice({n})" + "</td><td>"
                         + TF[0].volume.GetTactExpPrice(n, 1) + "</td><td>"
@@ -454,13 +451,13 @@ namespace stocksharp.ServiceContracts
                 htmlLog += "<tr><td>" + $"GetTactRealPrice" + "</td><td>"
                     + TF[0].volume.GetTactRealPrice(1) + "</td><td>"
                     + TF[0].volume.GetTactRealPrice(0) + "</td></tr>";
-                foreach (var kvp in MySettings.VELOCITIES_SETTINGS)
+                foreach (KeyValuePair<int, int> kvp in MySettings.VELOCITIES_SETTINGS)
                 {
                     htmlLog += "<tr><td>" + $"GetExpTv({kvp.Key}, {kvp.Value})" + "</td><td>"
                         + TF[0].volume.GetExpTv(kvp.Key, kvp.Value, 1) + "</td><td>"
                         + TF[0].volume.GetExpTv(kvp.Key, kvp.Value, 0) + "</td></tr>";
                 }
-                foreach (var kvp in MySettings.VELOCITIES_SETTINGS)
+                foreach (KeyValuePair<int, int> kvp in MySettings.VELOCITIES_SETTINGS)
                 {
                     htmlLog += "<tr><td>" + $"GetExpVv({kvp.Key}, {kvp.Value})" + "</td><td>"
                         + TF[0].volume.GetExpVv(kvp.Key, kvp.Value, 1) + "</td><td>"

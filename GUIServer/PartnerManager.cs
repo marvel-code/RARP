@@ -1,20 +1,17 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using Newtonsoft.Json;
 
 namespace GUIServer
-{   
+{
     public class PartnerInfo
     {
-        public string login { get;  set; }
-        public bool isOnline { get;  set; }
-        public bool allowTrade { get;  set; }
-        public bool is_Trading { get;  set; }
+        public string login { get; set; }
+        public bool isOnline { get; set; }
+        public bool allowTrade { get; set; }
+        public bool is_Trading { get; set; }
         public string lastConnectionTime { get; set; }
 
         public PartnerInfo(string _login, bool _allowTrade)
@@ -30,7 +27,7 @@ namespace GUIServer
     {
         // Partners info
         private static List<PartnerInfo> _partnersInfo;
-        
+
         private static void UpdateDgvPartnersInfoSource() { MainWindow.Instance.UpdateDgvPartnersInfoSource(); }
 
         // Actions on partners list
@@ -67,16 +64,19 @@ namespace GUIServer
                 LogManager.Log(LogType.Error, "Ошибка сохранение списка клиентов: {0}", ex.ToString());
             }
         }
-        public static void DownloadPartnersInfoFromFile() 
+        public static void DownloadPartnersInfoFromFile()
         {
             try
             {
                 string[] fileLines;
                 if (File.Exists(Globals.partnersDB_fullFileName) && (fileLines = File.ReadAllLines(Globals.partnersDB_fullFileName)).Length != 0)
                 {
-                    var deserialized = JsonConvert.DeserializeObject<List<PartnerInfo>>(fileLines[0]);
+                    List<PartnerInfo> deserialized = JsonConvert.DeserializeObject<List<PartnerInfo>>(fileLines[0]);
                     if (deserialized == null)
+                    {
                         throw new Exception("Список пуст");
+                    }
+
                     _partnersInfo = deserialized;
                     _partnersInfo.ForEach(x => x.isOnline = false);
 
@@ -87,9 +87,11 @@ namespace GUIServer
             {
                 LogManager.Log(LogType.Error, "Ошибка загрузки списка клиентов: {0}", ex.ToString());
             }
-            
+
             if (_partnersInfo == null)
+            {
                 _partnersInfo = new List<PartnerInfo>();
+            }
         }
 
         public static void AddPartnerInfo(PartnerInfo newClientInfo)
@@ -97,10 +99,12 @@ namespace GUIServer
             try
             {
                 if (MessageBox.Show(string.Format("Добавить клиента `{0}`?", newClientInfo.login), "Добавление клиента", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) != DialogResult.Yes)
+                {
                     return;
+                }
 
-                    // Check: login exist
-                    if (_partnersInfo.Exists(x => x.login == newClientInfo.login))
+                // Check: login exist
+                if (_partnersInfo.Exists(x => x.login == newClientInfo.login))
                 {
                     LogManager.Log(LogType.Info, "Клиент `{0}` не добавлен. Такой клиент уже существует.", newClientInfo.login);
 
@@ -109,7 +113,7 @@ namespace GUIServer
 
                 // Success
                 _partnersInfo.Add(newClientInfo);
-                
+
                 LogManager.Log(LogType.Info, "Клиент `{0}` добавлен. Разрешено торговать - {1}.", newClientInfo.login, newClientInfo.allowTrade ? "ДА" : "НЕТ");
 
                 UpdateDgvPartnersInfoSource();
@@ -122,7 +126,9 @@ namespace GUIServer
         public static void EditPartnerInfo(string login, bool allowTrade, ushort strategyNumber)
         {
             if (MessageBox.Show(string.Format("Изменить клиента `{0}`?\nНовые настройки: Разрешено торговать - {1}. Номер стратегии - {2}", login, allowTrade ? "ДА" : "НЕТ", strategyNumber), "Изменение клиента", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) != DialogResult.Yes)
+            {
                 return;
+            }
 
             try
             {
@@ -135,7 +141,7 @@ namespace GUIServer
                 }
 
                 // Success
-                var target = _partnersInfo.Find(x => x.login == login);
+                PartnerInfo target = _partnersInfo.Find(x => x.login == login);
                 target.allowTrade = allowTrade;
 
                 LogManager.Log(LogType.Info, "Клиент `{0}` изменён. Разрешено торговать - {1}. Номер стратегии - {2}", login, allowTrade ? "ДА" : "НЕТ", strategyNumber);
@@ -150,7 +156,9 @@ namespace GUIServer
         public static void RemovePartnerInfo(string login)
         {
             if (MessageBox.Show(string.Format("Удалить клиента `{0}`?", login), "Удаление клиента", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) != DialogResult.Yes)
+            {
                 return;
+            }
 
             try
             {

@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace stocksharp.ServiceContracts
 {
@@ -13,7 +10,7 @@ namespace stocksharp.ServiceContracts
             public enum ExtremumType { Max, Min }
             public class Extremum
             {
-                private ExtremumType _extremumType;
+                private readonly ExtremumType _extremumType;
 
                 public decimal Value { get; private set; }
                 public DateTimeOffset StartDateTime { get; private set; }
@@ -77,8 +74,10 @@ namespace stocksharp.ServiceContracts
 
             public PositionPricesValues(int[] expNs)
             {
-                foreach (var n in expNs)
+                foreach (int n in expNs)
+                {
                     ExpReal.Add(n, new Extremums());
+                }
             }
         }
 
@@ -100,19 +99,28 @@ namespace stocksharp.ServiceContracts
         private void updateMaxMin(decimal currentValue, ref decimal minValue, ref decimal maxValue, bool isInited = true)
         {
             if (!isInited)
+            {
                 minValue = maxValue = currentValue;
+            }
             else
                 if (currentValue > maxValue)
+            {
                 maxValue = currentValue;
+            }
             else if (currentValue < minValue)
+            {
                 minValue = currentValue;
+            }
         }
         private void initPositionValues()
         {
             // Velocities
             PositionVelocities = new List<PositionVelocitiesValues>();
-            foreach (var vs in MySettings.VELOCITIES_SETTINGS)
+            foreach (KeyValuePair<int, int> vs in MySettings.VELOCITIES_SETTINGS)
+            {
                 PositionVelocities.Add(new PositionVelocitiesValues(vs.Key, vs.Value));
+            }
+
             foreach (PositionVelocitiesValues pv in PositionVelocities)
             {
                 pv.Avr.Tv.Max.Init(tf[0].volume.GetAvrTv(pv.PeriodSeconds), Current_Time);
@@ -128,7 +136,7 @@ namespace stocksharp.ServiceContracts
             PositionPrices = new PositionPricesValues(MySettings.PRICE_SETTINGS);
             PositionPrices.Real.Max.Init(tf[0].volume.GetTactRealPrice(), Current_Time);
             PositionPrices.Real.Min.Init(tf[0].volume.GetTactRealPrice(), Current_Time);
-            foreach (var pv in PositionPrices.ExpReal)
+            foreach (KeyValuePair<int, Extremums> pv in PositionPrices.ExpReal)
             {
                 pv.Value.Max.Init(tf[0].volume.GetTactExpPrice(pv.Key), Current_Time);
                 pv.Value.Min.Init(tf[0].volume.GetTactExpPrice(pv.Key), Current_Time);
@@ -152,7 +160,7 @@ namespace stocksharp.ServiceContracts
             // Prices
             PositionPrices.Real.Max.Update(tf[0].volume.GetTactRealPrice(), Current_Time);
             PositionPrices.Real.Min.Update(tf[0].volume.GetTactRealPrice(), Current_Time);
-            foreach (var pv in PositionPrices.ExpReal)
+            foreach (KeyValuePair<int, Extremums> pv in PositionPrices.ExpReal)
             {
                 pv.Value.Max.Update(tf[0].volume.GetTactExpPrice(pv.Key), Current_Time);
                 pv.Value.Min.Update(tf[0].volume.GetTactExpPrice(pv.Key), Current_Time);

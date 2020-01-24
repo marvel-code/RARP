@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using System.ServiceModel;
 using System.ServiceModel.Description;
@@ -21,7 +18,7 @@ namespace GUIServer
         private static void host_Opened(object sender, EventArgs e)
         {
             LogManager.Log(LogType.Info, "Сервер открыт.");
-            
+
             UserManager.Init(PartnersManager.GetPartnersInfo().Select(x => x.login).ToList());
         }
         private static void host_Opening(object sender, EventArgs e)
@@ -41,16 +38,17 @@ namespace GUIServer
         }
 
 
-        public static bool isServerOpened { get { return host == null ? false : host.State == CommunicationState.Opened; } }
+        public static bool isServerOpened => host == null ? false : host.State == CommunicationState.Opened;
 
         public static void OpenServer()
         {
             try
             {
                 Uri address = new Uri(string.Format("http://localhost:{0}/WorkService", PORT));
-                WSHttpBinding binding = new WSHttpBinding(SecurityMode.None, true);
-
-                binding.Security = new WSHttpSecurity() { Mode = SecurityMode.None };
+                WSHttpBinding binding = new WSHttpBinding(SecurityMode.None, true)
+                {
+                    Security = new WSHttpSecurity() { Mode = SecurityMode.None }
+                };
 
                 int sizeMB = 500;
                 binding.MaxReceivedMessageSize = sizeMB * 1024 * 1024;
@@ -59,7 +57,7 @@ namespace GUIServer
                 host.AddServiceEndpoint(typeof(IWorkService), binding, "");
                 host.Description.Behaviors.Add(new ServiceMetadataBehavior { HttpGetEnabled = true });
                 host.AddServiceEndpoint(typeof(IMetadataExchange), MetadataExchangeBindings.CreateMexHttpBinding(), "mex");
-                
+
 
                 host.Opening += new EventHandler(host_Opening);
                 host.Opened += new EventHandler(host_Opened);
@@ -70,7 +68,7 @@ namespace GUIServer
             }
             catch (Exception ex)
             {
-                LogManager.Log(LogType.Error, "Ошибка открытия сервера: {0}",  ex.ToString());
+                LogManager.Log(LogType.Error, "Ошибка открытия сервера: {0}", ex.ToString());
             }
         }
         public static void CloseServer()
@@ -78,7 +76,9 @@ namespace GUIServer
             try
             {
                 if (isServerOpened)
+                {
                     host.Close();
+                }
             }
             catch (Exception ex)
             {

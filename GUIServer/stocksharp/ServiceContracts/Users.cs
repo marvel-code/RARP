@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 using System.Threading;
-using System.Windows.Forms;
 
 using GUIServer;
 
@@ -41,7 +39,7 @@ namespace stocksharp.ServiceContracts
             //doStopUserThread = true;
             threadUserTimeoutCheck.Abort();
         }
-        
+
         public static void ReaffirmUserConnection(string username)
         {
             if (true || connectedUsers.ContainsKey(username))
@@ -63,7 +61,10 @@ namespace stocksharp.ServiceContracts
             }
 
             if (!connectedUsers.ContainsKey(username))
+            {
                 connectedUsers.Add(username, DateTime.Now);
+            }
+
             PartnersManager.UpdatePartnerState(username, true);
 
             Log.addLog(LogType.Info, "{0}: connected {1}", username, comment);
@@ -82,7 +83,7 @@ namespace stocksharp.ServiceContracts
         {
             for (int i = 0; i < connectedUsers.Count; i++)
             {
-                var userInfo = connectedUsers.ElementAt(connectedUsers.Count - 1 - i);
+                KeyValuePair<string, DateTime> userInfo = connectedUsers.ElementAt(connectedUsers.Count - 1 - i);
                 if (DateTime.Now.Subtract(userInfo.Value) > TimeSpan.FromMinutes(5))
                 {
                     Process_UserDisconnect(userInfo.Key, "TIMEOUT");

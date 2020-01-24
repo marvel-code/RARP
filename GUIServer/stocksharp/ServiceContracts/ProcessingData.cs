@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
-using GUIServer;
 using StockSharp.Algo.Candles;
 using StockSharp.BusinessEntities;
 
@@ -27,12 +25,16 @@ namespace stocksharp.ServiceContracts
             {
                 time = time.AddMinutes(1);
                 if (time > TerminalTime)
+                {
                     break;
+                }
             }
-            
+
             // If time isn't out of range
             if (TradesIStarts.ContainsKey(time))
+            {
                 result = TradesIStarts[time];
+            }
 
             return result;
         }

@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.IO;
-using transportDataParrern;
 using DotLiquid;
-using StockSharp.BusinessEntities;
+using transportDataParrern;
 
 namespace GUIServer
 {
@@ -18,7 +15,7 @@ namespace GUIServer
 
     public static class LogManager
     {
-        static string CURRENT_DATE_STRING => Globals.CURRENT_DATE_STRING;
+        private static string CURRENT_DATE_STRING => Globals.CURRENT_DATE_STRING;
 
         public static string WrapMessageToLog(LogType logType, string message, params object[] args)
         {
@@ -231,7 +228,10 @@ namespace GUIServer
             {
                 IEnumerable<transportDataParrern.TradeData> trades = pd.tradesData.Where(t => t.orderNumber == order_id);
                 if (trades.Count() == 0)
+                {
                     return null;
+                }
+
                 return trades.Sum(t => t.price * t.volume) / trades.Sum(t => t.volume);
             };
             AmountChartCandle GetAmountCandle()
@@ -274,10 +274,12 @@ namespace GUIServer
                 OrderData exit_order = i < pd.ordersExit.Count ? new OrderData(pd.ordersExit[i]) : null;
                 CommentInfo enterCI = new CommentInfo(enter_order.comment);
 
-                PositionData pos_data = new PositionData();
-                pos_data.Direction = enter_order.side;
-                pos_data.EntryId = enterCI.rule_id;
-                pos_data.EntryTime = enter_order.dateTime.Split(' ')[1];
+                PositionData pos_data = new PositionData
+                {
+                    Direction = enter_order.side,
+                    EntryId = enterCI.rule_id,
+                    EntryTime = enter_order.dateTime.Split(' ')[1]
+                };
                 decimal? enter_trades_price = GetOrderTradesAvrPrice(enter_order.id);
                 decimal enter_avr_price = enter_trades_price != null ? enter_trades_price.Value : pd.Current_Price;
                 pos_data.EntryPrice = (int)enter_avr_price;
@@ -304,9 +306,11 @@ namespace GUIServer
 
                 PositionsData.Add(pos_data);
             }
-            List<BalanceChartPoint> balanceChartPoints = new List<BalanceChartPoint>();
-            balanceChartPoints.Add(new BalanceChartPoint { Time = "10:00:00", Balance = 0 });
-            foreach (var p in PositionsData)
+            List<BalanceChartPoint> balanceChartPoints = new List<BalanceChartPoint>
+            {
+                new BalanceChartPoint { Time = "10:00:00", Balance = 0 }
+            };
+            foreach (PositionData p in PositionsData)
             {
                 if (p.isClosed)
                 {
@@ -318,7 +322,8 @@ namespace GUIServer
             string template_path = Globals.template_path;
             string template_string = File.ReadAllText(template_path);
             Template tempate = Template.Parse(template_string);
-            string render = tempate.Render(Hash.FromAnonymousObject(new {
+            string render = tempate.Render(Hash.FromAnonymousObject(new
+            {
                 date = CURRENT_DATE_STRING,
                 dayOfWeek_title = Globals.RU_dayOfWeek[(int)DateTime.Now.DayOfWeek],
                 balanceChartPoints,
@@ -333,7 +338,11 @@ namespace GUIServer
             string logfile_path = Path.Combine(logfile_directory_path, $"{filename}.html");
             File.WriteAllText(logfile_path, render);
         }
-        private static string getBillingFilePath(string username) => Path.Combine(Globals.billing_folder, $"Сводка {username}.csv");
+        private static string getBillingFilePath(string username)
+        {
+            return Path.Combine(Globals.billing_folder, $"Сводка {username}.csv");
+        }
+
         public static void UpdateBillingData(PartnerDataObject pd, string _currentUser)
         {
             Directory.CreateDirectory(Globals.billing_folder);

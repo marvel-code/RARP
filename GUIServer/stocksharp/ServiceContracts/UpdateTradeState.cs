@@ -1,20 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using Ecng.Common;
-using StockSharp.BusinessEntities;
-using StockSharp.Messages;
+﻿using System.Collections.Generic;
 using transportDataParrern;
 
 namespace stocksharp.ServiceContracts
 {
     public partial class WorkService
     {
-        PartnerDataObject TM;
+        private PartnerDataObject TM;
         private List<TimeFrame> tf;
-        bool isPostPositionBlockUpdated = false;
+        private bool isPostPositionBlockUpdated = false;
         private bool allow_entry = true;
         private NeedAction needAction_;
-        bool wasLastExitByStrategy = true;
+        private bool wasLastExitByStrategy = true;
         private const bool DYNAMIC = false; // true - включить; false - выключить (ДИНАМИЧЕСКОЕ УСЛОВИЕ)
         private void updateTradeStateLongShort(ref TradeState tradeState, NeedAction needAction)
         {
@@ -74,7 +70,9 @@ namespace stocksharp.ServiceContracts
                 }
 
                 if (ruleId != 0)
+                {
                     tradeState.RuleId = ruleId;
+                }
             }
         }
         private void updateTradeStateSellCover(ref TradeState tradeState, NeedAction needAction)
@@ -157,12 +155,16 @@ namespace stocksharp.ServiceContracts
             }
             {
                 if (needAction != NeedAction.LongOrShortOpen)
+                {
                     updatePreExitRulesBlock();
+                }
 
                 updateTradeStateSellCover(ref tradeState, needAction);
 
                 if (needAction != NeedAction.LongOrShortOpen)
+                {
                     updatePostExitRulesBlock();
+                }
             }
 
             // Other
