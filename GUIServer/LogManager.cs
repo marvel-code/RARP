@@ -15,6 +15,14 @@ namespace GUIServer
 
     public static class LogManager
     {
+        static LogManager()
+        {
+            if (!File.Exists(Globals.datelog_path))
+            {
+                File.Create(Globals.datelog_path).Close();
+            }
+        }
+
         private static string CURRENT_DATE_STRING => Globals.CURRENT_DATE_STRING;
 
         public static string WrapMessageToLog(LogType logType, string message, params object[] args)
@@ -39,11 +47,11 @@ namespace GUIServer
         {
             try
             {
-                File.AppendAllText(Globals.log_fullFileName, message + "\r\n");
+                File.AppendAllText(Globals.datelog_path, message + "\r\n");
             }
             catch (Exception ex)
             {
-                ReportToWindow(WrapMessageToLog(LogType.Error, "Не удалось логировать в файл: ", ex));
+                ReportToWindow(WrapMessageToLog(LogType.Error, "Не удалось логировать в файл: " + ex));
             }
         }
 

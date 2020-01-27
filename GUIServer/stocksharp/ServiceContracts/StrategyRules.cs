@@ -46,7 +46,7 @@ namespace stocksharp.ServiceContracts
         };
     }
 
-    public partial class WorkService : Strategy
+    public partial class WorkService
     {
         //
         // Разрешение входа после выхода

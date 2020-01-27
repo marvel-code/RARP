@@ -245,7 +245,7 @@ namespace GUIServer
         }
         private void btn_openLogFile_Click(object sender, EventArgs e)
         {
-            Process.Start("notepad.exe", Globals.log_fullFileName);
+            Process.Start("notepad.exe", Globals.datelog_path);
         }
     }
 }

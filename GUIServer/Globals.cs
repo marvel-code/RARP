@@ -29,6 +29,6 @@ namespace GUIServer
             return Path.Combine(billing_folder, $"Сводка {username}.csv");
         }
         public static string partnersDB_fullFileName => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "clientInfo.db");
-        public static string log_fullFileName => Path.Combine(datereport_folder, "log.log");
+        public static string datelog_path => Path.Combine(datereport_folder, "log.log");
     }
 }
