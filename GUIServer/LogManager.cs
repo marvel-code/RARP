@@ -19,6 +19,8 @@ namespace GUIServer
         {
             if (!File.Exists(Globals.datelog_path))
             {
+                Directory.CreateDirectory(Globals.datereport_folder);
+                Directory.CreateDirectory(Globals.billing_folder);
                 File.Create(Globals.datelog_path).Close();
             }
         }
@@ -343,7 +345,7 @@ namespace GUIServer
             }));
             string logfile_directory_path = Globals.datereport_folder;
             Directory.CreateDirectory(logfile_directory_path);
-            string logfile_path = Path.Combine(logfile_directory_path, $"{filename}.html");
+            string logfile_path = Globals.datereport_dashboard(username);
             File.WriteAllText(logfile_path, render);
         }
 

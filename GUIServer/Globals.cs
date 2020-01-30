@@ -15,7 +15,7 @@ namespace GUIServer
         public static string datereport_folder => Path.Combine(analytics_folder, "Отчёты", CURRENT_DATE_STRING);
         public static string datereport_dashboard(string username)
         {
-            return Path.Combine(datereport_folder, "Сводка {username}.html");
+            return Path.Combine(datereport_folder, $"Сводка {username}.html");
         }
 
         public static string datereport_tradesLog_path(string username)

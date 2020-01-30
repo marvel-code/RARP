@@ -604,8 +604,16 @@ namespace AutoRobot
                 {
                     const int THREAD_SLEEP_MILLIS = 500;
 
+                    DateTime dt = DateTime.Now;
                     while (New_Order.Id == 0 || New_Order.Time.Year != terminalDateTime.Year)
+                    {
                         Thread.Sleep(THREAD_SLEEP_MILLIS);
+                        if (DateTime.Now - dt > TimeSpan.FromSeconds(5))
+                        {
+                            Add_Log_Message("Слишком долго");
+                            break;
+                        }
+                    }
                     var _OrderInfo = new OrderInfo(_Rule_ID, New_Order, _OrderType, _Comment);
                     // Значения индикаторов
                     mw.saveIndicatorsValuesToFile(_OrderInfo);

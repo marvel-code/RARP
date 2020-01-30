@@ -145,6 +145,11 @@ namespace stocksharp.ServiceContracts
         private void updatePositionValues()
         {
             // Velocities
+            if (PositionVelocities == null)
+            {
+                initPositionValues();
+            }
+
             foreach (PositionVelocitiesValues pv in PositionVelocities)
             {
                 pv.Avr.Tv.Max.Update(tf[0].volume.GetAvrTv(pv.PeriodSeconds), Current_Time);

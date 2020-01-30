@@ -109,44 +109,55 @@ namespace stocksharp
 
             return sideCache[dt];
         }
-        private int getNearestTradeIndexLaterDateTime(DateTime dt)
+        private int getNearestTradeIndexLaterDateTime(DateTime DT)
         {
-            dt = GetDateTimeWithoutMillis(dt);
-            for (; dt <= Get_CurrentTime(); dt = dt.AddSeconds(1))
+            if (DT < AllTrades[0].Time)
             {
+                return 0;
+            }
+            for (var dt = GetDateTimeWithoutMillis(DT).AddSeconds(1); dt <= Get_CurrentTime(); dt = dt.AddSeconds(1))
+            {
+                if (dt.Hour < 10)
+                {
+                    dt = dt.Add(-dt.TimeOfDay + TimeSpan.FromHours(10));
+                }
+                while (dt.DayOfWeek == DayOfWeek.Saturday || dt.DayOfWeek == DayOfWeek.Sunday)
+                {
+                    dt = dt.Add(-dt.TimeOfDay + TimeSpan.FromHours(10));
+                    dt = dt.AddDays(1);
+                }
                 if (_proectionDateTime2AllTrades.ContainsKey(dt))
                 {
                     int result = _proectionDateTime2AllTrades[dt];
-                    while (result > 0 && AllTrades[result - 1].Time > dt)
-                    {
+                    while (result > 0 && AllTrades[result - 1].Time > DT)
                         --result;
-                    }
-
                     return result;
                 }
             }
-
             return _lastProcessedProectionTradeIndex;
         }
         private int getNearestTradeIndexEarlierDateTime(DateTime DT)
         {
-            DateTime dt = GetDateTimeWithoutMillis(DT);
-            DateTime minTradeDateTime = AllTrades[0].Time;
-            for (; dt >= minTradeDateTime; dt = dt.AddSeconds(-1))
+            if (DT > AllTrades[AllTrades.Length - 1].Time)
+            {
+                return _lastProcessedProectionTradeIndex;
+            }
+            for (var dt = GetDateTimeWithoutMillis(DT).AddSeconds(-1); dt > AllTrades[0].Time; dt = dt.AddSeconds(-1))
             {
                 if (dt.Hour < 10)
                 {
+                    dt = dt.Add(-dt.TimeOfDay);
+                }
+                while (dt.DayOfWeek == DayOfWeek.Saturday || dt.DayOfWeek == DayOfWeek.Sunday)
+                {
                     dt = dt.Add(-dt.TimeOfDay - TimeSpan.FromSeconds(1));
                 }
-
-                while (dt.DayOfWeek == DayOfWeek.Sunday || dt.DayOfWeek == DayOfWeek.Saturday)
-                {
-                    dt = dt.AddDays(-1);
-                }
-
                 if (_proectionDateTime2AllTrades.ContainsKey(dt))
                 {
-                    return _proectionDateTime2AllTrades[dt];
+                    int result = _proectionDateTime2AllTrades[dt];
+                    while (result + 1 < AllTrades.Length && AllTrades[result + 1].Time < DT)
+                        ++result;
+                    return result;
                 }
             }
             return 0;
