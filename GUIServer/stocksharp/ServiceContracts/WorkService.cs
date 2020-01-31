@@ -293,7 +293,7 @@ namespace stocksharp.ServiceContracts
             string message = string.Format("{0}({1}) по цене {2}", action, ruleId, securityPrice);
             if (action == "SELL" || action == "COVER")
             {
-                message += string.Format(" {0} PNL: {1}", positionPnl == 0 ? ' ' : positionPnl > 0 ? '+' : '-', positionPnl);
+                message = string.Format("exit({1}) {0}", positionPnl, action);
             }
             Log.addLog(GUIServer.LogType.Info, string.Format("{0} :: {1}", _currentUser, message));
 

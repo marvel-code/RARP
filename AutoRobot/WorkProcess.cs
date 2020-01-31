@@ -37,7 +37,7 @@ namespace AutoRobot
         
         /// Settings
         
-        const string USERNAME = "vz#1999";
+        const string USERNAME = "ma#4321";
         const string IP = "185.158.155.246"; // Раскоментировать для клиента
         //const string IP = "127.0.0.1";  // Закомментировать
         const int PORT = 8020;
@@ -256,170 +256,178 @@ namespace AutoRobot
         {
             lock (lockObj_OnProcess)
             {
-                if (getLoadPercent() < 50)
-                    wasEnterFalse = false;
-
-                if (!isServerConnectionEstablished)
-                    return ProcessResults.Continue;
-
-                if (ProcessState == ProcessStates.Stopping)
+                try
                 {
-                    addLogMessage("Стратегия остановлена");
-                    return ProcessResults.Stop;
-                }
+                    if (getLoadPercent() < 50)
+                        wasEnterFalse = false;
 
-                if (!isWork)
-                    return ProcessResults.Continue;
+                    if (!isServerConnectionEstablished)
+                        return ProcessResults.Continue;
 
-                if (!updateCommon())
-                {
-                    return ProcessResults.Continue;
-                }
-
-                // Trading:
-                if (isTrade && getLoadPercent() > 98)
-                {
-                    // Exceptions overflow 
-                    if (TM.Exceptions_Count >= TM.tradeСfg.Max_Exceptions_Count)
+                    if (ProcessState == ProcessStates.Stopping)
                     {
-                        TM.resetExceptionsCount();
-                        mw.stopTrading();
+                        addLogMessage("Стратегия остановлена");
+                        return ProcessResults.Stop;
+                    }
+
+                    if (!isWork)
+                        return ProcessResults.Continue;
+
+                    if (!updateCommon())
+                    {
                         return ProcessResults.Continue;
                     }
 
-                    if
-                    (
-                        TM.tradeСfg.is_Test
-                        ||
-                        // Enter, if QUIK processes orders without errors
-                        (TM.last_EnterOrder == null || TM.last_EnterOrder.State != OrderStates.Failed)
-                        &&
-                        (TM.last_ExitOrder == null || TM.last_ExitOrder.State != OrderStates.Failed)
-                        &&
-                        (TM.last_StopOrder == null || TM.last_StopOrder.State != OrderStates.Failed)
-                    )
+                    // Trading:
+                    if (isTrade && getLoadPercent() > 98)
                     {
-                        if (!wasEnterFalse && (needAction != NeedAction.LongOrShortOpen || !tradeData.LongOpen && !tradeData.ShortOpen))
+                        // Exceptions overflow 
+                        if (TM.Exceptions_Count >= TM.tradeСfg.Max_Exceptions_Count)
                         {
-                            wasEnterFalse = true;
+                            TM.resetExceptionsCount();
+                            mw.stopTrading();
+                            return ProcessResults.Continue;
                         }
 
-                        if (!TM.is_Position && wasEnterFalse)
+                        if
+                        (
+                            TM.tradeСfg.is_Test
+                            ||
+                            // Enter, if QUIK processes orders without errors
+                            (TM.last_EnterOrder == null || TM.last_EnterOrder.State != OrderStates.Failed)
+                            &&
+                            (TM.last_ExitOrder == null || TM.last_ExitOrder.State != OrderStates.Failed)
+                            &&
+                            (TM.last_StopOrder == null || TM.last_StopOrder.State != OrderStates.Failed)
+                        )
                         {
-                            // Check for loop existence 
-                            if (tradeData.LongOpen && tradeData.LongClose || tradeData.ShortOpen && tradeData.ShortClose)
+                            if (!wasEnterFalse && (needAction != NeedAction.LongOrShortOpen || !tradeData.LongOpen && !tradeData.ShortOpen))
                             {
-                                string message = string.Format("Замечено OPEN & CLOSE. Выход из торговли. (LO-LC SO-SC):({0}-{1} {2}-{3})", tradeData.LongOpen, tradeData.LongClose, tradeData.ShortOpen, tradeData.ShortClose);
-                                addLogMessage(message);
-                                _proxy.LogMessage(message);
-                                mw.stopTrading();
-
-                                _proxy.LogMessage(message);
-                                return ProcessResults.Continue;
+                                wasEnterFalse = true;
                             }
 
-                            // Long
-                            if (tradeData.LongOpen && (TM.last_EnterOrder == null || TM.last_EnterOrder.State == OrderStates.Done))
+                            if (!TM.is_Position && wasEnterFalse)
                             {
-                                // Order
-                                TM.Register.Order(
-                                    tradeData.RuleId,
-                                    TM.tradeСfg.Order_Volume,
-                                    OrderDirections.Buy,
-                                    OrderType.Enter
-                                );
-                                // Stop order
-                                TM.Register.StopOrder(
-                                    TM.tradeСfg.Order_Volume,
-                                    OrderDirections.Sell,
-                                    QuikStopConditionTypes.TakeProfitStopLimit
-                                );
-
-                                _proxy.LogTrade("LONG", TM.tradeСfg.Order_Volume, TM.Day_PNL, tradeData.RuleId, Security.LastTrade.Price, TM.tradeСfg.Order_Shift);
-                                return ProcessResults.Continue;
-                            }
-
-                            // Short
-                            if (tradeData.ShortOpen && (TM.last_EnterOrder == null || TM.last_EnterOrder.State == OrderStates.Done))
-                            {
-                                // Order
-                                TM.Register.Order(
-                                    tradeData.RuleId,
-                                    TM.tradeСfg.Order_Volume,
-                                    OrderDirections.Sell,
-                                    OrderType.Enter
-                                );
-                                // Stop order
-                                TM.Register.StopOrder(
-                                    TM.tradeСfg.Order_Volume,
-                                    OrderDirections.Buy,
-                                    QuikStopConditionTypes.TakeProfitStopLimit
-                                );
-
-                                _proxy.LogTrade("SHORT", TM.tradeСfg.Order_Volume, TM.Day_PNL, tradeData.RuleId, Security.LastTrade.Price, TM.tradeСfg.Order_Shift);
-                                return ProcessResults.Continue;
-                            }
-                        }
-                        else if (TM.is_Position)
-                        {
-                            if (TM.is_Exit_From_Stop_Order())
-                            {
-                                _proxy.LogMessage(string.Format("Закрытие позиции по стопу {0}", Security.LastTrade.Price));
-                                return ProcessResults.Continue;
-                            }
-
-                            if (TM.last_EnterOrder.Direction == OrderDirections.Buy)
-                            {
-                                // SELL
-                                if (tradeData.LongClose && (TM.last_ExitOrder == null || TM.last_ExitOrder.State == OrderStates.Done))
+                                // Check for loop existence 
+                                if (tradeData.LongOpen && tradeData.LongClose || tradeData.ShortOpen && tradeData.ShortClose)
                                 {
-                                    _proxy.LogTrade("SELL", TM.tradeСfg.Order_Volume, TM.Day_PNL, tradeData.RuleId, Security.LastTrade.Price, TM.tradeСfg.Order_Shift, TM.Position_PNL, TM.Min_Position_PNL, TM.Max_Position_PNL);
+                                    string message = string.Format("Замечено OPEN & CLOSE. Выход из торговли. (LO-LC SO-SC):({0}-{1} {2}-{3})", tradeData.LongOpen, tradeData.LongClose, tradeData.ShortOpen, tradeData.ShortClose);
+                                    addLogMessage(message);
+                                    _proxy.LogMessage(message);
+                                    mw.stopTrading();
 
-                                    // Exit order
-                                    TM.Register.ExitOrder(
-                                        tradeData.RuleId
+                                    _proxy.LogMessage(message);
+                                    return ProcessResults.Continue;
+                                }
+
+                                // Long
+                                if (tradeData.LongOpen && (TM.last_EnterOrder == null || TM.last_EnterOrder.State == OrderStates.Done))
+                                {
+                                    // Order
+                                    TM.Register.Order(
+                                        tradeData.RuleId,
+                                        TM.tradeСfg.Order_Volume,
+                                        OrderDirections.Buy,
+                                        OrderType.Enter
                                     );
+                                    // Stop order
+                                    TM.Register.StopOrder(
+                                        TM.tradeСfg.Order_Volume,
+                                        OrderDirections.Sell,
+                                        QuikStopConditionTypes.TakeProfitStopLimit
+                                    );
+
+                                    _proxy.LogTrade("LONG", TM.tradeСfg.Order_Volume, TM.Day_PNL, tradeData.RuleId, Security.LastTrade.Price, TM.tradeСfg.Order_Shift);
+                                    return ProcessResults.Continue;
+                                }
+
+                                // Short
+                                if (tradeData.ShortOpen && (TM.last_EnterOrder == null || TM.last_EnterOrder.State == OrderStates.Done))
+                                {
+                                    // Order
+                                    TM.Register.Order(
+                                        tradeData.RuleId,
+                                        TM.tradeСfg.Order_Volume,
+                                        OrderDirections.Sell,
+                                        OrderType.Enter
+                                    );
+                                    // Stop order
+                                    TM.Register.StopOrder(
+                                        TM.tradeСfg.Order_Volume,
+                                        OrderDirections.Buy,
+                                        QuikStopConditionTypes.TakeProfitStopLimit
+                                    );
+
+                                    _proxy.LogTrade("SHORT", TM.tradeСfg.Order_Volume, TM.Day_PNL, tradeData.RuleId, Security.LastTrade.Price, TM.tradeСfg.Order_Shift);
                                     return ProcessResults.Continue;
                                 }
                             }
-                            else
+                            else if (TM.is_Position)
                             {
-                                // COVER
-                                if (tradeData.ShortClose && (TM.last_ExitOrder == null || TM.last_ExitOrder.State == OrderStates.Done))
+                                if (TM.is_Exit_From_Stop_Order())
                                 {
-                                    _proxy.LogTrade("COVER", TM.tradeСfg.Order_Volume, TM.Day_PNL, tradeData.RuleId, Security.LastTrade.Price, TM.tradeСfg.Order_Shift, TM.Position_PNL, TM.Min_Position_PNL, TM.Max_Position_PNL);
-
-                                    // Exit order
-                                    TM.Register.ExitOrder(
-                                        tradeData.RuleId
-                                    );
+                                    _proxy.LogMessage(string.Format("Закрытие позиции по стопу {0}", Security.LastTrade.Price));
                                     return ProcessResults.Continue;
+                                }
+
+                                if (TM.last_EnterOrder.Direction == OrderDirections.Buy)
+                                {
+                                    // SELL
+                                    if (tradeData.LongClose && (TM.last_ExitOrder == null || TM.last_ExitOrder.State == OrderStates.Done))
+                                    {
+                                        _proxy.LogTrade("S", TM.tradeСfg.Order_Volume, TM.Day_PNL, tradeData.RuleId, Security.LastTrade.Price, TM.tradeСfg.Order_Shift, TM.Position_PNL, TM.Min_Position_PNL, TM.Max_Position_PNL);
+
+                                        // Exit order
+                                        TM.Register.ExitOrder(
+                                            tradeData.RuleId
+                                        );
+                                        return ProcessResults.Continue;
+                                    }
+                                }
+                                else
+                                {
+                                    // COVER
+                                    if (tradeData.ShortClose && (TM.last_ExitOrder == null || TM.last_ExitOrder.State == OrderStates.Done))
+                                    {
+                                        _proxy.LogTrade("C", TM.tradeСfg.Order_Volume, TM.Day_PNL, tradeData.RuleId, Security.LastTrade.Price, TM.tradeСfg.Order_Shift, TM.Position_PNL, TM.Min_Position_PNL, TM.Max_Position_PNL);
+
+                                        // Exit order
+                                        TM.Register.ExitOrder(
+                                            tradeData.RuleId
+                                        );
+                                        return ProcessResults.Continue;
+                                    }
                                 }
                             }
                         }
+                        else
+                        {
+                            // Reregistering failed orders
+                            if (TM.last_EnterOrder != null && TM.last_EnterOrder.State == OrderStates.Failed)
+                            {
+                                TM.Register.FailedOrder(TM.last_EnterOrder, OrderType.Enter);
+                                Thread.Sleep(DELAY_AFTER_EXCEPTION);
+                            }
+                            if (TM.last_ExitOrder != null && TM.last_ExitOrder.State == OrderStates.Failed)
+                            {
+                                TM.Register.FailedOrder(TM.last_ExitOrder, OrderType.Exit);
+                                Thread.Sleep(DELAY_AFTER_EXCEPTION);
+                            }
+                            if (TM.last_StopOrder != null && TM.last_StopOrder.State == OrderStates.Failed)
+                            {
+                                TM.Register.FailedOrder(TM.last_StopOrder, OrderType.Stop);
+                                Thread.Sleep(DELAY_AFTER_EXCEPTION);
+                            }
+                        }
                     }
-                    else
-                    {
-                        // Reregistering failed orders
-                        if (TM.last_EnterOrder != null && TM.last_EnterOrder.State == OrderStates.Failed)
-                        {
-                            TM.Register.FailedOrder(TM.last_EnterOrder, OrderType.Enter);
-                            Thread.Sleep(DELAY_AFTER_EXCEPTION);
-                        }
-                        if (TM.last_ExitOrder != null && TM.last_ExitOrder.State == OrderStates.Failed)
-                        {
-                            TM.Register.FailedOrder(TM.last_ExitOrder, OrderType.Exit);
-                            Thread.Sleep(DELAY_AFTER_EXCEPTION);
-                        }
-                        if (TM.last_StopOrder != null && TM.last_StopOrder.State == OrderStates.Failed)
-                        {
-                            TM.Register.FailedOrder(TM.last_StopOrder, OrderType.Stop);
-                            Thread.Sleep(DELAY_AFTER_EXCEPTION);
-                        }
-                    }
+
+                    return ProcessResults.Continue;
                 }
-
-                return ProcessResults.Continue;
+                catch (Exception ex)
+                {
+                    addLogMessage("Ошибка! " + ex);
+                    return ProcessResults.Continue;
+                }
             }
         }
 
