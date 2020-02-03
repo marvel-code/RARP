@@ -568,13 +568,24 @@ namespace AutoRobot
 
 
         /// Server synchronization
-        
 
+
+        decimal last_progress_value = 0;
         private decimal getLoadPercent(decimal eps = 0)
         {
-            decimal progressValue = (decimal)(transmittedTradesCount + eps) / TM.MySecurity.Trader.Trades.Count();
-            progressValue = Math.Ceiling(progressValue * 100);
-            progressValue = progressValue > 100 ? 100 : progressValue;
+            decimal progressValue;
+            try
+            {
+                progressValue = (decimal)(transmittedTradesCount + eps) / TM.MySecurity.Trader.Trades.Count();
+                progressValue = Math.Ceiling(progressValue * 100);
+                progressValue = progressValue > 100 ? 100 : progressValue;
+                last_progress_value = progressValue;
+            }
+            catch (Exception ex)
+            {
+                progressValue = last_progress_value;
+                addLogMessage("~");
+            }
 
             return progressValue;
         }
@@ -667,10 +678,18 @@ namespace AutoRobot
 
         private Trade[] getNewTrades()
         {
-            var AllTrades = TM.MySecurity.Trader.Trades.ToArray();
-            int nonTransmittedTradesCount = AllTrades.Length - transmittedTradesCount;
-            List<Trade> result = AllTrades.Range(transmittedTradesCount, nonTransmittedTradesCount > maxTransmitTradesCount ? maxTransmitTradesCount : nonTransmittedTradesCount).ToList();
-            transmittedTradesCount += result.Count;
+            List<Trade> result = new List<Trade>();
+            try
+            {
+                var AllTrades = TM.MySecurity.Trader.Trades.ToArray();
+                int nonTransmittedTradesCount = AllTrades.Length - transmittedTradesCount;
+                result = AllTrades.Range(transmittedTradesCount, nonTransmittedTradesCount > maxTransmitTradesCount ? maxTransmitTradesCount : nonTransmittedTradesCount).ToList();
+                transmittedTradesCount += result.Count;
+            }
+            catch (Exception ex)
+            {
+                addLogMessage("~~");
+            }
 
             return result.ToArray();
         }

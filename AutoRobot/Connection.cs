@@ -599,7 +599,6 @@ namespace AutoRobot
             {
                 //MessageBox.Show("Ошибка добавления сообщения \"" + _Message + "\" в лог:\n\n" + ex.Message);
             }
-            saveLog(true);
         }
         public void addLogSpoiler(String _Spoiler_Header_Message, String _Spoiler_Content_Message)
         {

@@ -134,13 +134,13 @@ namespace stocksharp
                     return result;
                 }
             }
-            return _lastProcessedProectionTradeIndex;
+            return AllTrades.Length - 1;
         }
         private int getNearestTradeIndexEarlierDateTime(DateTime DT)
         {
             if (DT > AllTrades[AllTrades.Length - 1].Time)
             {
-                return _lastProcessedProectionTradeIndex;
+                return AllTrades.Length - 1;
             }
             for (var dt = GetDateTimeWithoutMillis(DT).AddSeconds(-1); dt > AllTrades[0].Time; dt = dt.AddSeconds(-1))
             {
@@ -193,7 +193,7 @@ namespace stocksharp
             int allTradesCount = IAllTrades.Count();
             if (_lastProcessedProectionTradeIndex == -1)
             {
-                _lastProcessedProectionTradeIndex = allTradesCount;
+                _lastProcessedProectionTradeIndex = allTradesCount - 1;
                 var pq = IAllTrades.AsParallel().Select((t, i) => new { Index = i, Trade = t });
                 object locker_proection = new object();
                 object locker_buySumsCaches = new object();
