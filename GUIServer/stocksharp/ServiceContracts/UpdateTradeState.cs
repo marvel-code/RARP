@@ -75,7 +75,7 @@ namespace stocksharp.ServiceContracts
                 }
             }
         }
-        private void updateTradeStateSellCover(ref TradeState tradeState, NeedAction needAction)
+        private void updateTradeStateSellCover(ref TradeState tradeState, NeedAction needAction, ref int sellRuleId, ref int coverRuleId)
         {
             int ruleId;
 
@@ -91,6 +91,7 @@ namespace stocksharp.ServiceContracts
                     {
                         tradeState.RuleId = ruleId;
                     }
+                    sellRuleId = ruleId;
                 }
             }
 
@@ -106,6 +107,7 @@ namespace stocksharp.ServiceContracts
                     {
                         tradeState.RuleId = ruleId;
                     }
+                    coverRuleId = ruleId;
                 }
             }
         }
@@ -153,13 +155,14 @@ namespace stocksharp.ServiceContracts
 
                 updatePostOpenRulesBlock();
             }
+            int sellRuleId = 0, coverRuleId = 0;
             {
                 if (needAction != NeedAction.LongOrShortOpen)
                 {
                     updatePreExitRulesBlock();
                 }
 
-                updateTradeStateSellCover(ref tradeState, needAction);
+                updateTradeStateSellCover(ref tradeState, needAction, ref sellRuleId, ref coverRuleId);
 
                 if (needAction != NeedAction.LongOrShortOpen)
                 {
@@ -185,7 +188,27 @@ namespace stocksharp.ServiceContracts
                 updatePostPositionBlock();
             }
 
+            // Проверка на зацикленность
+            if (needAction == NeedAction.LongOrShortOpen)
+            {
+                if (tradeState.LongOpen && tradeState.LongClose)
+                {
+                    LogMessage($"Зацикленность Long ({tradeState.RuleId}, {sellRuleId})");
+                    setStopTradingCommand(ref tradeState);
+                }
+                else if (tradeState.ShortOpen && tradeState.ShortClose)
+                {
+                    LogMessage($"Зацикленность Short ({tradeState.RuleId}, {coverRuleId})");
+                    setStopTradingCommand(ref tradeState);
+                }
+            }
+
             return tradeState;
+        }
+
+        void setStopTradingCommand(ref TradeState tradeState)
+        {
+            tradeState.Command = "stopTrading";
         }
     }
 }

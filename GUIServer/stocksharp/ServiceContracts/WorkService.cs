@@ -439,6 +439,19 @@ namespace stocksharp.ServiceContracts
             }
             // Others
             {
+                htmlLog += $"TerminalTime = {TM.TerminalTime}";
+                htmlLog += "<br>";
+                var AllTrades = tf[0].volume.AllTrades;
+                htmlLog += $"AllTradesLength = {AllTrades.Length}";
+                htmlLog += "<br>";
+                for (int i = 0; i < 5; ++i)
+                {
+                    var Trade = AllTrades[AllTrades.Length - 1 - i];
+                    htmlLog += $"{Trade.Time} - {Trade.Id}";
+                    htmlLog += "<br>";
+                }
+                htmlLog += "<br>";
+                // tacts volumes
                 List<TimeFrame> TF = _currentData.timeFrameList;
                 htmlLog += "<table>";
                 htmlLog += "<tr><td>" + "Индикатор" + "</td><td>" + "shift = 1" + "</td><td>" + "shift = 0" + "</td></tr>";

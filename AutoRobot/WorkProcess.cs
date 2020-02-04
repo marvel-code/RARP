@@ -278,6 +278,13 @@ namespace AutoRobot
                         return ProcessResults.Continue;
                     }
 
+                    switch (tradeData.Command)
+                    {
+                        case "stopTrading":
+                            mw.stopTrading();
+                            break;
+                    }
+
                     // Trading:
                     if (isTrade && getLoadPercent() > 98)
                     {
@@ -313,9 +320,7 @@ namespace AutoRobot
                                 {
                                     string message = string.Format("Замечено OPEN & CLOSE. Выход из торговли. (LO-LC SO-SC):({0}-{1} {2}-{3})", tradeData.LongOpen, tradeData.LongClose, tradeData.ShortOpen, tradeData.ShortClose);
                                     addLogMessage(message);
-                                    _proxy.LogMessage(message);
                                     mw.stopTrading();
-
                                     _proxy.LogMessage(message);
                                     return ProcessResults.Continue;
                                 }

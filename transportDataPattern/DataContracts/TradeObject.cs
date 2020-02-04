@@ -22,6 +22,8 @@ namespace transportDataParrern
         public bool ShortClose { get; set; }
         [DataMember]
         public AdditionalDataStruct AdditionalData { get; set; }
+        [DataMember]
+        public string Command { get; set; }
     }
     
     public struct AdditionalDataStruct
