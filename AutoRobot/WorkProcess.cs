@@ -589,7 +589,6 @@ namespace AutoRobot
             catch (Exception ex)
             {
                 progressValue = last_progress_value;
-                addLogMessage("~");
             }
 
             return progressValue;
@@ -693,7 +692,6 @@ namespace AutoRobot
             }
             catch (Exception ex)
             {
-                addLogMessage("~~");
             }
 
             return result.ToArray();
