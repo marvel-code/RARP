@@ -67,6 +67,7 @@ namespace stocksharp.ServiceContracts
         private bool LongCommonRule =>
 
 
+<<<<<<< Updated upstream
                     /*
                     PositionPrices.ExpReal[0].Max.Value - в позиции   
 
@@ -107,6 +108,9 @@ namespace stocksharp.ServiceContracts
                     tf[0].volume.vector > new decimal(200.0)
 
                     //  true
+=======
+                    true
+>>>>>>> Stashed changes
 
                     //-//
                     && true;
@@ -118,6 +122,7 @@ namespace stocksharp.ServiceContracts
 
                     new List<bool>
                     {
+<<<<<<< Updated upstream
 
                     tf[0].volume.GetExpTv(1800, 50, 0) > tf[0].volume.GetExpTv(1800, 50, 24)   //..1
                     &&
@@ -203,9 +208,10 @@ namespace stocksharp.ServiceContracts
                     &&
                     tf[0].volume.GetTactRealPrice(0) > tf[0].volume.GetTactRealPriceTactsMax(24, 1)
 
+=======
+                        tf[0].adx[0].dip > tf[0].adx[0].dim,
+>>>>>>> Stashed changes
                     },
-
-        //-//
                 };
 
 
@@ -218,6 +224,7 @@ namespace stocksharp.ServiceContracts
                     //-// SHORT общее условие................................................................................
 
 
+<<<<<<< Updated upstream
                     tf[0].GetCandleLow(0) < tf[0].GetCandleLow(1)
 
                     &&
@@ -237,6 +244,10 @@ namespace stocksharp.ServiceContracts
                     tf[0].volume.vector < -new decimal(200.0)
 
             //           true
+=======
+
+            true
+>>>>>>> Stashed changes
 
             //-//
             && true;
@@ -248,6 +259,7 @@ namespace stocksharp.ServiceContracts
 
                     new List<bool>
                     {
+<<<<<<< Updated upstream
 
 
                     tf[0].volume.GetExpTv(1800, 50, 0) > tf[0].volume.GetExpTv(1800, 50, 24)   //..1
@@ -336,6 +348,11 @@ namespace stocksharp.ServiceContracts
 
                     },
 
+=======
+                        tf[0].adx[0].dip < tf[0].adx[0].dim,
+
+                    },
+>>>>>>> Stashed changes
             //-//
         };
 
@@ -356,12 +373,15 @@ namespace stocksharp.ServiceContracts
                   //-// Разрешение на LONG.............................................
 
                   !tf[1].IsExitCandle(0)
+<<<<<<< Updated upstream
                   &&
                   Current_Day_PNL < new decimal(5000)    //  Current_Day_PNL < new decimal(400,500,600,700)
                   &&
                   Current_Time.TimeOfDay > new TimeSpan(10, 10, 0)
                   &&
                   Current_Time.TimeOfDay < new TimeSpan(18, 44, 0)
+=======
+>>>>>>> Stashed changes
             // true
 
             //-//
@@ -372,12 +392,15 @@ namespace stocksharp.ServiceContracts
                   //-// Разрешение на SHORT...........................................
 
                   !tf[1].IsExitCandle(0)
+<<<<<<< Updated upstream
                   &&
                   Current_Day_PNL < new decimal(5000)  //  Current_Day_PNL < new decimal(500)
                   &&
                   Current_Time.TimeOfDay > new TimeSpan(10, 10, 0)
                   &&
                   Current_Time.TimeOfDay < new TimeSpan(18, 44, 0)
+=======
+>>>>>>> Stashed changes
 
             // true
 
@@ -391,9 +414,14 @@ namespace stocksharp.ServiceContracts
 
         private bool SellCommonRule =>
 
+<<<<<<< Updated upstream
                      //-// SELL общее условие.........................................
 
                      true
+=======
+                    //-// SELL общее условие.........................................
+                    true
+>>>>>>> Stashed changes
             //-//
             && true;
 
@@ -402,6 +430,7 @@ namespace stocksharp.ServiceContracts
         {
 
 //-// SELL дополнительные условия..............................
+<<<<<<< Updated upstream
 
                    
                     tf[0].IsRedCandle(0)                                                                 //..1
@@ -514,6 +543,10 @@ namespace stocksharp.ServiceContracts
 */
     //                ,
    //                 Position_PNL <= Position_PNL_MAX  - new decimal(300)                                           //..9
+=======
+                        tf[0].adx[0].dip < tf[0].adx[0].dim,
+
+>>>>>>> Stashed changes
         };
 
 
@@ -525,7 +558,11 @@ namespace stocksharp.ServiceContracts
 
                       //-// COVER общее условие......................................
 
+<<<<<<< Updated upstream
                       true
+=======
+            true
+>>>>>>> Stashed changes
 
             //-//
             && true;
@@ -536,6 +573,7 @@ namespace stocksharp.ServiceContracts
 
 //-// COVER дополнительные условия..............................
 
+<<<<<<< Updated upstream
 
                     tf[0].IsGreenCandle(0)                                                             //..1                           
 
@@ -634,6 +672,10 @@ namespace stocksharp.ServiceContracts
                     &&
                     tf[0].volume.GetAvrVv(180, 0) > tf[0].volume.GetExpVv(180, 8, 0)
             
+=======
+                        tf[0].adx[0].dip > tf[0].adx[0].dim,
+
+>>>>>>> Stashed changes
             //-//
         };
     }
