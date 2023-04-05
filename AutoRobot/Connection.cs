@@ -249,6 +249,7 @@ namespace AutoRobot
                     TM.Register.ExitOrder(0, "(стоп робота)");
             }
             // Стратегия
+            stopTrading();
             workProcess.Stop();
             // Интерфейс покоя
             grid_connection.IsEnabled = true;
@@ -260,7 +261,7 @@ namespace AutoRobot
             btn_stop_robot.IsEnabled = false;
         }
         // Save log
-        private void saveLog()
+        private void saveLog(bool from_log = false)
         {
             try
             {
@@ -307,7 +308,10 @@ namespace AutoRobot
                     //if (is_NewFile) hdl_write.WriteLine("</pre></body></html>");
                     hdl_write.Close();
                 }
-                addLogMessage("Лог сохранён");
+                if (!from_log)
+                {
+                    addLogMessage("Лог сохранён");
+                }
             }
             catch (Exception ex)
             {
@@ -334,6 +338,12 @@ namespace AutoRobot
         // Stop trading
         public void stopTrading()
         {
+            TM.Cancel.AllOrders("Стоп торговли");
+            if (TM.is_Position)
+            {
+                TM.Register.ExitOrder(0, "Стоп торговли");
+            }
+
             btn_start_strategy.Dispatcher.Invoke(new Action(() => btn_start_strategy.IsEnabled = true));
             btn_stop_strategy.Dispatcher.Invoke(new Action(() => btn_stop_strategy.IsEnabled = false));
             btn_exit_from_position.Dispatcher.Invoke(new Action(() => btn_exit_from_position.IsEnabled = true));
@@ -342,7 +352,12 @@ namespace AutoRobot
 
 
             workProcess.isTrade = false;
-            TM.Register.ExitOrder(999, "Stop trading exit");
+
+            TM.Cancel.AllOrders("Стоп торговли");
+            if (TM.is_Position)
+            {
+                TM.Register.ExitOrder(0, "Стоп торговли");
+            }
 
             updateRobotStatus();
 

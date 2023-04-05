@@ -48,19 +48,19 @@ namespace AutoRobot
             Orders_Exit = new List<Order>();
             Orders_Stop = new List<Order>();
             Orders_Failed = new List<Order>();
-            if (!tradeСfg.is_New_Session)
+            //if (!tradeСfg.is_New_Session)
             {
-                Orders_Enter.Add(MyDayOrders.LastOrDefault(or => or.Comment == string.Format("{0} {1}", Robot_Trade_Name, OrderType.Enter)));
-                if (Orders_Enter[0] == null)
-                    Orders_Enter = new List<Order>();
+                var orders2add = MyDayOrders.Where(or => or.Comment.Contains(string.Format("{0} {1}", Robot_Trade_Name, OrderType.Enter)));
+                if (orders2add.Count() != 0)
+                    Orders_Enter.AddRange(orders2add);
 
-                Orders_Exit.Add(MyDayOrders.LastOrDefault(or => or.Comment == string.Format("{0} {1}", Robot_Trade_Name, OrderType.Exit) || or.Comment == string.Format("{0} {1}", Robot_Trade_Name, OrderType.Stop) && or.StopCondition == null));
-                if (Orders_Exit[0] == null || last_ExitOrder.Time < last_EnterOrder.Time)
-                    Orders_Exit = new List<Order>();
+                orders2add = MyDayOrders.Where(or => or.Comment.Contains(string.Format("{0} {1}", Robot_Trade_Name, OrderType.Exit)) || or.Comment.Contains(string.Format("{0} {1}", Robot_Trade_Name, OrderType.Stop)) && or.StopCondition == null);
+                if (orders2add.Count() != 0)
+                    Orders_Exit.AddRange(orders2add);
 
-                Orders_Stop.Add(MyDayOrders.LastOrDefault(or => or.Comment == string.Format("{0} {1}", Robot_Trade_Name, OrderType.Stop) && or.StopCondition != null));
-                if (Orders_Stop[0] == null)
-                    Orders_Stop = new List<Order>();
+                orders2add = MyDayOrders.Where(or => or.Comment.Contains(string.Format("{0} {1}", Robot_Trade_Name, OrderType.Stop)) && or.StopCondition != null);
+                if (orders2add.Count() != 0)
+                    Orders_Stop.AddRange(orders2add);
             }
         }
         public static void loadTestTrades(List<MyTrade> _Test_Trades)
@@ -68,6 +68,7 @@ namespace AutoRobot
             testTrades = _Test_Trades;
         }
         public static void updateValues() { }
+        public static void zeroExceptionsCount() { Exceptions_Count = 0; }
 
         // Connection
         public static Security MySecurity { get; private set; }
@@ -132,7 +133,8 @@ namespace AutoRobot
                 Decimal Result = 0;
                 Decimal Trade_Position = 0;
                 // Массивы
-                var _MyOrders_Array = MyDayOrders.Where(or => or.Time.Day == terminalDateTime.Day); // Мои заявки текущей стратегии
+                //var _MyOrders_Array = MyDayOrders.Where(or => or.Time.Day == terminalDateTime.Day); // Мои заявки текущей стратегии
+                var _MyOrders_Array = Orders_Enter.Concat(Orders_Exit); // Мои заявки текущей стратегии
                 // Перебираем заявки
                 foreach (var or in _MyOrders_Array)
                 {
@@ -155,9 +157,13 @@ namespace AutoRobot
                     Result += Current_Price;
                 // Если PNL ненормальный какой-то
                 if (Result.Abs() > 10000)
+                {
                     Add_Log_Message("Зафиксирован невалидный PNL: " + Result);
+                    Add_Log_Message("Position: " + Trade_Position);
+                    Add_Log_Message("");
+                }
 
-                return Result;
+                return Result.Round();
             }
         }
         public static Decimal Session_PNL
@@ -168,7 +174,7 @@ namespace AutoRobot
                 Decimal Result = 0;
                 Decimal Trade_Position = 0;
                 // Массивы
-                var _MyOrders_Array = Orders_Enter.Concat(Orders_Exit).ToList(); // Мои заявки текущей стратегии
+                var _MyOrders_Array = Orders_Enter.Concat(Orders_Exit); // Мои заявки текущей стратегии
                 // Перебираем заявки
                 foreach (var or in _MyOrders_Array)
                 {
@@ -193,7 +199,7 @@ namespace AutoRobot
                 if (Result.Abs() > 10000)
                     Add_Log_Message("Зафиксирован невалидный PNL: " + Result);
 
-                return Result;
+                return Result.Round();
             }
         }
         public static Decimal _Position_PNL { get; private set; }
@@ -244,7 +250,7 @@ namespace AutoRobot
                 }
 
                 _Position_PNL = Result;
-                return Result;
+                return Result.Round();
             }
         }
         public static Decimal _Max_Position_PNL { get; private set; }
@@ -278,26 +284,48 @@ namespace AutoRobot
         {
             public static Order FailedOrder(Order _FailedOrder, OrderType _OrderType)
             {
-                Order New_Order;
-                // Снова регистрируем заявку на бирже
-                if (_OrderType != OrderType.Stop)
-                    New_Order = Order(0, _FailedOrder.Balance, _FailedOrder.Direction, _OrderType, "[REREG]");
-                else
-                    New_Order = StopOrder(_FailedOrder.Volume, _FailedOrder.Direction, (QuikStopConditionTypes)_FailedOrder.StopCondition.Parameters["Type"], "Стоп-заявка [REREG]");
                 // Переносим неудачную заявку в массив неудачников
                 List<Order> Orders_Array = null;
                 if (_OrderType == OrderType.Enter)
+                {
                     Orders_Array = Orders_Enter;
+                }
                 else if (_OrderType == OrderType.Exit)
+                {
                     Orders_Array = Orders_Exit;
+                }
                 else if (_OrderType == OrderType.Stop)
+                {
                     Orders_Array = Orders_Stop;
+                }
+                Orders_Failed.Add(_FailedOrder);
+                ++Exceptions_Count;
 
-                Orders_Failed.Add(Orders_Array[Orders_Array.Count - 1]);
-                Orders_Array[Orders_Array.Count - 1] = New_Order;
-                Exceptions_Count++;
-
-                return New_Order;
+                if (Exceptions_Count < Max_Exceptions_Count)
+                {
+                    // Снова регистрируем заявку на бирже
+                    Order New_Order;
+                    if (_OrderType != OrderType.Stop)
+                    {
+                        New_Order = Order(0, _FailedOrder.Balance, _FailedOrder.Direction, _OrderType, "[REREG]");
+                    }
+                    else
+                    {
+                        New_Order = StopOrder(_FailedOrder.Volume, _FailedOrder.Direction, (QuikStopConditionTypes)_FailedOrder.StopCondition.Parameters["Type"], "Стоп-заявка [REREG]");
+                    }
+                    Orders_Array[Orders_Array.Count - 1] = New_Order;
+                    return New_Order;
+                }
+                else
+                {
+                    // Не ререгаем заявку
+                    if (Exceptions_Count == Max_Exceptions_Count)
+                    {
+                        Add_Log_Message("Количество исключений достигло максимума");
+                    }
+                    Orders_Array.Remove(_FailedOrder);
+                    return null;
+                }
             }
 
             public static Order Order(Decimal _Rule_ID, Decimal _Order_Volume, OrderDirections _Order_Direction, OrderType _OrderType, String _Comment = "")
@@ -313,7 +341,7 @@ namespace AutoRobot
                     Direction = _Order_Direction,
                     Volume = _Order_Volume,
 
-                    Comment = string.Format("{0} {1}", Robot_Trade_Name, _OrderType)
+                    Comment = string.Format("{0} {1} {2}#{3}", Robot_Trade_Name, _OrderType, _OrderType == OrderType.Enter ? Orders_Enter.Count : Orders_Exit.Count, _Rule_ID)
                 };
                 // Регистрируем тип заявки
                 if (_OrderType == OrderType.Enter)
@@ -324,7 +352,7 @@ namespace AutoRobot
                 else
                 {
                     Orders_Exit.Add(New_Order);
-                    _Comment += " — " + _Position_PNL + "pnl";
+                    _Comment += ": " + _Position_PNL + "pnl";
                 }
                 // Регистрируем заявку на бирже
                 RegisterOrder(New_Order);
@@ -416,7 +444,7 @@ namespace AutoRobot
                 }
             }
 
-            public static void Orders(String _Comment = "", Boolean _NoticeIfNoActive = false)
+            public static void AllOrders(String _Comment = "", Boolean _NoticeIfNoActive = false)
             {
                 int CanceledOrders_Count = 0;
                 List<long> CanceledOrders_Array = new List<long>();
@@ -574,8 +602,18 @@ namespace AutoRobot
             ot.GuiSync(() =>
                 ot.Dispatcher.Invoke(new Action(() =>
                 {
+                    const int THREAD_SLEEP_MILLIS = 500;
+
+                    DateTime dt = DateTime.Now;
                     while (New_Order.Id == 0 || New_Order.Time.Year != terminalDateTime.Year)
-                        continue;
+                    {
+                        Thread.Sleep(THREAD_SLEEP_MILLIS);
+                        if (DateTime.Now - dt > TimeSpan.FromSeconds(5))
+                        {
+                            Add_Log_Message("Слишком долго");
+                            break;
+                        }
+                    }
                     var _OrderInfo = new OrderInfo(_Rule_ID, New_Order, _OrderType, _Comment);
                     // Значения индикаторов
                     mw.saveIndicatorsValuesToFile(_OrderInfo);

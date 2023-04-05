@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -23,10 +24,11 @@ namespace AutoRobot
 
         public MainWindow()
         {
+
             InitializeComponent();
             Instance = this;
             addLogMessage(string.Format("Вас приветствует {0}. Удачной торговли!", MyGlobals.Robot_Name));
-            
+
             // Загрузка конфигурации соединения
             connectionCfg = new Connection_Configuration();
             loadConnectionConfiguration();

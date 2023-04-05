@@ -22,11 +22,13 @@ namespace transportDataParrern
         public bool ShortClose { get; set; }
         [DataMember]
         public AdditionalDataStruct AdditionalData { get; set; }
+        [DataMember]
+        public string Command { get; set; }
     }
     
     public struct AdditionalDataStruct
     {
-        public string  message;
+        public string  message { get; set; }
 
         public decimal adx_val;
         public decimal adx_dip;

@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 
 
 
 namespace stocksharp.ServiceContracts
 {
-    class Log
+    internal class Log
     {
         public static void addLog(GUIServer.LogType logType, string message, params string[] args)
         {

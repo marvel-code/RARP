@@ -48,6 +48,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DotLiquid">
+      <HintPath>..\dll\DotLiquid.dll</HintPath>
+    </Reference>
     <Reference Include="Ecng.Collections">
       <HintPath>..\dll\Ecng.Collections.dll</HintPath>
     </Reference>
@@ -123,6 +126,7 @@
     <Compile Include="stocksharp\ServiceContracts\Log.cs" />
     <Compile Include="stocksharp\ServiceContracts\ProcessingData.cs" />
     <Compile Include="stocksharp\ServiceContracts\StrategyRules.cs" />
+    <Compile Include="stocksharp\ServiceContracts\StrategyValues.cs" />
     <Compile Include="stocksharp\ServiceContracts\UpdateTradeState.cs" />
     <Compile Include="stocksharp\ServiceContracts\Users.cs" />
     <Compile Include="stocksharp\ServiceContracts\WorkService.cs" />
@@ -172,4 +176,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy /E /Y /F "$(ProjectDir)..\ClientDayReportOnServerTemplate" "$(TargetDir)ClientDayReportOnServerTemplate\"</PostBuildEvent>
+  </PropertyGroup>
 </Project>

@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
-using GUIServer;
 using StockSharp.Algo.Candles;
 using StockSharp.BusinessEntities;
 
@@ -14,9 +12,9 @@ namespace stocksharp.ServiceContracts
         public List<Trade> AllTrades;
         private DateTime _lastTradeIStartDatetime;
         public Dictionary<DateTime, int> TradesIStarts;
-        public DateTimeOffset TerminalTime;
-        public DateTimeOffset LastEnterTime;
-        public DateTimeOffset LastExitTime;
+        public DateTime TerminalTime;
+        public DateTime LastEnterTime;
+        public DateTime LastExitTime;
 
         public int GetTradeIStart(DateTime time)
         {
@@ -27,26 +25,28 @@ namespace stocksharp.ServiceContracts
             {
                 time = time.AddMinutes(1);
                 if (time > TerminalTime)
+                {
                     break;
+                }
             }
-            
+
             // If time isn't out of range
             if (TradesIStarts.ContainsKey(time))
+            {
                 result = TradesIStarts[time];
+            }
 
             return result;
         }
 
         public void Init()
         {
-            Log.addLog(LogType.Info, " >> INIT");
-
             AllTrades = new List<Trade>();
             _lastTradeIStartDatetime = DateTime.Now.Date.AddDays(-2);
             TradesIStarts = new Dictionary<DateTime, int>();
-            TerminalTime = DateTimeOffset.Now;
-            LastEnterTime = DateTimeOffset.Now;
-            LastExitTime = DateTimeOffset.Now;
+            TerminalTime = DateTime.Now;
+            LastEnterTime = DateTime.Now;
+            LastExitTime = DateTime.Now;
 
             timeFrameList = new List<TimeFrame>();
             foreach (int tf_per in tf_Periods)

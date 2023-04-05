@@ -4,7 +4,6 @@ using Ecng.Common;
 using StockSharp.BusinessEntities;
 using StockSharp.Messages;
 using transportDataParrern;
-using Ecng.Common;
 
 namespace stocksharp.ServiceContracts
 {
@@ -13,8 +12,8 @@ namespace stocksharp.ServiceContracts
         // >> Customizable strategy settings
         public List<int> tf_Periods = new List<int>
         {
-            60,
-            1800
+           300,
+           120
         };
         public List<ADX_Configuration> adx_cfgList = new List<ADX_Configuration>
         {
@@ -30,25 +29,20 @@ namespace stocksharp.ServiceContracts
         };
         public List<KAMA_Configuration> kama_cfgList = new List<KAMA_Configuration>
         {
-            new KAMA_Configuration(
-                    1, 3, CalculationType.Median, 2, 30
-                )
+            new KAMA_Configuration(0, 3, CalculationType.Median, 2, 30)
         };
         public List<MA_Configuration> ma_cfgList = new List<MA_Configuration>
         {
-            new MA_Configuration(
-                    0, 2, MaType.Simple, CalculationType.Median
-                ),
+            new MA_Configuration(0, 1, MaType.Simple, CalculationType.Median),
         };
         public List<ROC_Configuration> roc_cfgList = new List<ROC_Configuration>
         {
-            new ROC_Configuration(1, 1, CalculationType.Median),
-            new ROC_Configuration(1, 2, CalculationType.Median),
+            new ROC_Configuration(0, 1, CalculationType.Median),
+            new ROC_Configuration(0, 2, CalculationType.Median),
         };
         public List<Volume_Configuration> volume_cfgList = new List<Volume_Configuration>
         {
-            new Volume_Configuration(0, 2, 1, 60),
-            new Volume_Configuration(1, 2, 1, 1),
+            new Volume_Configuration(0, 2, 1, 1),
         };
     }
 
@@ -68,12 +62,9 @@ namespace stocksharp.ServiceContracts
 
 
         //
-        // LONG.......................................
+        // LONG..........................................................................................................
         //
-
         private bool LongCommonRule =>
-
-                    //-// LONG общее условие......................
 
                     true
 
@@ -82,273 +73,123 @@ namespace stocksharp.ServiceContracts
 
         private List<List<bool>> LongAdditionalRules => new List<List<bool>>
                 {
-//-// LONG добавочные условия..................
+           
+//-// LONG добавочные условия........................................................................1
 
-/// Add.1...........................................................................
- 
                     new List<bool>
                     {
-
-                    tf[1].roc[0].val > new decimal(0.0)          //..per=1          //..1
-                    &&
-                    tf[1].roc[0].val > tf[1].roc[0].val_p
-                    &&
-                    tf[1].roc[1].val > tf[1].roc[1].val_p
-                    &&
-                    tf[1].roc[1].val > new decimal(0.0)          //..per=2   
-                        
-                    ,
-                    tf[1].roc[0].val > new decimal(0.0)          //..per=1          //..2
-                    &&
-                    tf[1].roc[0].val > tf[1].roc[0].val_p
-                    &&
-                    tf[1].volume.vector > tf[1].volume.vector_hp * new decimal(1.5)
-                    &&
-                    tf[1].volume.vector > -tf[1].volume.vector_lp * new decimal(1.5)
-                      
-                    ,
-                    tf[1].roc[1].val > tf[1].roc[1].val_p                           //..3
-                    &&
-                    tf[1].roc[1].val > new decimal(0.0)          //..per=2   
-                    &&
-                    tf[1].volume.vector > tf[1].volume.vector_hp * new decimal(1.5)
-                    &&
-                    tf[1].volume.vector > -tf[1].volume.vector_lp * new decimal(1.5)
-
+                        tf[0].adx[0].dip > tf[0].adx[0].dim,
                     },
-
-/// Add.2...........................................................................
- 
-                    new List<bool>
-                    {
-
-                    tf[1].volume.vector > tf[1].volume.vector_hp * new decimal(1)
-                    &&
-                    tf[1].volume.vector > -tf[1].volume.vector_lp * new decimal(1)
-
-                    },
-
-/// Add.3...........................................................................
- 
-                    new List<bool>
-                    {
-
-                    tf[1].GetPriceChannelHigh(4, 0) > tf[1].GetPriceChannelHigh(4, 1)
-
-                    ,
-                    tf[1].volume.vector > tf[1].volume.vector_hp * new decimal(1.5)
-                    &&
-                    tf[1].volume.vector > -tf[1].volume.vector_lp * new decimal(1.5)
-
-                    },
-
-           //-//
                 };
 
 
         //
-        // SHORT......................................
+        // SHORT.................................................................................................
         //
 
         private bool ShortCommonRule =>
 
-                    //-// SHORT общее условие....................
+                    //-// SHORT общее условие................................................................................
 
-                    tf[0].GetPriceChannelLow(3, 0) < tf[0].GetPriceChannelLow(3, 1)  //..1min
 
-                    &&
-
-                    tf[1].IsRedCandle(0)                                             //..30min
-                    &&
-                    tf[1].kama[0].val < tf[1].kama[0].val_p
-
-            //true
+            true
 
             //-//
             && true;
 
         private List<List<bool>> ShortAdditionalRules => new List<List<bool>>
         {
-//-// SHORT добавочные условия................
 
-/// Add.1...........................................................................
- 
+//-// SHORT добавочные условия.......................................................................1
+
                     new List<bool>
                     {
 
-                    tf[1].roc[0].val < - new decimal(0.0)          //..per=1          //..1
-                    &&
-                    tf[1].roc[0].val < tf[1].roc[0].val_p
-                    &&
-                    tf[1].roc[1].val < tf[1].roc[1].val_p
-                    &&
-                    tf[1].roc[1].val < - new decimal(0.0)          //..per=2          
-
-                    ,
-                    tf[1].roc[0].val < - new decimal(0.0)          //..per=1          //..2
-                    &&
-                    tf[1].roc[0].val < tf[1].roc[0].val_p
-                    &&
-                    tf[1].volume.vector < tf[1].volume.vector_lp * new decimal(1.5)
-                    &&
-                    tf[1].volume.vector < -tf[1].volume.vector_hp * new decimal(1.5)
-
-                    ,
-                    tf[1].roc[1].val < tf[1].roc[1].val_p                             //..3
-                    &&
-                    tf[1].roc[1].val < - new decimal(0.0)          //..per=2   
-                    &&
-                    tf[1].volume.vector < tf[1].volume.vector_lp * new decimal(1.5)
-                    &&
-                    tf[1].volume.vector < -tf[1].volume.vector_hp * new decimal(1.5)
+                        tf[0].adx[0].dip < tf[0].adx[0].dim,
 
                     },
-
-/// Add.2...........................................................................
- 
-                    new List<bool>
-                    {
-
-                    tf[1].volume.vector < tf[1].volume.vector_lp * new decimal(1)
-                    &&
-                    tf[1].volume.vector < -tf[1].volume.vector_hp * new decimal(1)
-
-                    },
-
-/// Add.2...........................................................................
- 
-                    new List<bool>
-                    {
-
-                    tf[1].GetPriceChannelLow(4, 0) < tf[1].GetPriceChannelLow(4, 1)
-
-                    ,
-                    tf[1].volume.vector < tf[1].volume.vector_lp * new decimal(1.5)
-                    &&
-                    tf[1].volume.vector < -tf[1].volume.vector_hp * new decimal(1.5)
-
-                    },
-
             //-//
         };
 
 
         //
-        // Запреты на вход
+        // Разрешения на вход .................................................
         //
 
-        private bool isEntryDenyed =>
-               //-// Запрет на вход 
+        private bool isEntryAllowed =>
 
-               false
-            // tf[1].isExitCandle(1)
+            true
 
             //-//
             && true;
 
-        private bool isLongDenyed =>
-            //-// Запрет на LONG
+        private bool isLongAllowed =>
 
-            false
+                  //-// Разрешение на LONG.............................................
+
+                  !tf[1].IsExitCandle(0)
+
+            // true
 
             //-//
             && true;
 
-        private bool isShortDenyed =>
-            //-// Запрет на SHORT
+        private bool isShortAllowed =>
 
-            false
+                  //-// Разрешение на SHORT...........................................
+
+                  !tf[1].IsExitCandle(0)
+
+            // true
 
             //-//
             && true;
 
 
         //
-        // SELL....................................
+        // SELL..........................................................
         //
 
         private bool SellCommonRule =>
-                    //-// SELL общее условие...................
 
+
+                    //-// SELL общее условие.........................................
                     true
-
             //-//
             && true;
 
         private List<bool> SellAdditionalRules => new List<bool>
+
         {
-//-// SELL дополнительные условия.........
-           
-                    tf[1].roc[0].val < tf[1].roc[0].val_p                               //..1
-                    &&
-                    tf[1].roc[1].val < tf[1].roc[1].val_p
-                    &&
-                   (
-                    tf[1].volume.vector < tf[1].volume.vector_hp * new decimal(1.5)
-                    ||
-                    tf[1].volume.vector < -tf[1].volume.vector_lp * new decimal(1.5)
-                   )
 
-                    ,
-                    tf[1].IsRedCandle(0)
-                    &&
-                    tf[1].volume.vector_p > new decimal(1000)
-                    &&
-                    tf[1].volume.vector < - tf[1].volume.vector_p * new decimal(0.5)
+//-// SELL дополнительные условия..............................
 
-                    ,
-                    Position_PNL <= Position_PNL_MAX - new decimal(400)                 //..2 
+                        tf[0].adx[0].dip < tf[0].adx[0].dim,
 
-                    ,
-                    Position_PNL_MAX >= new decimal(1000)                               //..3         
-                    &&
-                    Position_PNL <= Position_PNL_MAX - new decimal(10)
-
-            //-//
         };
 
 
         //
-        // COVER....................................
+        // COVER.........................................................
         //
 
         private bool CoverCommonRule =>
-                   //-// COVER общее условие..................
 
-                   true
+                      //-// COVER общее условие......................................
+
+            true
 
             //-//
             && true;
 
         private List<bool> CoverAdditionalRules => new List<bool>
+
         {
-//-// COVER дополнительные условия..........
 
-                    tf[1].roc[0].val > tf[1].roc[0].val_p                                 //..1
-                    &&
-                    tf[1].roc[1].val > tf[1].roc[1].val_p
-                    &&
-                    (
-                    tf[1].volume.vector > tf[1].volume.vector_lp * new decimal(1.5)
-                    ||
-                    tf[1].volume.vector > -tf[1].volume.vector_hp * new decimal(1.5)
-                    )
+//-// COVER дополнительные условия..............................
 
-                    ,
-                    tf[1].IsGreenCandle(0)
-                    &&
-                    tf[1].volume.vector_p < - new decimal(1000)
-                    &&
-                    tf[1].volume.vector > - tf[1].volume.vector_p * new decimal(0.5)
 
-                    ,
-                    Position_PNL <= Position_PNL_MAX - new decimal(400)                   //..2 
-
-                    ,
-                    Position_PNL_MAX >= new decimal(1000)                                 //..3         
-                    &&
-                    Position_PNL <= Position_PNL_MAX - new decimal(10)
-
+                        tf[0].adx[0].dip > tf[0].adx[0].dim,
             //-//
         };
     }

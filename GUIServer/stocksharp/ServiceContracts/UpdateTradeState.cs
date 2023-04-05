@@ -1,135 +1,214 @@
-﻿using System;
-using System.Collections.Generic;
-using Ecng.Common;
-using StockSharp.BusinessEntities;
-using StockSharp.Messages;
+﻿using System.Collections.Generic;
 using transportDataParrern;
 
 namespace stocksharp.ServiceContracts
 {
     public partial class WorkService
     {
-        private const bool DYNAMIC = false; // true - включить; false - выключить (ДИНАМИЧЕСКОЕ УСЛОВИЕ)
+        private PartnerDataObject TM;
         private List<TimeFrame> tf;
+        private bool isPostPositionBlockUpdated = false;
         private bool allow_entry = true;
-        private decimal Position_PNL;
-        private decimal Position_PNL_MAX;
-        private decimal Current_Price;
+        private NeedAction needAction_;
+        private bool wasLastExitByStrategy = true;
+        private const bool DYNAMIC = false; // true - включить; false - выключить (ДИНАМИЧЕСКОЕ УСЛОВИЕ)
+        private void updateTradeStateLongShort(ref TradeState tradeState, NeedAction needAction)
+        {
+            if (needAction == NeedAction.LongOrShortOpen)
+            {
+                int ruleId;
 
-        public TradeState updateTradeState(List<TimeFrame> _tf, NeedAction _needAction, PartnerDataObject PD)
+                // LONG
+                {
+                    ruleId = 0;
+
+                    if (LongCommonRule && isLongAllowed)
+                    {
+                        for (int i = 0; i < LongAdditionalRules.Count; i++)
+                        {
+                            ruleId *= 10;
+                            int index = LongAdditionalRules[i].FindIndex(x => x);
+                            if (index == -1)
+                            {
+                                ruleId = 0;
+                                break;
+                            }
+                            ruleId += index + 1;
+                        }
+
+                        if (ruleId != 0)
+                        {
+                            tradeState.LongOpen = true;
+                        }
+                    }
+                }
+
+                // SHORT
+                if (!tradeState.LongOpen)
+                {
+                    ruleId = 0;
+
+                    if (ShortCommonRule && isShortAllowed)
+                    {
+                        for (int i = 0; i < ShortAdditionalRules.Count; i++)
+                        {
+                            ruleId *= 10;
+                            int index = ShortAdditionalRules[i].FindIndex(x => x);
+                            if (index == -1)
+                            {
+                                ruleId = 0;
+                                break;
+                            }
+                            ruleId += index + 1;
+                        }
+
+                        if (ruleId != 0)
+                        {
+                            tradeState.ShortOpen = true;
+                        }
+                    }
+                }
+
+                if (ruleId != 0)
+                {
+                    tradeState.RuleId = ruleId;
+                }
+            }
+        }
+        private void updateTradeStateSellCover(ref TradeState tradeState, NeedAction needAction, ref int sellRuleId, ref int coverRuleId)
         {
             int ruleId;
-            TradeState tradeState = new TradeState();
-            tradeState.RuleId = 0;
-            tradeState.LongOpen = false;
-            tradeState.LongClose = false;
-            tradeState.ShortOpen = false;
-            tradeState.ShortClose = false;
-            tf = _tf;
-            Position_PNL = PD.Position_PNL;
-            Position_PNL_MAX = PD.Position_PNL_MAX;
-            Current_Price = tf[0].GetCandle().ClosePrice;
 
-            if (_needAction == NeedAction.LongOrShortOpen)
+            // Sell
+            ruleId = 0;
+            if (SellCommonRule)
             {
+                ruleId = SellAdditionalRules.FindIndex(x => x) + 1;
+                if (ruleId != 0)
+                {
+                    tradeState.LongClose = true;
+                    if (needAction == NeedAction.LongClose)
+                    {
+                        tradeState.RuleId = ruleId;
+                    }
+                    sellRuleId = ruleId;
+                }
+            }
+
+            // Cover
+            ruleId = 0;
+            if (CoverCommonRule)
+            {
+                ruleId = CoverAdditionalRules.FindIndex(x => x) + 1;
+                if (ruleId != 0)
+                {
+                    tradeState.ShortClose = true;
+                    if (needAction == NeedAction.ShortClose)
+                    {
+                        tradeState.RuleId = ruleId;
+                    }
+                    coverRuleId = ruleId;
+                }
+            }
+        }
+        public TradeState getTradeState(List<TimeFrame> timeFrames, NeedAction needAction, PartnerDataObject TM_)
+        {
+            tf = timeFrames;
+            TM = TM_;
+
+            if (needAction == NeedAction.LongOrShortOpen && !wasLastExitByStrategy && !isPostPositionBlockUpdated)
+            {
+                updatePostPositionBlock();
+                isPostPositionBlockUpdated = true;
+            }
+
+
+            // Variables init
+
+            needAction_ = needAction;
+            TradeState tradeState = new TradeState();
+
+            updatePreRulesBlock();
+
+            // Strategy implementation
+
+            if (needAction == NeedAction.LongOrShortOpen)
+            {
+                updatePreOpenRulesBlock();
+
                 if (!allow_entry && isEntryAllowedAfterExitRule)
                 {
                     allow_entry = true;
                 }
 
-                if (allow_entry && !isEntryDenyed)
+                if (allow_entry && isEntryAllowed)
                 {
-                    // LONG
+                    updateTradeStateLongShort(ref tradeState, needAction);
+
+                    if (tradeState.RuleId != 0)
                     {
-                        ruleId = 0;
-
-                        if (LongCommonRule && !isLongDenyed)
-                        {
-                            for (int i = 0; i < LongAdditionalRules.Count; i++)
-                            {
-                                ruleId *= 10;
-                                int index = LongAdditionalRules[i].FindIndex(x => x);
-                                if (index == -1)
-                                {
-                                    ruleId = 0;
-                                    break;
-                                }
-                                ruleId += index + 1;
-                            }
-
-                            if (ruleId != 0)
-                            {
-                                tradeState.LongOpen = true;
-                            }
-                        }
-                    }
-
-                    // SHORT
-                    if (!tradeState.LongOpen)
-                    {
-                        ruleId = 0;
-
-                        if (ShortCommonRule && !isShortDenyed)
-                        {
-                            for (int i = 0; i < ShortAdditionalRules.Count; i++)
-                            {
-                                ruleId *= 10;
-                                int index = ShortAdditionalRules[i].FindIndex(x => x);
-                                if (index == -1)
-                                {
-                                    ruleId = 0;
-                                    break;
-                                }
-                                ruleId += index + 1;
-                            }
-
-                            if (ruleId != 0)
-                            {
-                                tradeState.ShortOpen = true;
-                            }
-                        }
-                    }
-
-                    if (ruleId != 0)
-                    {
-                        tradeState.RuleId = ruleId;
                         allow_entry = false;
+
+                        updatePrePositionBlock();
                     }
+                }
+
+                updatePostOpenRulesBlock();
+            }
+            int sellRuleId = 0, coverRuleId = 0;
+            {
+                if (needAction != NeedAction.LongOrShortOpen)
+                {
+                    updatePreExitRulesBlock();
+                }
+
+                updateTradeStateSellCover(ref tradeState, needAction, ref sellRuleId, ref coverRuleId);
+
+                if (needAction != NeedAction.LongOrShortOpen)
+                {
+                    updatePostExitRulesBlock();
                 }
             }
-            {
-                // Sell
-                ruleId = 0;
-                if (SellCommonRule)
-                {
-                    ruleId = SellAdditionalRules.FindIndex(x => x) + 1;
-                    if (ruleId != 0)
-                    {
-                        tradeState.LongClose = true;
-                        if (_needAction == NeedAction.LongClose)
-                        {
-                            tradeState.RuleId = ruleId;
-                        }
-                    }
-                }
 
-                // Cover
-                ruleId = 0;
-                if (CoverCommonRule)
+            // Other
+
+            updatePostRulesBlock();
+
+            if (needAction == NeedAction.LongOrShortOpen && (tradeState.LongOpen || tradeState.ShortOpen))
+            {
+                // Entry
+                wasLastExitByStrategy = false;
+                updatePrePositionBlock();
+                isPostPositionBlockUpdated = false;
+            }
+            if (needAction != NeedAction.LongOrShortOpen && (tradeState.LongClose || tradeState.ShortClose))
+            {
+                // Exit
+                wasLastExitByStrategy = true;
+                updatePostPositionBlock();
+            }
+
+            // Проверка на зацикленность
+            if (needAction == NeedAction.LongOrShortOpen)
+            {
+                if (tradeState.LongOpen && tradeState.LongClose)
                 {
-                    ruleId = CoverAdditionalRules.FindIndex(x => x) + 1;
-                    if (ruleId != 0)
-                    {
-                        tradeState.ShortClose = true;
-                        if (_needAction == NeedAction.ShortClose)
-                        {
-                            tradeState.RuleId = ruleId;
-                        }
-                    }
+                    LogMessage($"Зацикленность Long ({tradeState.RuleId}, {sellRuleId})");
+                    setStopTradingCommand(ref tradeState);
+                }
+                else if (tradeState.ShortOpen && tradeState.ShortClose)
+                {
+                    LogMessage($"Зацикленность Short ({tradeState.RuleId}, {coverRuleId})");
+                    setStopTradingCommand(ref tradeState);
                 }
             }
 
             return tradeState;
+        }
+
+        void setStopTradingCommand(ref TradeState tradeState)
+        {
+            tradeState.Command = "stopTrading";
         }
     }
 }
