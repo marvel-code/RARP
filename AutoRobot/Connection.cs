@@ -261,7 +261,7 @@ namespace AutoRobot
             btn_stop_robot.IsEnabled = false;
         }
         // Save log
-        private void saveLog()
+        private void saveLog(bool from_log = false)
         {
             try
             {
@@ -308,7 +308,10 @@ namespace AutoRobot
                     //if (is_NewFile) hdl_write.WriteLine("</pre></body></html>");
                     hdl_write.Close();
                 }
-                addLogMessage("Лог сохранён");
+                if (!from_log)
+                {
+                    addLogMessage("Лог сохранён");
+                }
             }
             catch (Exception ex)
             {

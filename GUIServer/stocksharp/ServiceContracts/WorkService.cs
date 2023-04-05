@@ -293,7 +293,7 @@ namespace stocksharp.ServiceContracts
             string message = string.Format("{0}({1}) по цене {2}", action, ruleId, securityPrice);
             if (action == "SELL" || action == "COVER")
             {
-                message += string.Format(" {0} PNL: {1}", positionPnl == 0 ? ' ' : positionPnl > 0 ? '+' : '-', positionPnl);
+                message = string.Format("exit({1}) {0}", positionPnl, action);
             }
             Log.addLog(GUIServer.LogType.Info, string.Format("{0} :: {1}", _currentUser, message));
 
@@ -439,6 +439,19 @@ namespace stocksharp.ServiceContracts
             }
             // Others
             {
+                htmlLog += $"TerminalTime = {TM.TerminalTime}";
+                htmlLog += "<br>";
+                var AllTrades = tf[0].volume.AllTrades;
+                htmlLog += $"AllTradesLength = {AllTrades.Length}";
+                htmlLog += "<br>";
+                for (int i = 0; i < 5; ++i)
+                {
+                    var Trade = AllTrades[AllTrades.Length - 1 - i];
+                    htmlLog += $"{Trade.Time} - {Trade.Id}";
+                    htmlLog += "<br>";
+                }
+                htmlLog += "<br>";
+                // tacts volumes
                 List<TimeFrame> TF = _currentData.timeFrameList;
                 htmlLog += "<table>";
                 htmlLog += "<tr><td>" + "Индикатор" + "</td><td>" + "shift = 1" + "</td><td>" + "shift = 0" + "</td></tr>";

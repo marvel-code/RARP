@@ -117,14 +117,14 @@ namespace stocksharp
             }
             for (var dt = GetDateTimeWithoutMillis(DT).AddSeconds(1); dt <= Get_CurrentTime(); dt = dt.AddSeconds(1))
             {
-                if (dt.Hour < 10)
-                {
-                    dt = dt.Add(-dt.TimeOfDay + TimeSpan.FromHours(10));
-                }
                 while (dt.DayOfWeek == DayOfWeek.Saturday || dt.DayOfWeek == DayOfWeek.Sunday)
                 {
                     dt = dt.Add(-dt.TimeOfDay + TimeSpan.FromHours(10));
                     dt = dt.AddDays(1);
+                }
+                if (dt.Hour < 10)
+                {
+                    dt = dt.Add(-dt.TimeOfDay + TimeSpan.FromHours(10));
                 }
                 if (_proectionDateTime2AllTrades.ContainsKey(dt))
                 {
@@ -134,19 +134,19 @@ namespace stocksharp
                     return result;
                 }
             }
-            return _lastProcessedProectionTradeIndex;
+            return AllTrades.Length - 1;
         }
         private int getNearestTradeIndexEarlierDateTime(DateTime DT)
         {
             if (DT > AllTrades[AllTrades.Length - 1].Time)
             {
-                return _lastProcessedProectionTradeIndex;
+                return AllTrades.Length - 1;
             }
             for (var dt = GetDateTimeWithoutMillis(DT).AddSeconds(-1); dt > AllTrades[0].Time; dt = dt.AddSeconds(-1))
             {
                 if (dt.Hour < 10)
                 {
-                    dt = dt.Add(-dt.TimeOfDay);
+                    dt = dt.Add(-dt.TimeOfDay - TimeSpan.FromSeconds(1));
                 }
                 while (dt.DayOfWeek == DayOfWeek.Saturday || dt.DayOfWeek == DayOfWeek.Sunday)
                 {
@@ -193,7 +193,7 @@ namespace stocksharp
             int allTradesCount = IAllTrades.Count();
             if (_lastProcessedProectionTradeIndex == -1)
             {
-                _lastProcessedProectionTradeIndex = allTradesCount;
+                _lastProcessedProectionTradeIndex = allTradesCount - 1;
                 var pq = IAllTrades.AsParallel().Select((t, i) => new { Index = i, Trade = t });
                 object locker_proection = new object();
                 object locker_buySumsCaches = new object();
@@ -206,11 +206,12 @@ namespace stocksharp
                     {
                         if (!_proectionDateTime2AllTrades.ContainsKey(dt))
                         {
+                            // Init proection
                             _proectionDateTime2AllTrades.Add(dt, el.Index);
                         }
-                        else
-                            if (_proectionDateTime2AllTrades[dt] > el.Index)
+                        else if (_proectionDateTime2AllTrades[dt] > el.Index)
                         {
+                            // Make index erliest at second
                             _proectionDateTime2AllTrades[dt] = el.Index;
                         }
                     }
@@ -262,7 +263,6 @@ namespace stocksharp
                     {
                         sideCache.Add(trade_minutes_dt, 0);
                     }
-
                     sideCache[trade_minutes_dt] += trade.Volume;
                 }
             }
@@ -285,9 +285,10 @@ namespace stocksharp
             }
 
             // Tact exp velocities
-            DateTime current_time = Get_CurrentTime();
-            if (current_time - _lastExpTactUpdateDateTime > TimeSpan.FromHours(10))
+            DateTime current_terminal_time = Get_CurrentTime();
+            if (current_terminal_time - _lastExpTactUpdateDateTime > TimeSpan.FromHours(10))
             {
+                // Avr
                 Console.WriteLine("Avr caches init started..");
                 foreach (KeyValuePair<int, int> kvp in MySettings.VELOCITIES_SETTINGS)
                 {
@@ -296,7 +297,7 @@ namespace stocksharp
                     Console.WriteLine("Формирование кэша для {1} заняло {0}мин", Math.Round((DateTime.Now - timeStamp).Add(TimeSpan.FromSeconds(30)).TotalMinutes), kvp.Key);
                 }
                 Console.WriteLine("Avr caches init finished!");
-
+                // Готовим список tactsProectionsDateTimes временных отметок тактов для расчёта
                 List<DateTime> tactsProectionsDateTimes = _proectionDateTime2AllTrades.Keys.Where(p => p.TimeOfDay.TotalSeconds % VV_TACT == 0).ToList();
                 tactsProectionsDateTimes.Sort();
                 List<DateTime> proections2add = new List<DateTime>();
@@ -313,7 +314,7 @@ namespace stocksharp
                 }
                 tactsProectionsDateTimes.AddRange(proections2add);
                 tactsProectionsDateTimes.Sort();
-
+                // Exp
                 Console.WriteLine("Exp init started..");
                 int k = 0;
                 int k_max = tactsProectionsDateTimes.Count;
@@ -334,13 +335,13 @@ namespace stocksharp
             }
             else
             {
-                while (_lastExpTactUpdateDateTime.AddSeconds(VV_TACT) <= current_time)
+                while (_lastExpTactUpdateDateTime.AddSeconds(VV_TACT) <= current_terminal_time)
                 {
                     _lastExpTactUpdateDateTime = _lastExpTactUpdateDateTime.AddSeconds(VV_TACT);
                     if (_lastExpTactUpdateDateTime.TimeOfDay.TotalHours < 10)
                     {
-                        _lastExpTactUpdateDateTime = _lastExpTactUpdateDateTime.AddHours(10);
-                        while (_lastExpTactUpdateDateTime.Date != TM.TerminalTime.Date)
+                        _lastExpTactUpdateDateTime = _lastExpTactUpdateDateTime.Add(-_lastExpTactUpdateDateTime.TimeOfDay + TimeSpan.FromHours(10));
+                        while (_lastExpTactUpdateDateTime.Date != current_terminal_time.Date)
                         {
                             _lastExpTactUpdateDateTime = _lastExpTactUpdateDateTime.AddDays(1);
                         }
@@ -745,12 +746,10 @@ namespace stocksharp
         {
             return GetExpBv(periodSeconds, n, shift) + GetExpSv(periodSeconds, n, shift);
         }
-
         public decimal GetExpVv(int periodSeconds, int n, int shift = 0)
         {
             return GetExpBv(periodSeconds, n, shift) - GetExpSv(periodSeconds, n, shift);
         }
-
         public decimal GetExpBv(int periodSeconds, int n, int shift = 0)
         {
             return _buyExpTactCache[new KeyValuePair<int, int>(periodSeconds, n)].Get_Value(shift);
@@ -763,12 +762,10 @@ namespace stocksharp
         {
             return GetExpBv(periodSeconds, n, dt) + GetExpSv(periodSeconds, n, dt);
         }
-
         public decimal GetExpVv(int periodSeconds, int n, DateTime dt)
         {
             return GetExpBv(periodSeconds, n, dt) - GetExpSv(periodSeconds, n, dt);
         }
-
         public decimal GetExpBv(int periodSeconds, int n, DateTime dt)
         {
             return _buyExpTactCache[new KeyValuePair<int, int>(periodSeconds, n)].Get_Value(dt);
@@ -975,7 +972,7 @@ namespace stocksharp
             }
 
             DateTime delAfterDT = GetDateTimeDivSeconds(beginCalcTime, 60).AddMinutes(1);
-            for (int k = getNearestTradeIndexLaterDateTime(beginCalcTime); k < AllTrades.Length && AllTrades[k].Time < delAfterDT; ++k)
+            for (int k = _proectionDateTime2AllTrades.ContainsKey(beginCalcTime) ? _proectionDateTime2AllTrades[beginCalcTime] : getNearestTradeIndexLaterDateTime(beginCalcTime); k < AllTrades.Length && AllTrades[k].Time < delAfterDT; ++k)
             {
                 if (AllTrades[k].OrderDirection == orderDireciton)
                 {
